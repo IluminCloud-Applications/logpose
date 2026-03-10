@@ -1,0 +1,50 @@
+{
+  "integration_key": "f5c3f8a38ef52ff78866314cafeea665",
+  "started_at": "2026-02-25 11:45:49.000000",
+  "updated_at": "2026-02-25 11:49:13.000000",
+  "seller_id": "LGA5YL",
+  "test": false,
+  "type": "order",
+  "tangible": false,
+  "cart_id": "ZYYX5NN",
+  "status": "lost_cart",
+  "customer": {
+    "name": "Celio Maximiano",
+    "fake_email": false,
+    "email": "celioswipe@gmail.com",
+    "doc": "",
+    "phone": "+5573981864979",
+    "ip": "45.5.231.139",
+    "billing_address": {
+      "zipcode": "",
+      "street": "",
+      "street_number": "",
+      "complement": "",
+      "district": "",
+      "city": "",
+      "state": "",
+      "estate": "",
+      "country": "BR"
+    }
+  },
+  "product": {
+    "name": "InstaFactory AI",
+    "price": 6700,
+    "code": "LQ8AKD",
+    "sku": "6a884a6652c1c8",
+    "type": "digital",
+    "quantity": 1
+  },
+  "link": {
+    "title": "InstaFactory - 67",
+    "sources": {
+      "src": "sl_seguidores"
+    },
+    "url": "https://checkout.payt.com.br/bc116692e94fd18c40474df3510a4ef1?cart=ZYYX5NN",
+    "available_coupons": [],
+    "admin_url": "https://app.payt.com.br/admin/carrinhos/ZYYX5NN",
+    "query_params": {
+      "sck": "QUERO GARANTIR MINHA VAGA AGORA"
+    }
+  }
+}

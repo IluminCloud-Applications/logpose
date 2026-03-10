@@ -1,0 +1,136 @@
+{
+  "order_id": "6661bb6a-645f-4734-ad3e-8dfb39af32d6",
+  "order_ref": "bWEIIJB",
+  "order_status": "paid",
+  "product_type": "club",
+  "payment_method": "credit_card",
+  "store_id": "eWa1CdmHVSDr5A3",
+  "payment_merchant_id": "6560838a-8255-49ae-91f7-ac0a00795183",
+  "installments": 1,
+  "card_type": "mastercard",
+  "card_last4digits": "7933",
+  "boleto_barcode": null,
+  "boleto_expiry_date": null,
+  "pix_code": null,
+  "pix_expiration": null,
+  "sale_type": "producer",
+  "created_at": "2026-03-10 14:23",
+  "updated_at": "2026-03-10 14:23",
+  "approved_date": "2026-03-10 14:23",
+  "refunded_at": null,
+  "webhook_event_type": "order_approved",
+  "Product": {
+    "product_id": "09b73960-0873-11f1-ba12-ff0e1902f4c1",
+    "product_name": "InstaFactory Assinatura"
+  },
+  "Customer": {
+    "full_name": "Pedro lucas carneiro",
+    "first_name": "Pedro",
+    "email": "pedrosowtkx@gmail.com",
+    "mobile": "+5521998363840",
+    "CPF": "16158944700",
+    "ip": "2804:14d:168e:82e8:d0f8:88ce:653d:a8b6",
+    "country": "br"
+  },
+  "Commissions": {
+    "charge_amount": 2700,
+    "product_base_price": 2700,
+    "product_base_price_currency": "BRL",
+    "kiwify_fee": 465,
+    "kiwify_fee_currency": "BRL",
+    "commissioned_stores": [
+      {
+        "id": "f90ef2e2-f69c-4dc8-a5c7-7f567c7ac876",
+        "type": "producer",
+        "custom_name": "celio maximiano dos santos",
+        "email": "celiobelps@gmail.com",
+        "value": "2235"
+      }
+    ],
+    "currency": "BRL",
+    "my_commission": 2235,
+    "funds_status": "waiting",
+    "estimated_deposit_date": "2026-03-25T03:00:00.000Z",
+    "deposit_date": null
+  },
+  "TrackingParameters": {
+    "src": "typebot",
+    "sck": "TESTE GRÁTIS",
+    "utm_source": "bio",
+    "utm_medium": "social",
+    "utm_campaign": null,
+    "utm_content": "link_in_bio",
+    "utm_term": null,
+    "s1": null,
+    "s2": null,
+    "s3": null
+  },
+  "checkout_link": "E1ox9J7",
+  "Subscription": {
+    "start_date": "2026-03-10T17:23:48.414Z",
+    "next_payment": "2026-04-10T17:23:52.096Z",
+    "status": "active",
+    "customer_access": {
+      "has_access": true,
+      "active_period": true,
+      "access_until": "2026-04-10T17:23:52.096Z"
+    },
+    "plan": {
+      "id": "f1beb1b9-a43f-4a0e-9605-d32e3668f3dc",
+      "name": "27 mes",
+      "frequency": "monthly",
+      "qty_charges": 0
+    },
+    "charges": {
+      "completed": [
+        {
+          "order_id": "6661bb6a-645f-4734-ad3e-8dfb39af32d6",
+          "amount": 2235,
+          "status": "paid",
+          "installments": 1,
+          "card_type": "mastercard",
+          "card_last_digits": "7933",
+          "card_first_digits": "550209",
+          "created_at": "2026-03-10T17:23:48.445Z"
+        }
+      ],
+      "future": [
+        {
+          "charge_date": "2026-04-10T17:23:52.096Z"
+        },
+        {
+          "charge_date": "2026-05-10T17:23:52.096Z"
+        },
+        {
+          "charge_date": "2026-06-10T17:23:52.096Z"
+        },
+        {
+          "charge_date": "2026-07-10T17:23:52.096Z"
+        },
+        {
+          "charge_date": "2026-08-10T17:23:52.096Z"
+        },
+        {
+          "charge_date": "2026-09-10T17:23:52.096Z"
+        },
+        {
+          "charge_date": "2026-10-10T17:23:52.096Z"
+        },
+        {
+          "charge_date": "2026-11-10T17:23:52.096Z"
+        },
+        {
+          "charge_date": "2026-12-10T17:23:52.096Z"
+        },
+        {
+          "charge_date": "2027-01-10T17:23:52.096Z"
+        },
+        {
+          "charge_date": "2027-02-10T17:23:52.096Z"
+        }
+      ]
+    }
+  },
+  "subscription_id": "697d7340-105c-4c5d-8cf1-93a09873645f",
+  "access_url": "https://dashboard.kiwify.com/student/password/h0VoE0BLp2HInX9ah0lOlbbQIlWoMxRzDf71T?redirect=/course/4adb76d4-6482-4eda-9f53-a779d37d1a56"
+}
