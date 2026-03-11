@@ -1,19 +1,19 @@
 import logging
 from sqlalchemy.orm import Session
-from datetime import datetime, timezone, timedelta
 
 from integrations.webhook.schemas import StandardizedWebhookEvent
 from database.models.customer import Customer
 from database.models.transaction import Transaction, TransactionStatus
 from database.models.product import Product
 from database.models.customer_product import CustomerProduct
+from database.core.timezone import now_sp
 
 logger = logging.getLogger(__name__)
 
 
-def get_saopaulo_time() -> datetime:
-    """Helper para pegar o tempo exato de São Paulo (UTC-3) para os timestamps do customer."""
-    return datetime.now(timezone.utc) - timedelta(hours=3)
+def get_saopaulo_time():
+    """Helper para pegar o tempo exato de São Paulo."""
+    return now_sp()
 
 
 def process_webhook_event(db: Session, event: StandardizedWebhookEvent):

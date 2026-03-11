@@ -1,7 +1,9 @@
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta
 from typing import Optional
+
+from database.core.timezone import now_sp, SP_ZONE
 
 from database.core.connection import get_db
 from database.models.transaction import Transaction, TransactionStatus, PaymentPlatform
@@ -19,7 +21,7 @@ router = APIRouter(prefix="/dashboard", tags=["dashboard"])
 
 
 def _parse_date_range(preset: str, start: Optional[str], end: Optional[str]):
-    now = datetime.now(timezone.utc)
+    now = now_sp()
     if preset == "today":
         return now.replace(hour=0, minute=0, second=0, microsecond=0), now
     elif preset == "7d":
@@ -32,9 +34,9 @@ def _parse_date_range(preset: str, start: Optional[str], end: Optional[str]):
         return now - timedelta(days=90), now
     elif preset == "custom" and start and end:
         try:
-            s = datetime.strptime(start, "%Y-%m-%d").replace(tzinfo=timezone.utc)
+            s = datetime.strptime(start, "%Y-%m-%d").replace(tzinfo=SP_ZONE)
             e = datetime.strptime(end, "%Y-%m-%d").replace(
-                hour=23, minute=59, second=59, tzinfo=timezone.utc
+                hour=23, minute=59, second=59, tzinfo=SP_ZONE
             )
             return s, e
         except ValueError:
@@ -62,7 +64,7 @@ def _date_range_strings(preset, start, end):
     """Retorna date strings YYYY-MM-DD para a Meta API."""
     d_start, d_end = _parse_date_range(preset, start, end)
     if not d_start or not d_end:
-        now = datetime.now(timezone.utc)
+        now = now_sp()
         d_start = now - timedelta(days=30)
         d_end = now
     return d_start.strftime("%Y-%m-%d"), d_end.strftime("%Y-%m-%d")

@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
 from sqlalchemy import func, or_
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta
 from typing import Optional
 
 from database.core.connection import get_db
@@ -9,13 +9,14 @@ from database.models.customer import Customer
 from database.models.customer_product import CustomerProduct
 from database.models.product import Product
 from database.models.transaction import Transaction, TransactionStatus, PaymentPlatform
+from database.core.timezone import now_sp, SP_ZONE
 from api.auth.deps import get_current_user
 
 router = APIRouter(prefix="/customers", tags=["customers"])
 
 
 def _parse_date_range(preset: str, start: Optional[str], end: Optional[str]):
-    now = datetime.now(timezone.utc)
+    now = now_sp()
     if preset == "today":
         return now.replace(hour=0, minute=0, second=0, microsecond=0), now
     elif preset == "7d":
@@ -26,9 +27,9 @@ def _parse_date_range(preset: str, start: Optional[str], end: Optional[str]):
         return now - timedelta(days=90), now
     elif preset == "custom" and start and end:
         try:
-            s = datetime.strptime(start, "%Y-%m-%d").replace(tzinfo=timezone.utc)
+            s = datetime.strptime(start, "%Y-%m-%d").replace(tzinfo=SP_ZONE)
             e = datetime.strptime(end, "%Y-%m-%d").replace(
-                hour=23, minute=59, second=59, tzinfo=timezone.utc
+                hour=23, minute=59, second=59, tzinfo=SP_ZONE
             )
             return s, e
         except ValueError:

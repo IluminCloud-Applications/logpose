@@ -30,6 +30,8 @@ from api.campaigns.presets import router as campaigns_presets_router
 from api.campaigns.tags import router as campaigns_tags_router
 from api.campaigns.filters import router as campaigns_filters_router
 from api.webhook.receive import router as webhook_receiver_router
+from api.csv_import.preview import router as import_preview_router
+from api.csv_import.execute import router as import_execute_router
 
 # Create tables
 Base.metadata.create_all(bind=engine)
@@ -70,6 +72,8 @@ app.include_router(campaigns_presets_router, prefix="/api")
 app.include_router(campaigns_tags_router, prefix="/api")
 app.include_router(campaigns_filters_router, prefix="/api")
 app.include_router(webhook_receiver_router, prefix="/api")
+app.include_router(import_preview_router, prefix="/api")
+app.include_router(import_execute_router, prefix="/api")
 
 # SPA Middleware (serves frontend in production)
 _frontend_dir = os.path.join(os.path.dirname(__file__), "frontend_dist")

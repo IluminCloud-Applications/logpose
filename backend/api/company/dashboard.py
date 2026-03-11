@@ -5,10 +5,10 @@ Agrega dados de transações + Meta Ads por mês para visão anual.
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from sqlalchemy import func, extract
-from datetime import datetime, timezone
 
 from database.core.connection import get_db
 from database.models.transaction import Transaction, TransactionStatus
+from database.core.timezone import now_sp
 from api.auth.deps import get_current_user
 from api.company.meta_spend import fetch_monthly_spend
 
@@ -22,7 +22,7 @@ MONTH_LABELS = [
 
 @router.get("/dashboard")
 async def get_dashboard(
-    year: int = datetime.now(timezone.utc).year,
+    year: int = now_sp().year,
     db: Session = Depends(get_db),
     _=Depends(get_current_user),
 ):

@@ -2,6 +2,8 @@ from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
 from datetime import datetime
 
+from database.core.timezone import now_sp
+
 from database.core.connection import get_db
 from database.models.product import Product
 from database.models.product_items import OrderBump, Upsell
@@ -65,7 +67,7 @@ async def _get_fb_metrics(
         return {"impressions": 0, "clicks": 0, "lpv": 0, "checkout": 0}
 
     meta_start = date_to_meta_format(dt_start) if dt_start else "2020-01-01"
-    meta_end = date_to_meta_format(dt_end) if dt_end else date_to_meta_format(datetime.now())
+    meta_end = date_to_meta_format(dt_end) if dt_end else date_to_meta_format(now_sp())
 
     return await fetch_facebook_aggregated(accounts, meta_start, meta_end)
 

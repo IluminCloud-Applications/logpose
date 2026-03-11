@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta
+from database.core.timezone import now_sp
 
 
 def resolve_date_range(
@@ -10,7 +11,7 @@ def resolve_date_range(
     Resolve um preset de período em (start, end) datetimes.
     Retorna (None, None) para 'all'.
     """
-    today = datetime.now()
+    today = now_sp()
 
     if preset == "today":
         start = today.replace(hour=0, minute=0, second=0, microsecond=0)

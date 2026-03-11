@@ -8,3 +8,5 @@ python-dotenv
 pydantic[email]
 alembic
 httpx
+openpyxl
+python-multipart
