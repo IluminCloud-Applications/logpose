@@ -107,7 +107,7 @@ def parse_payt_xlsx(
             product_name=product_name,
             product_external_id=_clean(venda.get("Sku")) or product_name,
             product_ticket=_parse_brl(venda.get("Preço do Produto")),
-            amount=_parse_brl(venda.get("Valor da Venda")),
+            amount=_parse_brl(venda.get("Você Recebe")),
             customer_name=_clean(venda.get("Cliente")) or None,
             customer_email=_clean(venda.get("Email")),
             customer_cpf=_clean(venda.get("Documento")) or None,

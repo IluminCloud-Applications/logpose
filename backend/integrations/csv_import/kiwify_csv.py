@@ -55,7 +55,7 @@ def parse_kiwify_csv(file_content: bytes) -> list[ImportRow]:
             product_name=product_name,
             product_external_id=product_name,
             product_ticket=_safe_float(raw.get("Preço base do produto", "0")),
-            amount=_safe_float(raw.get("Total com acréscimo", "0")),
+            amount=_safe_float(raw.get("Valor líquido", "0")),
             customer_name=raw.get("Cliente", "").strip() or None,
             customer_email=raw.get("Email", "").strip(),
             customer_cpf=raw.get("CPF / CNPJ", "").strip() or None,
