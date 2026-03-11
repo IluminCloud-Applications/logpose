@@ -33,7 +33,7 @@ async def fetch_ads(
     # 1. Buscar estrutura dos ads
     ads_raw = await client._get_all_pages(
         f"{client.account_id}/ads",
-        params={"fields": AD_STRUCTURE_FIELDS},
+        params={"fields": AD_STRUCTURE_FIELDS, "limit": "200"},
     )
 
     # 2. Buscar insights no nível ad

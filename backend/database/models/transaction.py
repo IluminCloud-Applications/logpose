@@ -50,6 +50,7 @@ class Transaction(Base):
     utm_medium = Column(String(255), nullable=True)
     utm_campaign = Column(String(255), nullable=True)
     utm_content = Column(String(255), nullable=True)
+    utm_term = Column(String(255), nullable=True)
     src = Column(String(255), nullable=True)
 
     # Detalhes do carrinho / checkout

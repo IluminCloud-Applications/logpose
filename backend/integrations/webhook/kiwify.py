@@ -79,6 +79,7 @@ def parse_kiwify_webhook(payload: Dict[str, Any]) -> Optional[StandardizedWebhoo
             utm_medium=tracking.get("utm_medium"),
             utm_campaign=tracking.get("utm_campaign"),
             utm_content=tracking.get("utm_content"),
+            utm_term=tracking.get("utm_term"),
             src=tracking.get("src") or tracking.get("sck"),
             checkout_url=f"https://pay.kiwify.com.br/{payload.get('checkout_link')}" if payload.get("checkout_link") else None,
             order_bumps=payload.get("order_bumps", [])

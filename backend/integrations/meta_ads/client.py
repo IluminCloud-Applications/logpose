@@ -48,7 +48,11 @@ class MetaAdsClient:
         """
         Busca todas as páginas de resultado (paginação automática).
         Retorna lista com todos os resultados concatenados.
+        Se a próxima página falhar (400/cursor expirado), retorna o que já coletou.
         """
+        import logging
+        logger = logging.getLogger(__name__)
+
         all_data: list[dict[str, Any]] = []
         url = f"{GRAPH_API_BASE}/{endpoint}"
         request_params = {"access_token": self.access_token}
@@ -56,10 +60,18 @@ class MetaAdsClient:
             request_params.update(params)
 
         while url:
-            response = await self._client.get(url, params=request_params)
-            response.raise_for_status()
-            data = response.json()
+            try:
+                response = await self._client.get(url, params=request_params)
+                response.raise_for_status()
+            except httpx.HTTPStatusError as e:
+                # Cursor expirado ou inválido — retorna o que já coletou
+                logger.warning(
+                    f"Paginação parou com status {e.response.status_code} "
+                    f"({len(all_data)} itens coletados). Endpoint: {endpoint}"
+                )
+                break
 
+            data = response.json()
             all_data.extend(data.get("data", []))
 
             # Próxima página (cursor-based pagination)

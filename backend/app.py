@@ -8,7 +8,28 @@ from starlette.middleware.base import BaseHTTPMiddleware
 from database.core.connection import engine, Base
 from api.auth.setup import router as setup_router
 from api.auth.login import router as login_router
+from api.auth.profile import router as profile_router
 from api.company.settings import router as company_router
+from api.company.dashboard import router as company_dash_router
+from api.vturb.accounts import router as vturb_router
+from api.facebook.accounts import router as facebook_router
+from api.platforms.webhooks import router as platforms_router
+from api.products.crud import router as products_router
+from api.products.items import router as product_items_router
+from api.products.stats import router as product_stats_router
+from api.funnel.data import router as funnel_router
+from api.sales.transactions import router as sales_router
+from api.customers.list import router as customers_router
+from api.recovery.config import router as recovery_config_router
+from api.recovery.list import router as recovery_list_router
+from api.dashboard.overview import router as dashboard_router
+from api.campaigns.list import router as campaigns_data_router
+from api.campaigns.toggle import router as campaigns_toggle_router
+from api.campaigns.budget import router as campaigns_budget_router
+from api.campaigns.presets import router as campaigns_presets_router
+from api.campaigns.tags import router as campaigns_tags_router
+from api.campaigns.filters import router as campaigns_filters_router
+from api.webhook.receive import router as webhook_receiver_router
 
 # Create tables
 Base.metadata.create_all(bind=engine)
@@ -28,6 +49,27 @@ app.add_middleware(
 app.include_router(setup_router, prefix="/api")
 app.include_router(login_router, prefix="/api")
 app.include_router(company_router, prefix="/api")
+app.include_router(company_dash_router, prefix="/api")
+app.include_router(profile_router, prefix="/api")
+app.include_router(vturb_router, prefix="/api")
+app.include_router(facebook_router, prefix="/api")
+app.include_router(platforms_router, prefix="/api")
+app.include_router(products_router, prefix="/api")
+app.include_router(product_items_router, prefix="/api")
+app.include_router(product_stats_router, prefix="/api")
+app.include_router(funnel_router, prefix="/api")
+app.include_router(sales_router, prefix="/api")
+app.include_router(customers_router, prefix="/api")
+app.include_router(recovery_config_router, prefix="/api")
+app.include_router(dashboard_router, prefix="/api")
+app.include_router(recovery_list_router, prefix="/api")
+app.include_router(campaigns_data_router, prefix="/api")
+app.include_router(campaigns_toggle_router, prefix="/api")
+app.include_router(campaigns_budget_router, prefix="/api")
+app.include_router(campaigns_presets_router, prefix="/api")
+app.include_router(campaigns_tags_router, prefix="/api")
+app.include_router(campaigns_filters_router, prefix="/api")
+app.include_router(webhook_receiver_router, prefix="/api")
 
 # SPA Middleware (serves frontend in production)
 _frontend_dir = os.path.join(os.path.dirname(__file__), "frontend_dist")

@@ -3,6 +3,7 @@ from sqlalchemy.orm import Session
 from pydantic import BaseModel
 from database.core.connection import get_db
 from database.models.company import CompanySettings
+from api.auth.deps import get_current_user
 
 router = APIRouter(prefix="/company", tags=["company"])
 
@@ -27,7 +28,7 @@ class CompanySettingsResponse(BaseModel):
 
 
 @router.get("/settings", response_model=CompanySettingsResponse)
-def get_settings(db: Session = Depends(get_db)):
+def get_settings(db: Session = Depends(get_db), _=Depends(get_current_user)):
     settings = db.query(CompanySettings).first()
     if not settings:
         settings = CompanySettings(
@@ -44,6 +45,7 @@ def get_settings(db: Session = Depends(get_db)):
 def update_settings(
     payload: CompanySettingsSchema,
     db: Session = Depends(get_db),
+    _=Depends(get_current_user),
 ):
     settings = db.query(CompanySettings).first()
     if not settings:

@@ -39,7 +39,7 @@ async def fetch_campaigns(
     # 1. Buscar estrutura das campanhas
     campaigns_raw = await client._get_all_pages(
         f"{client.account_id}/campaigns",
-        params={"fields": CAMPAIGN_STRUCTURE_FIELDS},
+        params={"fields": CAMPAIGN_STRUCTURE_FIELDS, "limit": "200"},
     )
 
     # 2. Buscar insights no nível campaign

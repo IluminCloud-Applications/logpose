@@ -16,6 +16,8 @@ class RecoveryType(str, enum.Enum):
 class RecoveryChannel(str, enum.Enum):
     WHATSAPP = "whatsapp"
     EMAIL = "email"
+    SMS = "sms"
+    BACK_REDIRECT = "back_redirect"
     OTHER = "other"
 
 
@@ -37,6 +39,7 @@ class Recovery(Base):
     amount = Column(Float, nullable=False)
     recovered = Column(Boolean, default=False)
     channel = Column(Enum(RecoveryChannel), nullable=True)
+    src = Column(String(255), nullable=True)
     recovered_at = Column(DateTime, nullable=True)
     created_at = Column(DateTime, server_default=CREATED_AT_DEFAULT)
     updated_at = Column(

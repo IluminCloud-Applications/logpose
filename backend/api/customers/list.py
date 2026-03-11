@@ -1,0 +1,198 @@
+from fastapi import APIRouter, Depends, Query
+from sqlalchemy.orm import Session
+from sqlalchemy import func, or_
+from datetime import datetime, timedelta, timezone
+from typing import Optional
+
+from database.core.connection import get_db
+from database.models.customer import Customer
+from database.models.customer_product import CustomerProduct
+from database.models.product import Product
+from database.models.transaction import Transaction, TransactionStatus, PaymentPlatform
+from api.auth.deps import get_current_user
+
+router = APIRouter(prefix="/customers", tags=["customers"])
+
+
+def _parse_date_range(preset: str, start: Optional[str], end: Optional[str]):
+    now = datetime.now(timezone.utc)
+    if preset == "today":
+        return now.replace(hour=0, minute=0, second=0, microsecond=0), now
+    elif preset == "7d":
+        return now - timedelta(days=7), now
+    elif preset == "30d":
+        return now - timedelta(days=30), now
+    elif preset == "90d":
+        return now - timedelta(days=90), now
+    elif preset == "custom" and start and end:
+        try:
+            s = datetime.strptime(start, "%Y-%m-%d").replace(tzinfo=timezone.utc)
+            e = datetime.strptime(end, "%Y-%m-%d").replace(
+                hour=23, minute=59, second=59, tzinfo=timezone.utc
+            )
+            return s, e
+        except ValueError:
+            return None, None
+    return None, None
+
+
+@router.get("")
+def list_customers(
+    preset: str = Query("all"),
+    start_date: Optional[str] = Query(None),
+    end_date: Optional[str] = Query(None),
+    platform: Optional[str] = Query(None),
+    product_id: Optional[int] = Query(None),
+    search: Optional[str] = Query(None),
+    page: int = Query(1, ge=1),
+    per_page: int = Query(50, ge=1, le=200),
+    db: Session = Depends(get_db),
+    _=Depends(get_current_user),
+):
+    query = db.query(Customer)
+
+    # Date filter on first_purchase_at
+    date_start, date_end = _parse_date_range(preset, start_date, end_date)
+    if date_start:
+        query = query.filter(Customer.first_purchase_at >= date_start)
+    if date_end:
+        query = query.filter(Customer.first_purchase_at <= date_end)
+
+    # Platform filter: customers that have transactions on a given platform
+    if platform and platform != "all":
+        try:
+            plat = PaymentPlatform(platform)
+            customer_ids = db.query(Transaction.customer_id).filter(
+                Transaction.platform == plat,
+                Transaction.customer_id.isnot(None),
+            ).distinct().subquery()
+            query = query.filter(Customer.id.in_(db.query(customer_ids)))
+        except ValueError:
+            pass
+
+    # Product filter: customers that purchased a specific product
+    if product_id:
+        cp_ids = db.query(CustomerProduct.customer_id).filter(
+            CustomerProduct.product_id == product_id
+        ).subquery()
+        query = query.filter(Customer.id.in_(db.query(cp_ids)))
+
+    # Search by name, email, or cpf
+    if search:
+        term = f"%{search}%"
+        query = query.filter(
+            or_(
+                Customer.name.ilike(term),
+                Customer.email.ilike(term),
+                Customer.cpf.ilike(term),
+                Customer.phone.ilike(term),
+            )
+        )
+
+    total = query.count()
+    customers = (
+        query.order_by(Customer.last_purchase_at.desc().nullslast())
+        .offset((page - 1) * per_page)
+        .limit(per_page)
+        .all()
+    )
+
+    items = []
+    for c in customers:
+        products = _get_customer_products(db, c.id)
+        items.append(_serialize(c, products))
+
+    return {"total": total, "page": page, "per_page": per_page, "items": items}
+
+
+@router.get("/summary")
+def customers_summary(
+    preset: str = Query("all"),
+    start_date: Optional[str] = Query(None),
+    end_date: Optional[str] = Query(None),
+    db: Session = Depends(get_db),
+    _=Depends(get_current_user),
+):
+    query = db.query(Customer)
+
+    date_start, date_end = _parse_date_range(preset, start_date, end_date)
+    if date_start:
+        query = query.filter(Customer.first_purchase_at >= date_start)
+    if date_end:
+        query = query.filter(Customer.first_purchase_at <= date_end)
+
+    total = query.count()
+    total_orders = db.query(func.coalesce(func.sum(Customer.total_orders), 0)).filter(
+        Customer.id.in_([c.id for c in query.all()])
+    ).scalar()
+    total_spent = db.query(func.coalesce(func.sum(Customer.total_spent), 0)).filter(
+        Customer.id.in_([c.id for c in query.all()])
+    ).scalar()
+
+    # Unique products across all matching customers
+    customer_ids = [c.id for c in query.all()]
+    unique_products = 0
+    if customer_ids:
+        unique_products = db.query(func.count(func.distinct(CustomerProduct.product_id))).filter(
+            CustomerProduct.customer_id.in_(customer_ids)
+        ).scalar() or 0
+
+    avg_ticket = (float(total_spent) / int(total_orders)) if total_orders and int(total_orders) > 0 else 0
+
+    return {
+        "total_customers": total,
+        "total_orders": int(total_orders),
+        "total_spent": float(total_spent),
+        "unique_products": unique_products,
+        "avg_ticket": round(avg_ticket, 2),
+    }
+
+
+@router.get("/filter-options")
+def customer_filter_options(
+    db: Session = Depends(get_db),
+    _=Depends(get_current_user),
+):
+    products = db.query(Product.id, Product.name).order_by(Product.name).all()
+    platforms = (
+        db.query(Transaction.platform)
+        .filter(Transaction.platform.isnot(None))
+        .distinct()
+        .all()
+    )
+
+    platform_labels = {"kiwify": "Kiwify", "payt": "PayT"}
+
+    return {
+        "products": [{"id": p.id, "name": p.name} for p in products],
+        "platforms": [
+            {"value": p[0].value, "label": platform_labels.get(p[0].value, p[0].value)}
+            for p in platforms
+        ],
+    }
+
+
+def _get_customer_products(db: Session, customer_id: int) -> list[str]:
+    rows = (
+        db.query(Product.name)
+        .join(CustomerProduct, CustomerProduct.product_id == Product.id)
+        .filter(CustomerProduct.customer_id == customer_id)
+        .all()
+    )
+    return [r[0] for r in rows]
+
+
+def _serialize(c: Customer, products: list[str]) -> dict:
+    return {
+        "id": c.id,
+        "name": c.name,
+        "email": c.email,
+        "phone": c.phone,
+        "cpf": c.cpf,
+        "total_spent": c.total_spent or 0,
+        "total_orders": c.total_orders or 0,
+        "products": products,
+        "first_purchase_at": c.first_purchase_at.isoformat() if c.first_purchase_at else None,
+        "last_purchase_at": c.last_purchase_at.isoformat() if c.last_purchase_at else None,
+        "created_at": c.created_at.isoformat() if c.created_at else None,
+    }

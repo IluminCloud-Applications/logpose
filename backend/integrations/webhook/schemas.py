@@ -27,6 +27,7 @@ class StandardizedWebhookEvent(BaseModel):
     utm_medium: Optional[str] = None
     utm_campaign: Optional[str] = None
     utm_content: Optional[str] = None
+    utm_term: Optional[str] = None
     src: Optional[str] = None
 
     # Detalhes complementares

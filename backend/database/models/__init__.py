@@ -9,6 +9,9 @@ from database.models.facebook_account import FacebookAccount
 from database.models.vturb_account import VturbAccount
 from database.models.webhook_endpoint import WebhookEndpoint, WebhookPlatform
 from database.models.customer_product import CustomerProduct
+from database.models.recovery_channel_config import RecoveryChannelConfig
+from database.models.campaign_preset import CampaignPreset
+from database.models.campaign_tag import CampaignTag
 
 __all__ = [
     "Admin",
@@ -30,4 +33,7 @@ __all__ = [
     "WebhookEndpoint",
     "WebhookPlatform",
     "CustomerProduct",
+    "RecoveryChannelConfig",
+    "CampaignPreset",
+    "CampaignTag",
 ]

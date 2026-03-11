@@ -77,6 +77,7 @@ def parse_payt_webhook(payload: Dict[str, Any]) -> Optional[StandardizedWebhookE
             utm_medium=extract_param("utm_medium"),
             utm_campaign=extract_param("utm_campaign"),
             utm_content=extract_param("utm_content"),
+            utm_term=extract_param("utm_term"),
             src=extract_param("src") or extract_param("sck"),
             checkout_url=link.get("url"),
             order_bumps=payload.get("order_bumps", [])

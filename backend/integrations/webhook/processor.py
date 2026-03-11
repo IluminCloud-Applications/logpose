@@ -117,6 +117,7 @@ def process_webhook_event(db: Session, event: StandardizedWebhookEvent):
         utm_medium=event.utm_medium,
         utm_campaign=event.utm_campaign,
         utm_content=event.utm_content,
+        utm_term=event.utm_term,
         src=event.src,
         checkout_url=event.checkout_url,
         order_bumps=event.order_bumps
