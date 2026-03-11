@@ -1,0 +1,89 @@
+import { useState, useEffect, useCallback } from "react";
+import type { SaleAPI, SalesSummary, SalesFilterOptions } from "@/types/sale";
+import type { DateRangeState } from "@/components/DateRangeFilter";
+import { fetchTransactions, fetchSalesSummary, fetchSalesFilterOptions } from "@/services/sales";
+import { useCachedQuery } from "./useCachedQuery";
+
+export interface SalesFilters {
+  dateRange: DateRangeState;
+  status: string;
+  platform: string;
+  productId: string;
+  campaign: string;
+  search: string;
+}
+
+export const defaultSalesFilters: SalesFilters = {
+  dateRange: { preset: "today", startDate: "", endDate: "" },
+  status: "all",
+  platform: "all",
+  productId: "all",
+  campaign: "all",
+  search: "",
+};
+
+export function useSales() {
+  const [page, setPage] = useState(1);
+  const [filters, setFilters] = useState<SalesFilters>(defaultSalesFilters);
+  const [filterOptions, setFilterOptions] = useState<SalesFilterOptions>({ products: [], campaigns: [], platforms: [] });
+
+  const buildParams = useCallback(() => {
+    const p: Record<string, unknown> = {
+      preset: filters.dateRange.preset,
+      page,
+      per_page: 12,
+    };
+    if (filters.dateRange.preset === "custom") {
+      p.start_date = filters.dateRange.startDate;
+      p.end_date = filters.dateRange.endDate;
+    }
+    if (filters.status !== "all") p.status = filters.status;
+    if (filters.platform !== "all") p.platform = filters.platform;
+    if (filters.productId !== "all") p.product_id = Number(filters.productId);
+    if (filters.search) p.search = filters.search;
+    return p;
+  }, [filters, page]);
+
+  const params = buildParams();
+
+  const { data: txData, isLoading: txLoading, reload: reloadTx } = useCachedQuery<{
+    items: SaleAPI[];
+    total: number;
+  }>({
+    cachePrefix: "sales-list",
+    params,
+    queryFn: () => fetchTransactions(params as Record<string, string | number | undefined>),
+  });
+
+  const { data: summary, reload: reloadSummary } = useCachedQuery<SalesSummary>({
+    cachePrefix: "sales-summary",
+    params,
+    queryFn: () => fetchSalesSummary(params as Record<string, string | number | undefined>),
+  });
+
+  useEffect(() => {
+    fetchSalesFilterOptions().then(setFilterOptions).catch(() => {});
+  }, []);
+
+  const updateFilters = (next: SalesFilters) => {
+    setPage(1);
+    setFilters(next);
+  };
+
+  const reload = useCallback(async () => {
+    await Promise.all([reloadTx(), reloadSummary()]);
+  }, [reloadTx, reloadSummary]);
+
+  return {
+    sales: txData?.items ?? [],
+    summary,
+    filterOptions,
+    total: txData?.total ?? 0,
+    page,
+    setPage,
+    loading: txLoading,
+    filters,
+    updateFilters,
+    reload,
+  };
+}
