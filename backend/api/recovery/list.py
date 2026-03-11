@@ -1,6 +1,5 @@
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
-from datetime import datetime
 
 from database.core.connection import get_db
 from database.models.recovery import Recovery
@@ -34,13 +33,15 @@ def list_recoveries(
     type_filter: str = Query("all"),
     status_filter: str = Query("all"),
     channel_filter: str = Query("all"),
+    search: str | None = Query(None),
+    page: int = Query(1, ge=1),
+    per_page: int = Query(12, ge=1, le=200),
     db: Session = Depends(get_db),
     _=Depends(get_current_user),
 ):
     dt_start, dt_end = resolve_date_range(preset, date_start, date_end)
-    configs = db.query(RecoveryChannelConfig).all()
 
-    q = db.query(Recovery).order_by(Recovery.created_at.desc())
+    q = db.query(Recovery)
 
     if dt_start:
         q = q.filter(Recovery.created_at >= dt_start)
@@ -55,29 +56,35 @@ def list_recoveries(
     elif status_filter == "pending":
         q = q.filter(Recovery.recovered.is_(False))
 
-    recoveries = q.all()
+    if channel_filter != "all":
+        q = q.filter(Recovery.channel == channel_filter)
 
-    result = []
-    for r in recoveries:
-        # Classificação do canal pelo campo `channel` do recovery ou pelo src
-        # Se tiver channel definido, usa. Senão, classifica pelo src original.
-        channel = r.channel.value if r.channel else "other"
+    if search:
+        from sqlalchemy import or_
+        term = f"%{search}%"
+        q = q.filter(
+            or_(
+                Recovery.customer_name.ilike(term),
+                Recovery.customer_email.ilike(term),
+            )
+        )
 
-        # Re-classifica baseado no campo src (se existir no contexto)
-        # Como o recovery não tem src direto, usamos o channel existente
-        # mas podemos expandir futuramente
+    total = q.count()
 
-        row = _to_response(r, channel)
+    recoveries = (
+        q.order_by(Recovery.created_at.desc())
+        .offset((page - 1) * per_page)
+        .limit(per_page)
+        .all()
+    )
 
-        if channel_filter != "all" and row["channel"] != channel_filter:
-            continue
+    items = [_to_response(r) for r in recoveries]
 
-        result.append(row)
-
-    return result
+    return {"total": total, "page": page, "per_page": per_page, "items": items}
 
 
-def _to_response(r: Recovery, channel: str) -> dict:
+def _to_response(r: Recovery) -> dict:
+    channel = r.channel.value if r.channel else "other"
     return {
         "id": r.id,
         "date": r.created_at.isoformat() if r.created_at else None,

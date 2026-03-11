@@ -9,6 +9,7 @@ class CampaignInsights(BaseModel):
     id: str
     name: str
     status: str
+    objective: str = ""
     budget: float = 0.0
     spend: float = 0.0
     clicks: int = 0

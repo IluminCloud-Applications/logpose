@@ -12,6 +12,7 @@ from database.models.customer_product import CustomerProduct
 from database.models.recovery_channel_config import RecoveryChannelConfig
 from database.models.campaign_preset import CampaignPreset
 from database.models.campaign_tag import CampaignTag
+from database.models.refund_reason import RefundReason
 
 __all__ = [
     "Admin",
@@ -36,4 +37,5 @@ __all__ = [
     "RecoveryChannelConfig",
     "CampaignPreset",
     "CampaignTag",
+    "RefundReason",
 ]

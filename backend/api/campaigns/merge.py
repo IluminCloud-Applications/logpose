@@ -119,6 +119,7 @@ def merge_campaigns(
             "id": camp.id,
             "name": camp.name,
             "status": camp.status,
+            "objective": camp.objective,
             "budget": camp.budget,
             "spend": camp.spend,
             "clicks": camp.clicks,

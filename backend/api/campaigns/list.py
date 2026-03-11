@@ -104,11 +104,12 @@ def _build_unidentified(db: Session, date_start: str, date_end: str) -> dict:
         "id": "unidentified",
         "name": "Não identificado",
         "status": "unidentified",
+        "objective": "",
         "sales": len(unid),
         "revenue": revenue,
         "profit": revenue,
         "spend": 0, "budget": 0, "clicks": 0, "impressions": 0,
         "cpc": 0, "ctr": 0, "cpa": 0, "roas": 0,
         "landing_page_views": 0, "initiate_checkout": 0,
-        "connect_rate": 0,
+        "connect_rate": 0, "no_id_sales": 0,
     }

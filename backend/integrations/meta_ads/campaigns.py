@@ -20,7 +20,7 @@ CAMPAIGN_FIELDS = ",".join([
 ])
 
 # Campos de estrutura da campanha
-CAMPAIGN_STRUCTURE_FIELDS = "id,name,status,daily_budget,lifetime_budget"
+CAMPAIGN_STRUCTURE_FIELDS = "id,name,status,daily_budget,lifetime_budget,objective"
 
 
 async def fetch_campaigns(
@@ -82,6 +82,7 @@ async def fetch_campaigns(
             id=camp_id,
             name=camp.get("name", ""),
             status=_normalize_status(camp.get("status", "")),
+            objective=_normalize_objective(camp.get("objective", "")),
             budget=budget,
             spend=spend,
             clicks=clicks,
@@ -106,3 +107,27 @@ def _normalize_status(raw_status: str) -> str:
         "ARCHIVED": "completed",
     }
     return mapping.get(raw_status, "paused")
+
+
+def _normalize_objective(raw_objective: str) -> str:
+    """Normaliza o objetivo da Meta para label amigável."""
+    mapping = {
+        "OUTCOME_SALES": "sales",
+        "OUTCOME_TRAFFIC": "traffic",
+        "OUTCOME_ENGAGEMENT": "engagement",
+        "OUTCOME_LEADS": "leads",
+        "OUTCOME_AWARENESS": "awareness",
+        "OUTCOME_APP_PROMOTION": "app_promotion",
+        "CONVERSIONS": "sales",
+        "LINK_CLICKS": "traffic",
+        "POST_ENGAGEMENT": "engagement",
+        "LEAD_GENERATION": "leads",
+        "BRAND_AWARENESS": "awareness",
+        "REACH": "awareness",
+        "VIDEO_VIEWS": "engagement",
+        "MESSAGES": "engagement",
+        "APP_INSTALLS": "app_promotion",
+        "PRODUCT_CATALOG_SALES": "sales",
+        "STORE_VISITS": "traffic",
+    }
+    return mapping.get(raw_objective, raw_objective.lower() if raw_objective else "other")
