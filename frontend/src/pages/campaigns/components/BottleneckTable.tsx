@@ -36,9 +36,9 @@ const allFunnelStages: FunnelStage[] = [
   },
   {
     label: "Plays VSL",
-    getValue: (c) => (c as CampaignData & { plays_vsl?: number }).plays_vsl ?? 0,
+    getValue: (c) => c.plays_vsl ?? 0,
     getRate: (c) => {
-      const plays = (c as CampaignData & { plays_vsl?: number }).plays_vsl ?? 0;
+      const plays = c.plays_vsl ?? 0;
       return c.clicks > 0 ? (plays / c.clicks) * 100 : 0;
     },
     rateLabel: "Play",

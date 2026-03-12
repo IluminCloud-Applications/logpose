@@ -1,6 +1,8 @@
 """
 Busca campanhas + insights da conta Meta Ads.
 """
+import asyncio
+
 from integrations.meta_ads.client import MetaAdsClient
 from integrations.meta_ads.schemas import CampaignInsights
 from integrations.meta_ads.helpers import (
@@ -30,26 +32,22 @@ async def fetch_campaigns(
 ) -> list[CampaignInsights]:
     """
     Busca todas as campanhas da conta com insights no período.
-
-    Estratégia:
-    1. Busca a lista de campanhas (id, name, status, budget)
-    2. Busca insights no nível de campanha (spend, clicks, etc.)
-    3. Combina os dados para retornar uma lista padronizada
+    Usa asyncio.gather para buscar estrutura e insights em paralelo.
     """
-    # 1. Buscar estrutura das campanhas
-    campaigns_raw = await client._get_all_pages(
-        f"{client.account_id}/campaigns",
-        params={"fields": CAMPAIGN_STRUCTURE_FIELDS, "limit": "200"},
-    )
-
-    # 2. Buscar insights no nível campaign
-    insights_raw = await client._get_all_pages(
-        f"{client.account_id}/insights",
-        params={
-            "fields": CAMPAIGN_FIELDS,
-            "level": "campaign",
-            "time_range": f'{{"since":"{date_start}","until":"{date_end}"}}',
-        },
+    # Buscar estrutura + insights em paralelo
+    campaigns_raw, insights_raw = await asyncio.gather(
+        client._get_all_pages(
+            f"{client.account_id}/campaigns",
+            params={"fields": CAMPAIGN_STRUCTURE_FIELDS, "limit": "200"},
+        ),
+        client._get_all_pages(
+            f"{client.account_id}/insights",
+            params={
+                "fields": CAMPAIGN_FIELDS,
+                "level": "campaign",
+                "time_range": f'{{"since":"{date_start}","until":"{date_end}"}}',
+            },
+        ),
     )
 
     # Indexar insights por campaign_id

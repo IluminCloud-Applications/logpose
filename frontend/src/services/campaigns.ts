@@ -22,6 +22,8 @@ export interface CampaignAdData {
   roas: number;
   cpa: number;
   no_id_sales: number;
+  plays_vsl: number;
+  play_rate: number;
 }
 
 export interface CampaignAdSetData {
@@ -44,6 +46,8 @@ export interface CampaignAdSetData {
   roas: number;
   cpa: number;
   no_id_sales: number;
+  plays_vsl: number;
+  play_rate: number;
   ads: CampaignAdData[];
 }
 
@@ -67,6 +71,8 @@ export interface CampaignData {
   roas: number;
   cpa: number;
   no_id_sales: number;
+  plays_vsl: number;
+  play_rate: number;
   adsets: CampaignAdSetData[];
 }
 

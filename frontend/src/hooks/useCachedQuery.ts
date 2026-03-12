@@ -27,27 +27,40 @@ interface UseCachedQueryResult<T> {
   invalidate: () => void;
 }
 
+// In-flight requests dedup — evita chamadas duplicadas simultâneas
+const inflightRequests = new Map<string, Promise<unknown>>();
+
 /**
  * Generic hook that wraps any API call with in-memory caching.
  *
  * - On mount or param change: serves cached data instantly if available,
  *   otherwise fetches from API and caches the result.
  * - `reload()` forces a fresh fetch and updates the cache.
- * - Cache is cleared on F5 since it lives only in JS memory.
+ * - Deduplicates in-flight requests for the same cache key.
+ * - Stabilizes params via JSON serialization to prevent unnecessary re-fetches.
  */
 export function useCachedQuery<T>(
   options: UseCachedQueryOptions<T>,
 ): UseCachedQueryResult<T> {
   const { cachePrefix, params, queryFn, enabled = true } = options;
 
-  const cacheKey = buildCacheKey(cachePrefix, params);
+  // Estabiliza params por valor (JSON) para evitar re-renders com objetos novos
+  const paramsStr = params ? JSON.stringify(params) : "";
+  const stableParamsRef = useRef(params);
+
+  if (JSON.stringify(stableParamsRef.current) !== paramsStr) {
+    stableParamsRef.current = params;
+  }
+
+  const stableParams = stableParamsRef.current;
+
+  const cacheKey = buildCacheKey(cachePrefix, stableParams);
   const cached = getCache<T>(cacheKey);
 
   const [data, setData] = useState<T | null>(cached);
   const [isLoading, setIsLoading] = useState(!cached && enabled);
   const [error, setError] = useState<string | null>(null);
 
-  // Keep queryFn stable via ref to avoid unnecessary re-renders
   const queryFnRef = useRef(queryFn);
   queryFnRef.current = queryFn;
 
@@ -55,7 +68,7 @@ export function useCachedQuery<T>(
     async (skipCache = false) => {
       if (!enabled) return;
 
-      const key = buildCacheKey(cachePrefix, params);
+      const key = buildCacheKey(cachePrefix, stableParams);
 
       // Serve from cache if available and not forcing refresh
       if (!skipCache) {
@@ -68,19 +81,41 @@ export function useCachedQuery<T>(
         }
       }
 
+      // Dedup: se já tem um request em andamento com a mesma key, aguarda ele
+      const inflight = inflightRequests.get(key);
+      if (inflight && !skipCache) {
+        setIsLoading(true);
+        try {
+          const result = (await inflight) as T;
+          setData(result);
+          setError(null);
+        } catch (err) {
+          setError(err instanceof Error ? err.message : "Erro ao carregar dados");
+        } finally {
+          setIsLoading(false);
+        }
+        return;
+      }
+
       setIsLoading(true);
       setError(null);
+
+      const promise = queryFnRef.current();
+      inflightRequests.set(key, promise);
+
       try {
-        const result = await queryFnRef.current();
+        const result = await promise;
         setCache(key, result);
         setData(result);
       } catch (err) {
         setError(err instanceof Error ? err.message : "Erro ao carregar dados");
       } finally {
         setIsLoading(false);
+        inflightRequests.delete(key);
       }
     },
-    [cachePrefix, params, enabled],
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [cachePrefix, paramsStr, enabled],
   );
 
   // Auto-fetch on mount or when params change

@@ -60,5 +60,37 @@ class VturbClient:
         response.raise_for_status()
         return response.json()
 
+    async def get_traffic_origin_stats(
+        self,
+        player_id: str,
+        query_key: str,
+        start_date: str,
+        end_date: str,
+        video_duration: int,
+    ) -> list[dict]:
+        """
+        [POST] /traffic_origin/stats
+        Retorna stats agrupados por um query_key (ex: utm_campaign).
+        Cada item retornado tem 'grouped_field' com o valor da UTM
+        e 'total_started_session_uniq' com unique plays.
+        """
+        payload = {
+            "player_id": player_id,
+            "query_key": query_key,
+            "start_date": start_date,
+            "end_date": end_date,
+            "video_duration": video_duration,
+        }
+        response = await self._client.post(
+            f"{VTURB_API_BASE}/traffic_origin/stats",
+            json=payload,
+        )
+        response.raise_for_status()
+        data = response.json()
+        # Pode ser dict ou list dependendo da API
+        if isinstance(data, dict):
+            return [data]
+        return data
+
     async def close(self):
         await self._client.aclose()

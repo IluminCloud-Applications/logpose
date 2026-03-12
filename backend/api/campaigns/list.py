@@ -15,6 +15,7 @@ from api.campaigns.helpers import (
 )
 from api.campaigns.merge import merge_campaigns, merge_ads
 from integrations.meta_ads.service import MetaAdsService
+from integrations.vturb.plays_by_utm import fetch_vturb_plays_by_campaign
 
 router = APIRouter(prefix="/campaigns", tags=["campaigns"])
 
@@ -41,9 +42,9 @@ async def get_campaigns_data(
     # 2. Buscar dados do Meta Ads
     service = MetaAdsService(fb_account.access_token, fb_account.account_id)
     try:
-        meta_campaigns = await service.get_campaigns(date_start, date_end)
-        meta_adsets = await service.get_adsets(date_start, date_end)
-        meta_ads = await service.get_ads(date_start, date_end)
+        meta_campaigns, meta_adsets, meta_ads = await service.get_all_levels(
+            date_start, date_end,
+        )
     except Exception as e:
         import logging
         logging.getLogger(__name__).error(f"Erro ao buscar dados do Meta Ads: {e}")
@@ -63,11 +64,26 @@ async def get_campaigns_data(
     # 4. Fazer o merge
     campaigns = merge_campaigns(meta_campaigns, meta_adsets, meta_ads, transactions)
 
-    # 5. Filtrar por status se necessário
+    # 5. Buscar plays do VTurb por utm_campaign
+    campaign_ids = [c["id"] for c in campaigns]
+    campaign_names = [c["name"] for c in campaigns]
+    try:
+        plays_map = await fetch_vturb_plays_by_campaign(
+            db, date_start, date_end, campaign_ids, campaign_names,
+        )
+    except Exception as e:
+        import logging
+        logging.getLogger(__name__).warning(f"Erro ao buscar plays do VTurb: {e}")
+        plays_map = {}
+
+    # Atribuir plays a cada campanha
+    _apply_vturb_plays(campaigns, plays_map)
+
+    # 6. Filtrar por status se necessário
     if status_filter and status_filter != "all":
         campaigns = [c for c in campaigns if c["status"] == status_filter]
 
-    # 6. Vendas sem UTM (não identificadas)
+    # 7. Vendas sem UTM (não identificadas)
     unidentified = _build_unidentified(db, date_start, date_end)
 
     return {"campaigns": campaigns, "unidentified": unidentified}
@@ -88,6 +104,23 @@ def _get_fb_transactions(db: Session, date_start: str, date_end: str) -> list[Tr
         Transaction.created_at <= f"{date_end} 23:59:59",
     )
     return query.all()
+
+
+def _apply_vturb_plays(
+    campaigns: list[dict],
+    plays_map: dict[str, int],
+) -> None:
+    """Atribui plays do VTurb a cada campanha por ID ou nome."""
+    for camp in campaigns:
+        plays = plays_map.get(camp["id"], 0)
+        if not plays:
+            plays = plays_map.get(camp["name"], 0)
+
+        camp["plays_vsl"] = plays
+        clicks = camp.get("clicks", 0)
+        camp["play_rate"] = (
+            round((plays / clicks) * 100, 1) if clicks > 0 and plays > 0 else 0
+        )
 
 
 def _build_unidentified(db: Session, date_start: str, date_end: str) -> dict:
@@ -112,4 +145,5 @@ def _build_unidentified(db: Session, date_start: str, date_end: str) -> dict:
         "cpc": 0, "ctr": 0, "cpa": 0, "roas": 0,
         "landing_page_views": 0, "initiate_checkout": 0,
         "connect_rate": 0, "no_id_sales": 0,
+        "plays_vsl": 0, "play_rate": 0,
     }

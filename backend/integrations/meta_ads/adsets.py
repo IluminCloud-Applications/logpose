@@ -1,6 +1,8 @@
 """
 Busca conjuntos de anúncios (ad sets) + insights da conta Meta Ads.
 """
+import asyncio
+
 from integrations.meta_ads.client import MetaAdsClient
 from integrations.meta_ads.schemas import AdSetInsights
 from integrations.meta_ads.helpers import (
@@ -29,21 +31,22 @@ async def fetch_adsets(
 ) -> list[AdSetInsights]:
     """
     Busca todos os ad sets da conta com insights no período.
+    Usa asyncio.gather para buscar estrutura e insights em paralelo.
     """
-    # 1. Buscar estrutura dos ad sets
-    adsets_raw = await client._get_all_pages(
-        f"{client.account_id}/adsets",
-        params={"fields": ADSET_STRUCTURE_FIELDS, "limit": "200"},
-    )
-
-    # 2. Buscar insights no nível adset
-    insights_raw = await client._get_all_pages(
-        f"{client.account_id}/insights",
-        params={
-            "fields": ADSET_FIELDS,
-            "level": "adset",
-            "time_range": f'{{"since":"{date_start}","until":"{date_end}"}}',
-        },
+    # Buscar estrutura + insights em paralelo
+    adsets_raw, insights_raw = await asyncio.gather(
+        client._get_all_pages(
+            f"{client.account_id}/adsets",
+            params={"fields": ADSET_STRUCTURE_FIELDS, "limit": "200"},
+        ),
+        client._get_all_pages(
+            f"{client.account_id}/insights",
+            params={
+                "fields": ADSET_FIELDS,
+                "level": "adset",
+                "time_range": f'{{"since":"{date_start}","until":"{date_end}"}}',
+            },
+        ),
     )
 
     insights_map = {

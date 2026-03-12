@@ -19,6 +19,8 @@ export interface MetricRow {
   connectRate: number;
   profit: number;
   budget: number;
+  playsVsl: number;
+  playRate: number;
 }
 
 function getCpaStatus(
@@ -105,8 +107,8 @@ export function getCellValue(c: MetricRow, col: string): React.ReactNode {
     lpv: c.landingPageViews.toLocaleString("pt-BR"),
     ic: c.initiateCheckout,
     connectRate: `${c.connectRate.toFixed(1)}%`,
-    playsVsl: "—",
-    playRate: "—",
+    playsVsl: c.playsVsl > 0 ? c.playsVsl.toLocaleString("pt-BR") : "—",
+    playRate: c.playRate > 0 ? `${c.playRate.toFixed(1)}%` : "—",
     checkoutConversion: `${checkoutConv.toFixed(1)}%`,
     checkoutToSaleRate: `${saleRate.toFixed(1)}%`,
     budget: fmt(c.budget),
@@ -134,6 +136,8 @@ export function getFooterValue(data: MetricRow[], col: string): string {
         .toLocaleString("pt-BR"),
     ic: () =>
       String(data.reduce((s, c) => s + c.initiateCheckout, 0)),
+    playsVsl: () =>
+      data.reduce((s, c) => s + c.playsVsl, 0).toLocaleString("pt-BR"),
   };
   return sums[col]?.() ?? "—";
 }
