@@ -17,6 +17,7 @@ import VturbPage from "@/pages/vturb";
 import ProfilePage from "@/pages/profile";
 import CompanyPage from "@/pages/company";
 import RefundsPage from "@/pages/refunds";
+import { Toaster } from "@/components/ui/sonner";
 
 export default function App() {
   return (
@@ -48,6 +49,7 @@ export default function App() {
           </Routes>
         </AppGuard>
       </TooltipProvider>
+      <Toaster richColors position="top-right" />
     </BrowserRouter>
   );
 }

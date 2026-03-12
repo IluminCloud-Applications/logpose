@@ -5,11 +5,14 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { RiEyeLine } from "@remixicon/react";
+import { RiEyeLine, RiDeleteBinLine } from "@remixicon/react";
 import type { SaleAPI } from "@/types/sale";
 import { UtmDetailModal } from "./UtmDetailModal";
 import { Skeleton } from "@/components/ui/skeleton";
 import { PaginationBar } from "@/components/PaginationBar";
+import { ConfirmDeleteModal } from "@/components/ConfirmDeleteModal";
+import { deleteSale } from "@/services/sales";
+import { toast } from "sonner";
 
 const statusConfig: Record<string, { label: string; className: string }> = {
   approved: { label: "Aprovada", className: "bg-[var(--color-success)]/15 text-[var(--color-success)] border-transparent" },
@@ -29,10 +32,28 @@ interface SalesTableProps {
   total: number;
   page: number;
   onPageChange: (page: number) => void;
+  onSaleDeleted?: () => void;
 }
 
-export function SalesTable({ data, loading, total, page, onPageChange }: SalesTableProps) {
+export function SalesTable({ data, loading, total, page, onPageChange, onSaleDeleted }: SalesTableProps) {
   const [selectedSale, setSelectedSale] = useState<SaleAPI | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<SaleAPI | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  const handleDelete = async () => {
+    if (!deleteTarget) return;
+    setIsDeleting(true);
+    try {
+      await deleteSale(deleteTarget.id);
+      toast.success("Venda apagada", { description: "A venda e o cliente associado foram removidos." });
+      setDeleteTarget(null);
+      onSaleDeleted?.();
+    } catch {
+      toast.error("Erro", { description: "Não foi possível apagar a venda." });
+    } finally {
+      setIsDeleting(false);
+    }
+  };
 
   return (
     <>
@@ -48,7 +69,7 @@ export function SalesTable({ data, loading, total, page, onPageChange }: SalesTa
                   <TableHead>Status</TableHead>
                   <TableHead className="text-right">Valor</TableHead>
                   <TableHead>Cliente</TableHead>
-                  <TableHead className="text-center w-[60px]">UTMs</TableHead>
+                  <TableHead className="text-center w-[80px]">Ações</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -98,15 +119,11 @@ export function SalesTable({ data, loading, total, page, onPageChange }: SalesTa
                         <TableCell className="text-muted-foreground max-w-[160px] truncate">
                           {sale.customer_email || "—"}
                         </TableCell>
-                        <TableCell className="text-center">
-                          <Button
-                            variant="ghost" size="icon-sm"
-                            onClick={() => setSelectedSale(sale)}
-                            className="hover:bg-primary/10"
-                          >
-                            <RiEyeLine className="size-4 text-muted-foreground" />
-                          </Button>
-                        </TableCell>
+                        <SaleActions
+                          sale={sale}
+                          onViewUtm={setSelectedSale}
+                          onDelete={setDeleteTarget}
+                        />
                       </TableRow>
                     );
                   })
@@ -123,7 +140,51 @@ export function SalesTable({ data, loading, total, page, onPageChange }: SalesTa
           />
         </CardContent>
       </Card>
+
       <UtmDetailModal sale={selectedSale} onClose={() => setSelectedSale(null)} />
+
+      <ConfirmDeleteModal
+        open={!!deleteTarget}
+        onOpenChange={(open) => !open && setDeleteTarget(null)}
+        onConfirm={handleDelete}
+        isLoading={isDeleting}
+        title="Apagar venda"
+        description="A venda e o cliente associado (se não tiver outras vendas) serão removidos permanentemente. Esta ação não pode ser desfeita."
+      />
     </>
+  );
+}
+
+/* ── Célula de ações extraída para manter a table limpa ── */
+function SaleActions({
+  sale,
+  onViewUtm,
+  onDelete,
+}: {
+  sale: SaleAPI;
+  onViewUtm: (s: SaleAPI) => void;
+  onDelete: (s: SaleAPI) => void;
+}) {
+  return (
+    <TableCell className="text-center">
+      <div className="flex items-center justify-center gap-1">
+        <Button
+          variant="ghost" size="icon-sm"
+          onClick={() => onViewUtm(sale)}
+          className="hover:bg-primary/10"
+          title="Ver UTMs"
+        >
+          <RiEyeLine className="size-4 text-muted-foreground" />
+        </Button>
+        <Button
+          variant="ghost" size="icon-sm"
+          onClick={() => onDelete(sale)}
+          className="hover:bg-destructive/10"
+          title="Apagar venda"
+        >
+          <RiDeleteBinLine className="size-4 text-muted-foreground hover:text-destructive" />
+        </Button>
+      </div>
+    </TableCell>
   );
 }

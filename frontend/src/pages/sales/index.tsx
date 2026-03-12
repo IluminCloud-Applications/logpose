@@ -6,7 +6,7 @@ import { useSales } from "@/hooks/use-sales";
 import { useState } from "react";
 
 export default function SalesPage() {
-  const { sales, summary, filterOptions, total, page, setPage, loading, filters, updateFilters } = useSales();
+  const { sales, summary, filterOptions, total, page, setPage, loading, filters, updateFilters, reload } = useSales();
   const [filtersOpen, setFiltersOpen] = useState(false);
 
   return (
@@ -37,6 +37,7 @@ export default function SalesPage() {
         total={total}
         page={page}
         onPageChange={setPage}
+        onSaleDeleted={reload}
       />
     </div>
   );

@@ -7,6 +7,7 @@ from database.models.webhook_endpoint import WebhookEndpoint, WebhookPlatform
 from integrations.webhook.kiwify import parse_kiwify_webhook
 from integrations.webhook.payt import parse_payt_webhook
 from integrations.webhook.processor import process_webhook_event
+from integrations.webhook.test_emails import is_test_email
 
 logger = logging.getLogger(__name__)
 
@@ -72,6 +73,11 @@ async def receive_webhook(
             status_code=422,
             detail="Não foi possível processar o payload recebido",
         )
+
+    # Ignorar emails de teste das plataformas (PayT: yoda@testsuser.com, Kiwify: johndoe@example.com)
+    if is_test_email(event.customer_email):
+        logger.info(f"Webhook ignorado: email de teste ({event.customer_email})")
+        return {"status": "ok", "message": "Webhook de teste ignorado"}
 
     # Processar o evento (salvar transação, customer, etc.)
     process_webhook_event(db, event)

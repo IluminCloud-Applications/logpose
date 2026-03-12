@@ -32,3 +32,7 @@ export async function fetchSalesSummary(params: SalesQueryParams): Promise<Sales
 export async function fetchSalesFilterOptions(): Promise<SalesFilterOptions> {
   return apiRequest<SalesFilterOptions>("/sales/filter-options");
 }
+
+export async function deleteSale(transactionId: number): Promise<void> {
+  return apiRequest<void>(`/sales/transactions/${transactionId}`, { method: "DELETE" });
+}

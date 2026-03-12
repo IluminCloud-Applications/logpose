@@ -15,6 +15,6 @@ git push -u origin main
 
 ```bash
 git add -A
-git commit -m "descrição da mudança"
+git commit -m "v1 finalizada"
 git push
 ```
