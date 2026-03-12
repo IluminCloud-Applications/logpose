@@ -180,3 +180,49 @@ export interface CampaignFilterOptionsAPI {
 export async function fetchCampaignFilterOptions(): Promise<CampaignFilterOptionsAPI> {
   return apiRequest<CampaignFilterOptionsAPI>("/campaigns/filter-options");
 }
+
+// ─── Markers (Definir Vídeo / Checkout) ───────────────────────────────
+
+export interface CampaignMarkerAPI {
+  id: number;
+  campaign_id: string;
+  marker_type: "video" | "checkout";
+  reference_id: string;
+  reference_label: string;
+}
+
+export async function fetchCampaignMarkers(): Promise<CampaignMarkerAPI[]> {
+  return apiRequest<CampaignMarkerAPI[]>("/campaigns/markers");
+}
+
+export async function upsertCampaignMarker(data: {
+  campaign_id: string;
+  marker_type: "video" | "checkout";
+  reference_id: string;
+  reference_label: string;
+}): Promise<CampaignMarkerAPI> {
+  return apiRequest<CampaignMarkerAPI>("/campaigns/markers", {
+    method: "PUT",
+    body: data,
+  });
+}
+
+export async function deleteCampaignMarker(id: number): Promise<void> {
+  return apiRequest(`/campaigns/markers/${id}`, { method: "DELETE" });
+}
+
+// ─── VTurb Players ────────────────────────────────────────────────────
+
+export interface VturbPlayer {
+  id: string;
+  name: string;
+  duration: number;
+  pitch_time: number;
+  created_at: string;
+  account_name: string;
+  plays_30d: number;
+}
+
+export async function fetchVturbPlayers(): Promise<VturbPlayer[]> {
+  return apiRequest<VturbPlayer[]>("/vturb/players");
+}

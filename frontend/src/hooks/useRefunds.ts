@@ -1,14 +1,18 @@
-import { useState, useCallback } from "react";
+import { useState, useEffect, useCallback } from "react";
 import type { DateRangeState } from "@/components/DateRangeFilter";
 import {
   fetchRefunds, fetchRefundsSummary, fetchReasonStats,
   type RefundItem, type RefundsSummary, type ReasonStat,
 } from "@/services/refunds";
+import { fetchSalesFilterOptions } from "@/services/sales";
+import type { SalesFilterOptions } from "@/types/sale";
 import { useCachedQuery } from "./useCachedQuery";
 
 export interface RefundsFilters {
   dateRange: DateRangeState;
   status: string;
+  platform: string;
+  productId: string;
   search: string;
   hasReason: string;
 }
@@ -16,6 +20,8 @@ export interface RefundsFilters {
 export const defaultRefundsFilters: RefundsFilters = {
   dateRange: { preset: "30d", startDate: "", endDate: "" },
   status: "all",
+  platform: "all",
+  productId: "all",
   search: "",
   hasReason: "all",
 };
@@ -23,6 +29,13 @@ export const defaultRefundsFilters: RefundsFilters = {
 export function useRefunds() {
   const [page, setPage] = useState(1);
   const [filters, setFilters] = useState<RefundsFilters>(defaultRefundsFilters);
+  const [filterOptions, setFilterOptions] = useState<SalesFilterOptions>({
+    products: [], campaigns: [], platforms: [],
+  });
+
+  useEffect(() => {
+    fetchSalesFilterOptions().then(setFilterOptions).catch(() => {});
+  }, []);
 
   const buildParams = useCallback(() => {
     const p: Record<string, string | number | undefined> = {
@@ -35,6 +48,8 @@ export function useRefunds() {
       p.end_date = filters.dateRange.endDate;
     }
     if (filters.status !== "all") p.status = filters.status;
+    if (filters.platform !== "all") p.platform = filters.platform;
+    if (filters.productId !== "all") p.product_id = Number(filters.productId);
     if (filters.search) p.search = filters.search;
     if (filters.hasReason !== "all") p.has_reason = filters.hasReason;
     return p;
@@ -85,6 +100,7 @@ export function useRefunds() {
     total: listData?.total ?? 0,
     summary,
     reasonStats: reasonStats ?? [],
+    filterOptions,
     page,
     setPage,
     loading: isLoading,

@@ -1,0 +1,47 @@
+services:
+  logpose:
+    image: ghcr.io/ilumincloud-applications/logpose:${APP_VERSION}
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      - DATABASE_URL=postgresql://postgres:${DB_PASSWORD}@db:5432/logpose
+      - SECRET_KEY=${DB_PASSWORD}
+      - META_GRAPH_API_VERSION=v25.0
+    networks:
+      - traefik
+      - internal
+    labels:
+      - traefik.enable=true
+      - traefik.docker.network=traefik
+      - traefik.http.routers.logpose.rule=Host(`${BASE_DOMAIN}`)${CUSTOM_DOMAIN:+ || Host(`${CUSTOM_DOMAIN}`)}
+      - traefik.http.routers.logpose.entrypoints=websecure
+      - traefik.http.routers.logpose.tls=true
+      - traefik.http.routers.logpose.tls.certresolver=letsencrypt
+      - traefik.http.services.logpose.loadbalancer.server.port=8000
+    restart: unless-stopped
+
+  db:
+    image: postgres:14
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: logpose
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - internal
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+volumes:
+  pgdata:
+
+networks:
+  traefik:
+    external: true
+  internal:

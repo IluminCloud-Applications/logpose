@@ -32,4 +32,6 @@ export interface CustomersSummary {
 export interface CustomersFilterOptions {
   products: { id: number; name: string }[];
   platforms: { value: string; label: string }[];
+  campaigns: string[];
+  sources: string[];
 }

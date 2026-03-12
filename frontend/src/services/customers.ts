@@ -9,6 +9,8 @@ interface CustomersQueryParams {
   end_date?: string;
   platform?: string;
   product_id?: number;
+  campaign?: string;
+  src?: string;
   search?: string;
   page?: number;
   per_page?: number;

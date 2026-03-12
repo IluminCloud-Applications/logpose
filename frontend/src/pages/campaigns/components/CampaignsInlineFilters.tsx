@@ -178,7 +178,7 @@ export function CampaignsInlineFilters({
 
 export const defaultCampaignFilters: CampaignFilterState = {
   status: "active",
-  objective: "all",
+  objective: "sales",
   product: "all",
   platform: "all",
   tag: "all",

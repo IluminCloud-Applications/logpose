@@ -39,7 +39,7 @@ const allFunnelStages: FunnelStage[] = [
     getValue: (c) => (c as CampaignData & { plays_vsl?: number }).plays_vsl ?? 0,
     getRate: (c) => {
       const plays = (c as CampaignData & { plays_vsl?: number }).plays_vsl ?? 0;
-      return c.landing_page_views > 0 ? (plays / c.landing_page_views) * 100 : 0;
+      return c.clicks > 0 ? (plays / c.clicks) * 100 : 0;
     },
     rateLabel: "Play",
     requiresVturb: true,

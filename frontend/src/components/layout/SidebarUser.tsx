@@ -67,7 +67,7 @@ export function SidebarUser() {
                   {user?.name || "Admin"}
                 </span>
                 <span className="truncate text-[11px] text-sidebar-foreground/60">
-                  {user?.email || "admin@logpose.app"}
+                  Versão: 1.0.0
                 </span>
               </div>
               <RiExpandUpDownLine className="ml-auto size-4" />

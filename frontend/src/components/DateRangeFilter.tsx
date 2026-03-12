@@ -16,7 +16,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 
-export type DatePreset = "today" | "7d" | "30d" | "90d" | "all" | "custom";
+export type DatePreset = "today" | "yesterday" | "3d" | "7d" | "30d" | "90d" | "all" | "custom";
 
 export interface DateRangeState {
   preset: DatePreset;
@@ -32,6 +32,8 @@ export const defaultDateRange: DateRangeState = {
 
 const presetLabels: Record<DatePreset, string> = {
   today: "Hoje",
+  yesterday: "Ontem",
+  "3d": "Últimos 3 dias",
   "7d": "Últimos 7 dias",
   "30d": "Últimos 30 dias",
   "90d": "Últimos 90 dias",

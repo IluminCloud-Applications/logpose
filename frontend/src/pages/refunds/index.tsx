@@ -10,7 +10,7 @@ import type { RefundItem } from "@/services/refunds";
 
 export default function RefundsPage() {
   const {
-    refunds, total, summary, reasonStats,
+    refunds, total, summary, reasonStats, filterOptions,
     page, setPage, loading, filters, updateFilters, reload,
   } = useRefunds();
 
@@ -33,6 +33,7 @@ export default function RefundsPage() {
           filters={filters}
           onFiltersChange={updateFilters}
           onClose={() => setFiltersOpen(false)}
+          filterOptions={filterOptions}
         />
       )}
 

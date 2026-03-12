@@ -1,34 +1,35 @@
 import { RiCloseLine, RiFilterOffLine } from "@remixicon/react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
-import type { SalesFilterOptions } from "@/types/sale";
-import type { RefundsFilters } from "@/hooks/useRefunds";
-import { defaultRefundsFilters } from "@/hooks/useRefunds";
+import type { CustomersFilterOptions } from "@/types/customer";
+import type { CustomersFilters } from "@/hooks/use-customers";
+import { defaultCustomersFilters } from "@/hooks/use-customers";
 
-interface RefundsInlineFiltersProps {
-  filters: RefundsFilters;
-  onFiltersChange: (f: RefundsFilters) => void;
+interface CustomersInlineFiltersProps {
+  filters: CustomersFilters;
+  onFiltersChange: (f: CustomersFilters) => void;
   onClose: () => void;
-  filterOptions: SalesFilterOptions;
+  filterOptions: CustomersFilterOptions;
 }
 
-export function RefundsInlineFilters({
+export function CustomersInlineFilters({
   filters, onFiltersChange, onClose, filterOptions,
-}: RefundsInlineFiltersProps) {
+}: CustomersInlineFiltersProps) {
   const activeCount = [
-    filters.status !== "all",
     filters.platform !== "all",
     filters.productId !== "all",
-    filters.hasReason !== "all",
+    filters.campaign !== "all",
+    !!filters.src,
   ].filter(Boolean).length;
 
   const clearAll = () =>
     onFiltersChange({
-      ...defaultRefundsFilters,
+      ...defaultCustomersFilters,
       search: filters.search,
       dateRange: filters.dateRange,
     });
@@ -37,7 +38,7 @@ export function RefundsInlineFilters({
     <div className="rounded-xl border border-border/50 bg-card/80 backdrop-blur-sm p-4 space-y-4 animate-in fade-in slide-in-from-top-2 duration-200">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <h3 className="text-sm font-semibold">Filtros de Reembolsos</h3>
+          <h3 className="text-sm font-semibold">Filtros de Clientes</h3>
           {activeCount > 0 && (
             <Badge className="bg-primary/15 text-primary border-transparent text-[10px] px-1.5 py-0">
               {activeCount} {activeCount === 1 ? "ativo" : "ativos"}
@@ -46,7 +47,10 @@ export function RefundsInlineFilters({
         </div>
         <div className="flex items-center gap-1">
           {activeCount > 0 && (
-            <Button variant="ghost" size="sm" onClick={clearAll} className="text-xs gap-1 text-muted-foreground hover:text-destructive">
+            <Button
+              variant="ghost" size="sm" onClick={clearAll}
+              className="text-xs gap-1 text-muted-foreground hover:text-destructive"
+            >
               <RiFilterOffLine className="size-3.5" />
               Limpar
             </Button>
@@ -58,23 +62,13 @@ export function RefundsInlineFilters({
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {/* Tipo */}
-        <div className="space-y-1.5">
-          <Label className="text-xs">Tipo</Label>
-          <Select value={filters.status} onValueChange={(v) => onFiltersChange({ ...filters, status: v })}>
-            <SelectTrigger className="h-9 w-full"><SelectValue /></SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Todos</SelectItem>
-              <SelectItem value="refunded">Reembolso</SelectItem>
-              <SelectItem value="chargeback">Chargeback</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-
         {/* Plataforma */}
         <div className="space-y-1.5">
           <Label className="text-xs">Plataforma</Label>
-          <Select value={filters.platform} onValueChange={(v) => onFiltersChange({ ...filters, platform: v })}>
+          <Select
+            value={filters.platform}
+            onValueChange={(v) => onFiltersChange({ ...filters, platform: v })}
+          >
             <SelectTrigger className="h-9 w-full"><SelectValue /></SelectTrigger>
             <SelectContent>
               <SelectItem value="all">Todas</SelectItem>
@@ -88,7 +82,10 @@ export function RefundsInlineFilters({
         {/* Produto */}
         <div className="space-y-1.5">
           <Label className="text-xs">Produto</Label>
-          <Select value={filters.productId} onValueChange={(v) => onFiltersChange({ ...filters, productId: v })}>
+          <Select
+            value={filters.productId}
+            onValueChange={(v) => onFiltersChange({ ...filters, productId: v })}
+          >
             <SelectTrigger className="h-9 w-full"><SelectValue /></SelectTrigger>
             <SelectContent>
               <SelectItem value="all">Todos</SelectItem>
@@ -99,17 +96,32 @@ export function RefundsInlineFilters({
           </Select>
         </div>
 
-        {/* Motivo registrado */}
+        {/* Campanha (utm_campaign) */}
         <div className="space-y-1.5">
-          <Label className="text-xs">Motivo registrado</Label>
-          <Select value={filters.hasReason} onValueChange={(v) => onFiltersChange({ ...filters, hasReason: v })}>
+          <Label className="text-xs">Campanha</Label>
+          <Select
+            value={filters.campaign}
+            onValueChange={(v) => onFiltersChange({ ...filters, campaign: v })}
+          >
             <SelectTrigger className="h-9 w-full"><SelectValue /></SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">Todos</SelectItem>
-              <SelectItem value="yes">Com motivo</SelectItem>
-              <SelectItem value="no">Sem motivo</SelectItem>
+              <SelectItem value="all">Todas</SelectItem>
+              {filterOptions.campaigns?.map((c) => (
+                <SelectItem key={c} value={c}>{c}</SelectItem>
+              ))}
             </SelectContent>
           </Select>
+        </div>
+
+        {/* SRC */}
+        <div className="space-y-1.5">
+          <Label className="text-xs">SRC</Label>
+          <Input
+            placeholder="Digitar src..."
+            value={filters.src}
+            onChange={(e) => onFiltersChange({ ...filters, src: e.target.value })}
+            className="h-9 text-sm"
+          />
         </div>
       </div>
     </div>

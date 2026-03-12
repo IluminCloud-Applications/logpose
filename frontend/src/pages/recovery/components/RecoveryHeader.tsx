@@ -1,101 +1,67 @@
-import { RiShoppingCartLine, RiSettings3Line } from "@remixicon/react";
-import {
-  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
-} from "@/components/ui/select";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { RiShoppingCartLine, RiSearchLine, RiFilterLine, RiSettings3Line } from "@remixicon/react";
+import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { DateFilter, type DatePreset } from "@/components/DateFilter";
+import { cn } from "@/lib/utils";
+import { DateRangeFilter, type DateRangeState } from "@/components/DateRangeFilter";
 
 interface RecoveryHeaderProps {
-  typeFilter: string;
-  onTypeChange: (value: string) => void;
-  statusFilter: string;
-  onStatusChange: (value: string) => void;
-  channelFilter: string;
-  onChannelChange: (value: string) => void;
-  datePreset: DatePreset;
-  dateStart: string;
-  dateEnd: string;
-  onDatePresetChange: (preset: DatePreset) => void;
-  onDateStartChange: (value: string) => void;
-  onDateEndChange: (value: string) => void;
+  search: string;
+  onSearchChange: (v: string) => void;
+  dateRange: DateRangeState;
+  onDateRangeChange: (v: DateRangeState) => void;
+  onToggleFilters: () => void;
+  filtersOpen: boolean;
   onOpenConfig: () => void;
 }
 
 export function RecoveryHeader({
-  typeFilter, onTypeChange,
-  statusFilter, onStatusChange,
-  channelFilter, onChannelChange,
-  datePreset, dateStart, dateEnd,
-  onDatePresetChange, onDateStartChange, onDateEndChange,
+  search, onSearchChange,
+  dateRange, onDateRangeChange,
+  onToggleFilters, filtersOpen,
   onOpenConfig,
 }: RecoveryHeaderProps) {
   return (
-    <div className="space-y-4">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex items-center gap-3">
-          <div className="rounded-lg bg-primary/10 p-2.5">
-            <RiShoppingCartLine className="size-5 text-primary" />
-          </div>
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight">Recuperação</h1>
-            <p className="text-sm text-muted-foreground">
-              Carrinhos abandonados, cartões recusados e PIX não pagos
-            </p>
-          </div>
+    <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex items-center gap-3">
+        <div className="rounded-lg bg-primary/10 p-2.5">
+          <RiShoppingCartLine className="size-5 text-primary" />
         </div>
-        <div className="flex items-center gap-2 flex-wrap">
-          <DateFilter
-            preset={datePreset}
-            dateStart={dateStart}
-            dateEnd={dateEnd}
-            onPresetChange={onDatePresetChange}
-            onDateStartChange={onDateStartChange}
-            onDateEndChange={onDateEndChange}
-          />
-          <Select value={statusFilter} onValueChange={onStatusChange}>
-            <SelectTrigger className="h-9 w-[130px] text-sm">
-              <SelectValue placeholder="Status" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Todos</SelectItem>
-              <SelectItem value="recovered">Recuperado</SelectItem>
-              <SelectItem value="pending">Pendente</SelectItem>
-            </SelectContent>
-          </Select>
-          <Button
-            variant="outline"
-            size="icon"
-            className="size-9"
-            onClick={onOpenConfig}
-            title="Configurar canais de recuperação"
-          >
-            <RiSettings3Line className="size-4" />
-          </Button>
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight">Recuperação</h1>
+          <p className="text-sm text-muted-foreground">
+            Carrinhos abandonados, cartões recusados e PIX não pagos
+          </p>
         </div>
       </div>
-
-      {/* Tabs de tipo */}
-      <Tabs value={typeFilter} onValueChange={onTypeChange}>
-        <TabsList className="h-9">
-          <TabsTrigger value="all" className="text-xs px-4">Todos</TabsTrigger>
-          <TabsTrigger value="abandoned_cart" className="text-xs px-4">Carrinho</TabsTrigger>
-          <TabsTrigger value="declined_card" className="text-xs px-4">Cartão</TabsTrigger>
-          <TabsTrigger value="unpaid_pix" className="text-xs px-4">PIX</TabsTrigger>
-        </TabsList>
-      </Tabs>
-
-      {/* Tabs de canal */}
-      <Tabs value={channelFilter} onValueChange={onChannelChange}>
-        <TabsList className="h-9">
-          <TabsTrigger value="all" className="text-xs px-4">Todas</TabsTrigger>
-          <TabsTrigger value="whatsapp" className="text-xs px-4">WhatsApp</TabsTrigger>
-          <TabsTrigger value="email" className="text-xs px-4">Email</TabsTrigger>
-          <TabsTrigger value="sms" className="text-xs px-4">SMS</TabsTrigger>
-          <TabsTrigger value="back_redirect" className="text-xs px-4">BackRedirect</TabsTrigger>
-          <TabsTrigger value="other" className="text-xs px-4">Outras</TabsTrigger>
-        </TabsList>
-      </Tabs>
+      <div className="flex items-center gap-2">
+        <DateRangeFilter value={dateRange} onChange={onDateRangeChange} />
+        <div className="relative">
+          <RiSearchLine className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
+          <Input
+            placeholder="Buscar..."
+            value={search}
+            onChange={(e) => onSearchChange(e.target.value)}
+            className="pl-9 w-[200px] h-9 text-sm"
+          />
+        </div>
+        <Button
+          variant={filtersOpen ? "default" : "outline"}
+          onClick={onToggleFilters}
+          className={cn("gap-1.5 h-9", filtersOpen && "shadow-sm")}
+        >
+          <RiFilterLine className="size-4" />
+          Filtros
+        </Button>
+        <Button
+          variant="outline"
+          size="icon"
+          className="size-9"
+          onClick={onOpenConfig}
+          title="Configurar canais de recuperação"
+        >
+          <RiSettings3Line className="size-4" />
+        </Button>
+      </div>
     </div>
   );
 }

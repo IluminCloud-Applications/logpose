@@ -18,7 +18,16 @@ export function computeDateRange(preset: string, startDate?: string, endDate?: s
   if (preset === "custom" && startDate && endDate) {
     return { start: startDate, end: endDate };
   }
-  const daysMap: Record<string, number> = { "7d": 7, "30d": 30, "90d": 90 };
+  if (preset === "yesterday") {
+    const d = new Date();
+    d.setDate(d.getDate() - 1);
+    const yd = getDateStr(d);
+    return { start: yd, end: yd };
+  }
+  if (preset === "all") {
+    return { start: "2020-01-01", end: getDateStr(new Date()) };
+  }
+  const daysMap: Record<string, number> = { "3d": 3, "7d": 7, "30d": 30, "90d": 90 };
   const days = daysMap[preset];
   if (days) {
     const d = new Date();

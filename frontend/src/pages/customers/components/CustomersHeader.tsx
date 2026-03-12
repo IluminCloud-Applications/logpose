@@ -1,79 +1,55 @@
-import { RiGroupLine, RiSearchLine } from "@remixicon/react";
+import { RiGroupLine, RiSearchLine, RiFilterLine } from "@remixicon/react";
 import { Input } from "@/components/ui/input";
-import {
-  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
-} from "@/components/ui/select";
-import { DateRangeFilter } from "@/components/DateRangeFilter";
-import type { CustomersFilters } from "@/hooks/use-customers";
-import type { CustomersFilterOptions } from "@/types/customer";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+import { DateRangeFilter, type DateRangeState } from "@/components/DateRangeFilter";
 
 interface CustomersHeaderProps {
-  filters: CustomersFilters;
-  onFiltersChange: (filters: CustomersFilters) => void;
-  filterOptions: CustomersFilterOptions;
+  search: string;
+  onSearchChange: (v: string) => void;
+  dateRange: DateRangeState;
+  onDateRangeChange: (v: DateRangeState) => void;
+  onToggleFilters: () => void;
+  filtersOpen: boolean;
 }
 
-export function CustomersHeader({ filters, onFiltersChange, filterOptions }: CustomersHeaderProps) {
+export function CustomersHeader({
+  search, onSearchChange,
+  dateRange, onDateRangeChange,
+  onToggleFilters, filtersOpen,
+}: CustomersHeaderProps) {
   return (
-    <div className="flex flex-col gap-4">
-      {/* Title row */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex items-center gap-3">
-          <div className="rounded-lg bg-primary/10 p-2.5">
-            <RiGroupLine className="size-5 text-primary" />
-          </div>
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight">Clientes</h1>
-            <p className="text-sm text-muted-foreground">
-              Todos os clientes que compraram seus produtos
-            </p>
-          </div>
+    <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex items-center gap-3">
+        <div className="rounded-lg bg-primary/10 p-2.5">
+          <RiGroupLine className="size-5 text-primary" />
         </div>
-        <DateRangeFilter
-          value={filters.dateRange}
-          onChange={(v) => onFiltersChange({ ...filters, dateRange: v })}
-        />
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight">Clientes</h1>
+          <p className="text-sm text-muted-foreground">
+            Todos os clientes que compraram seus produtos
+          </p>
+        </div>
       </div>
-
-      {/* Filters row */}
-      <div className="flex items-center gap-2 flex-wrap">
+      <div className="flex items-center gap-2">
+        <DateRangeFilter value={dateRange} onChange={onDateRangeChange} />
         <div className="relative">
           <RiSearchLine className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
           <Input
             placeholder="Buscar nome, email, CPF..."
-            value={filters.search}
-            onChange={(e) => onFiltersChange({ ...filters, search: e.target.value })}
+            value={search}
+            onChange={(e) => onSearchChange(e.target.value)}
             className="pl-9 w-[240px] h-9 text-sm"
           />
         </div>
-        <Select
-          value={filters.platform}
-          onValueChange={(v) => onFiltersChange({ ...filters, platform: v })}
+        <Button
+          variant={filtersOpen ? "default" : "outline"}
+          onClick={onToggleFilters}
+          className={cn("gap-1.5 h-9", filtersOpen && "shadow-sm")}
         >
-          <SelectTrigger className="h-9 w-[120px] text-sm">
-            <SelectValue placeholder="Plataforma" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">Todas</SelectItem>
-            {filterOptions.platforms?.map((p) => (
-              <SelectItem key={p.value} value={p.value}>{p.label}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        <Select
-          value={filters.productId}
-          onValueChange={(v) => onFiltersChange({ ...filters, productId: v })}
-        >
-          <SelectTrigger className="h-9 w-[180px] text-sm">
-            <SelectValue placeholder="Produto" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">Todos</SelectItem>
-            {filterOptions.products.map((p) => (
-              <SelectItem key={p.id} value={String(p.id)}>{p.name}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+          <RiFilterLine className="size-4" />
+          Filtros
+        </Button>
       </div>
     </div>
   );

@@ -5,32 +5,32 @@ import { BottleneckTable } from "./components/BottleneckTable";
 import { CampaignsKpis } from "./components/CampaignsKpis";
 import { PresetDrawer } from "./components/PresetDrawer";
 import {
-  CampaignsInlineFilters,
   defaultCampaignFilters,
   type CampaignFilterState,
 } from "./components/CampaignsInlineFilters";
 import { defaultPresets, type ColumnPreset } from "./components/columnPresets";
 import type { BlurState } from "./components/BlurToggle";
-import { QuickFiltersBadges, type QuickFilter } from "@/components/QuickFiltersBadges";
-import { getDateRangeLabel, defaultDateRange } from "@/components/DateRangeFilter";
+import { QuickFiltersBadges } from "@/components/QuickFiltersBadges";
+import { AddValueFilterPopover } from "@/components/AddValueFilterPopover";
 import { useCampaigns, useCampaignPresets, useCampaignFilterOptions } from "@/hooks/useCampaigns";
 import { useCampaignTags } from "@/hooks/useCampaignTags";
+import { useCampaignMarkers } from "@/hooks/useCampaignMarkers";
 import { useVturbAccounts } from "@/hooks/useVturbAccounts";
 import { campaignToMetricRow } from "./components/mappers";
 import type { CampaignData } from "@/services/campaigns";
 import { CampaignsLoading } from "./components/CampaignsLoading";
-import {
-  getDefaultDateRange, computeDateRange, platformLabels, objectiveLabels,
-} from "./components/dateHelpers";
+import { getDefaultDateRange, computeDateRange } from "./components/dateHelpers";
+import { useQuickFilters } from "./components/useQuickFilters";
+import type { ValueFilter } from "@/components/ValueFiltersSection";
 
 export default function CampaignsPage() {
   const [search, setSearch] = useState("");
   const [filters, setFilters] = useState<CampaignFilterState>(defaultCampaignFilters);
-  const [filtersOpen, setFiltersOpen] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [blur, setBlur] = useState<BlurState>({ name: false, values: false, hideUnidentified: false });
 
   const { tagsMap, allUniqueTags, updateTags } = useCampaignTags();
+  const { markersMap, saveMarker } = useCampaignMarkers();
   const { filterOptions } = useCampaignFilterOptions();
   const { accounts: vturbAccounts } = useVturbAccounts();
   const hasVturb = vturbAccounts.length > 0;
@@ -52,13 +52,6 @@ export default function CampaignsPage() {
     activeAccountId, toggle, changeBudget,
   } = useCampaigns(dateStart, dateEnd);
 
-  const handleDateRangeChange = (dr: typeof filters.dateRange) => {
-    setFilters((p) => ({ ...p, dateRange: dr }));
-    const range = computeDateRange(dr.preset, dr.startDate, dr.endDate);
-    setDateStart(range.start);
-    setDateEnd(range.end);
-  };
-
   const allRows = useMemo(() => {
     const rows: CampaignData[] = [...campaigns];
     if (unidentified && unidentified.sales > 0 && !blur.hideUnidentified) {
@@ -71,7 +64,6 @@ export default function CampaignsPage() {
     return allRows.filter((c) => {
       const isUnidentified = c.status === "unidentified";
       if (!c.name.toLowerCase().includes(search.toLowerCase())) return false;
-      // Unidentified ignora filtros de status e tag (só oculta pelo toggle)
       if (!isUnidentified) {
         if (filters.status !== "all" && c.status !== filters.status) return false;
         if (filters.objective !== "all" && c.objective !== filters.objective) return false;
@@ -96,65 +88,39 @@ export default function CampaignsPage() {
     });
   }, [allRows, search, filters, tagsMap]);
 
-  const quickFilters: QuickFilter[] = [
-    {
-      key: "status",
-      label: "Status",
-      value: filters.status,
-      isActive: filters.status !== "all",
-      options: [
-        { value: "all", label: "Todos" },
-        { value: "active", label: "Ativa" },
-        { value: "paused", label: "Pausada" },
-        { value: "completed", label: "Finalizada" },
-      ],
-    },
-    {
-      key: "objective",
-      label: "Objetivo",
-      value: filters.objective,
-      isActive: filters.objective !== "all",
-      options: [
-        { value: "all", label: "Todos" },
-        ...Object.entries(objectiveLabels).map(([v, l]) => ({ value: v, label: l })),
-      ],
-    },
-  ];
-
-  if (filters.product !== "all") {
-    quickFilters.push({ key: "product", label: filters.product, value: filters.product, isActive: true, options: [] });
-  }
-  if (filters.platform !== "all") {
-    quickFilters.push({ key: "platform", label: platformLabels[filters.platform] || filters.platform, value: filters.platform, isActive: true, options: [] });
-  }
-  if (filters.tag !== "all") {
-    quickFilters.push({ key: "tag", label: `Tag: ${filters.tag}`, value: filters.tag, isActive: true, options: [] });
-  }
-  if (filters.dateRange.preset !== "today") {
-    quickFilters.push({ key: "dateRange", label: getDateRangeLabel(filters.dateRange), value: filters.dateRange.preset, isActive: true, options: [] });
-  }
-  filters.valueFilters.forEach((vf) => {
-    if (vf.value) {
-      const op = vf.operator === "gte" ? "≥" : "≤";
-      quickFilters.push({ key: `vf_${vf.id}`, label: `${vf.metric} ${op} ${vf.value}`, value: vf.value, isActive: true, options: [] });
-    }
+  const quickFilters = useQuickFilters({
+    filters,
+    products: filterOptions.products,
+    platforms: filterOptions.platforms,
+    tags: allUniqueTags,
   });
 
   const handleFilterChange = (key: string, value: string) => {
-    if (key === "status") setFilters((p) => ({ ...p, status: value }));
+    if (key === "dateRange") {
+      if (value.startsWith("custom|")) {
+        const [, start, end] = value.split("|");
+        setFilters((p) => ({ ...p, dateRange: { preset: "custom" as any, startDate: start, endDate: end } }));
+        setDateStart(start);
+        setDateEnd(end);
+      } else {
+        setFilters((p) => ({ ...p, dateRange: { preset: value as any, startDate: "", endDate: "" } }));
+        const range = computeDateRange(value);
+        setDateStart(range.start);
+        setDateEnd(range.end);
+      }
+    } else if (key === "status") setFilters((p) => ({ ...p, status: value }));
     else if (key === "objective") setFilters((p) => ({ ...p, objective: value }));
-    else if (key === "product") setFilters((p) => ({ ...p, product: "all" }));
-    else if (key === "platform") setFilters((p) => ({ ...p, platform: "all" }));
-    else if (key === "tag") setFilters((p) => ({ ...p, tag: "all" }));
-    else if (key === "dateRange") {
-      setFilters((p) => ({ ...p, dateRange: defaultDateRange }));
-      const d = getDefaultDateRange();
-      setDateStart(d.start);
-      setDateEnd(d.end);
-    } else if (key.startsWith("vf_")) {
+    else if (key === "product") setFilters((p) => ({ ...p, product: value }));
+    else if (key === "platform") setFilters((p) => ({ ...p, platform: value }));
+    else if (key === "tag") setFilters((p) => ({ ...p, tag: value }));
+    else if (key.startsWith("vf_")) {
       const id = key.replace("vf_", "");
       setFilters((p) => ({ ...p, valueFilters: p.valueFilters.filter((f) => f.id !== id) }));
     }
+  };
+
+  const addValueFilter = (vf: ValueFilter) => {
+    setFilters((p) => ({ ...p, valueFilters: [...p.valueFilters, vf] }));
   };
 
   const metricsForKpi = filtered.map(campaignToMetricRow);
@@ -164,29 +130,18 @@ export default function CampaignsPage() {
       <CampaignsHeader
         search={search}
         onSearchChange={setSearch}
-        onToggleFilters={() => setFiltersOpen((p) => !p)}
-        filtersOpen={filtersOpen}
         presets={allPresets}
         activePresetId={activePresetId}
         onPresetChange={setActivePresetId}
         onCreatePreset={() => setDrawerOpen(true)}
         blur={blur}
         onBlurChange={setBlur}
-        dateRange={filters.dateRange}
-        onDateRangeChange={handleDateRangeChange}
       />
-      {filtersOpen && (
-        <CampaignsInlineFilters
-          filters={filters}
-          onFiltersChange={setFilters}
-          onClose={() => setFiltersOpen(false)}
-          availableTags={allUniqueTags}
-          availableProducts={filterOptions.products}
-          availablePlatforms={filterOptions.platforms}
-        />
-      )}
       <CampaignsKpis data={metricsForKpi} />
-      <QuickFiltersBadges filters={quickFilters} onChange={handleFilterChange} />
+      <div className="flex flex-wrap items-center gap-2">
+        <QuickFiltersBadges filters={quickFilters} onChange={handleFilterChange} />
+        <AddValueFilterPopover onAdd={addValueFilter} />
+      </div>
       {isLoading ? (
         <CampaignsLoading />
       ) : error ? (
@@ -199,9 +154,13 @@ export default function CampaignsPage() {
           columns={activePreset.columns}
           blur={blur}
           tagsMap={tagsMap}
+          markersMap={markersMap}
           onToggle={toggle}
           onBudgetChange={changeBudget}
           onSaveTags={async (id, tags) => { await updateTags(id, tags); }}
+          onSaveMarker={async (id, type, refId, refLabel) => {
+            await saveMarker(id, type, refId, refLabel);
+          }}
           accountId={activeAccountId}
         />
       )}

@@ -44,6 +44,8 @@ def list_customers(
     end_date: Optional[str] = Query(None),
     platform: Optional[str] = Query(None),
     product_id: Optional[int] = Query(None),
+    campaign: Optional[str] = Query(None),
+    src: Optional[str] = Query(None),
     search: Optional[str] = Query(None),
     page: int = Query(1, ge=1),
     per_page: int = Query(50, ge=1, le=200),
@@ -77,6 +79,22 @@ def list_customers(
             CustomerProduct.product_id == product_id
         ).subquery()
         query = query.filter(Customer.id.in_(db.query(cp_ids)))
+
+    # Campaign filter (utm_campaign): customers with transactions matching campaign
+    if campaign and campaign != "all":
+        camp_ids = db.query(Transaction.customer_id).filter(
+            Transaction.utm_campaign == campaign,
+            Transaction.customer_id.isnot(None),
+        ).distinct().subquery()
+        query = query.filter(Customer.id.in_(db.query(camp_ids)))
+
+    # SRC filter: customers with transactions matching src
+    if src:
+        src_ids = db.query(Transaction.customer_id).filter(
+            Transaction.src.ilike(f"%{src}%"),
+            Transaction.customer_id.isnot(None),
+        ).distinct().subquery()
+        query = query.filter(Customer.id.in_(db.query(src_ids)))
 
     # Search by name, email, or cpf
     if search:
@@ -147,31 +165,6 @@ def customers_summary(
         "unique_products": unique_products,
         "avg_ticket": round(avg_ticket, 2),
     }
-
-
-@router.get("/filter-options")
-def customer_filter_options(
-    db: Session = Depends(get_db),
-    _=Depends(get_current_user),
-):
-    products = db.query(Product.id, Product.name).order_by(Product.name).all()
-    platforms = (
-        db.query(Transaction.platform)
-        .filter(Transaction.platform.isnot(None))
-        .distinct()
-        .all()
-    )
-
-    platform_labels = {"kiwify": "Kiwify", "payt": "PayT"}
-
-    return {
-        "products": [{"id": p.id, "name": p.name} for p in products],
-        "platforms": [
-            {"value": p[0].value, "label": platform_labels.get(p[0].value, p[0].value)}
-            for p in platforms
-        ],
-    }
-
 
 def _get_customer_products(db: Session, customer_id: int) -> list[str]:
     rows = (

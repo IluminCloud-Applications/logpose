@@ -48,6 +48,7 @@ def list_refunds(
     start_date: Optional[str] = Query(None),
     end_date: Optional[str] = Query(None),
     status: Optional[str] = Query(None),
+    platform: Optional[str] = Query(None),
     product_id: Optional[int] = Query(None),
     search: Optional[str] = Query(None),
     has_reason: Optional[str] = Query(None),
@@ -69,6 +70,12 @@ def list_refunds(
     if status and status != "all":
         try:
             query = query.filter(Transaction.status == TransactionStatus(status))
+        except ValueError:
+            pass
+
+    if platform and platform != "all":
+        try:
+            query = query.filter(Transaction.platform == PaymentPlatform(platform))
         except ValueError:
             pass
 

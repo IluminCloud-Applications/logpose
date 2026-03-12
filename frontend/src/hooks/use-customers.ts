@@ -10,6 +10,8 @@ export interface CustomersFilters {
   dateRange: DateRangeState;
   platform: string;
   productId: string;
+  campaign: string;
+  src: string;
   search: string;
 }
 
@@ -17,13 +19,17 @@ export const defaultCustomersFilters: CustomersFilters = {
   dateRange: { preset: "today", startDate: "", endDate: "" },
   platform: "all",
   productId: "all",
+  campaign: "all",
+  src: "",
   search: "",
 };
 
 export function useCustomers() {
   const [page, setPage] = useState(1);
   const [filters, setFilters] = useState<CustomersFilters>(defaultCustomersFilters);
-  const [filterOptions, setFilterOptions] = useState<CustomersFilterOptions>({ products: [], platforms: [] });
+  const [filterOptions, setFilterOptions] = useState<CustomersFilterOptions>({
+    products: [], platforms: [], campaigns: [], sources: [],
+  });
 
   const buildParams = useCallback(() => {
     const p: Record<string, unknown> = {
@@ -37,6 +43,8 @@ export function useCustomers() {
     }
     if (filters.platform !== "all") p.platform = filters.platform;
     if (filters.productId !== "all") p.product_id = Number(filters.productId);
+    if (filters.campaign !== "all") p.campaign = filters.campaign;
+    if (filters.src) p.src = filters.src;
     if (filters.search) p.search = filters.search;
     return p;
   }, [filters, page]);
@@ -94,3 +102,4 @@ export function useCustomers() {
     reload,
   };
 }
+

@@ -57,7 +57,7 @@ export function TagsModal({
       <DialogContent className="sm:max-w-[420px]">
         <DialogHeader>
           <DialogTitle>Tags da Campanha</DialogTitle>
-          <DialogDescription className="truncate">
+          <DialogDescription className="break-all">
             {campaignName}
           </DialogDescription>
         </DialogHeader>

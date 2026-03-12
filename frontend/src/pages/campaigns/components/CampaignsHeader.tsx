@@ -1,31 +1,26 @@
-import { RiMegaphoneLine, RiSearchLine, RiFilterLine, RiAddLine } from "@remixicon/react";
+import { RiMegaphoneLine, RiSearchLine, RiAddLine } from "@remixicon/react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import type { ColumnPreset } from "./columnPresets";
 import { BlurToggle, type BlurState } from "./BlurToggle";
-import { DateRangeFilter, type DateRangeState } from "@/components/DateRangeFilter";
 import { UtmParamsGuide } from "./UtmParamsGuide";
 
 interface CampaignsHeaderProps {
   search: string;
   onSearchChange: (value: string) => void;
-  onToggleFilters: () => void;
-  filtersOpen: boolean;
   presets: ColumnPreset[];
   activePresetId: string;
   onPresetChange: (id: string) => void;
   onCreatePreset: () => void;
   blur: BlurState;
   onBlurChange: (blur: BlurState) => void;
-  dateRange: DateRangeState;
-  onDateRangeChange: (value: DateRangeState) => void;
 }
 
 export function CampaignsHeader({
-  search, onSearchChange, onToggleFilters, filtersOpen,
+  search, onSearchChange,
   presets, activePresetId, onPresetChange, onCreatePreset,
-  blur, onBlurChange, dateRange, onDateRangeChange,
+  blur, onBlurChange,
 }: CampaignsHeaderProps) {
   return (
     <div className="flex flex-col gap-4">
@@ -42,7 +37,6 @@ export function CampaignsHeader({
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <DateRangeFilter value={dateRange} onChange={onDateRangeChange} />
           <div className="relative">
             <RiSearchLine className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
             <Input
@@ -52,14 +46,6 @@ export function CampaignsHeader({
               className="pl-9 w-[220px] h-9 text-sm"
             />
           </div>
-          <Button
-            variant={filtersOpen ? "default" : "outline"}
-            onClick={onToggleFilters}
-            className={cn("gap-1.5 h-9", filtersOpen && "shadow-sm")}
-          >
-            <RiFilterLine className="size-4" />
-            Filtros
-          </Button>
           <BlurToggle blur={blur} onBlurChange={onBlurChange} />
           <UtmParamsGuide />
         </div>

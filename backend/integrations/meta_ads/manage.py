@@ -32,7 +32,10 @@ async def toggle_entity_status(
             response.raise_for_status()
             return {"success": True}
     except httpx.HTTPStatusError as e:
-        error_body = e.response.json() if e.response else {}
+        try:
+            error_body = e.response.json() if e.response else {}
+        except Exception:
+            error_body = {}
         error_msg = error_body.get("error", {}).get("message", str(e))
         logger.error(f"Toggle {entity_type} {entity_id}: {error_msg}")
         return {"success": False, "error": error_msg}
@@ -64,7 +67,10 @@ async def update_budget(
             response.raise_for_status()
             return {"success": True}
     except httpx.HTTPStatusError as e:
-        error_body = e.response.json() if e.response else {}
+        try:
+            error_body = e.response.json() if e.response else {}
+        except Exception:
+            error_body = {}
         error_msg = error_body.get("error", {}).get("message", str(e))
         logger.error(f"Budget {entity_type} {entity_id}: {error_msg}")
         return {"success": False, "error": error_msg}

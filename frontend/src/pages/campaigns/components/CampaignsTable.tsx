@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, Fragment } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow, TableFooter,
@@ -8,35 +8,50 @@ import { allColumns } from "./columnPresets";
 import { AdSetsSubTable } from "./AdSetsSubTable";
 import { BudgetModal } from "./BudgetModal";
 import { TagsModal } from "./TagsModal";
+import { DefineVideoModal } from "./DefineVideoModal";
+import { DefineCheckoutModal } from "./DefineCheckoutModal";
+import { CampaignInfoModal } from "./CampaignInfoModal";
 import { CampaignNameCell } from "./CampaignNameCell";
 import { CampaignContextMenu } from "./CampaignContextMenu";
 import { cn } from "@/lib/utils";
 import type { BlurState } from "./BlurToggle";
 import { getCellValue, getFooterValue } from "./campaignCellHelpers";
 import { campaignToMetricRow } from "./mappers";
+import type { CampaignMarkerAPI } from "@/services/campaigns";
 
 interface CampaignsTableProps {
   data: CampaignData[];
   columns: string[];
   blur?: BlurState;
   tagsMap?: Record<string, string[]>;
+  markersMap?: Record<string, { video?: CampaignMarkerAPI; checkout?: CampaignMarkerAPI }>;
   onToggle: (entityId: string, entityType: "campaign" | "adset" | "ad", active: boolean) => Promise<void>;
   onBudgetChange: (entityId: string, entityType: "campaign" | "adset", dailyBudget: number) => Promise<void>;
   onSaveTags?: (campaignId: string, tags: string[]) => Promise<void>;
+  onSaveMarker?: (campaignId: string, type: "video" | "checkout", refId: string, refLabel: string) => Promise<void>;
   accountId?: number;
 }
 
 export function CampaignsTable({
   data, columns,
   blur = { name: false, values: false, hideUnidentified: false },
-  tagsMap = {},
-  onToggle, onBudgetChange, onSaveTags,
+  tagsMap = {}, markersMap = {},
+  onToggle, onBudgetChange, onSaveTags, onSaveMarker,
 }: CampaignsTableProps) {
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [budgetModal, setBudgetModal] = useState<{
     open: boolean; campaign: CampaignData | null;
   }>({ open: false, campaign: null });
   const [tagsModal, setTagsModal] = useState<{
+    open: boolean; campaign: CampaignData | null;
+  }>({ open: false, campaign: null });
+  const [videoModal, setVideoModal] = useState<{
+    open: boolean; campaign: CampaignData | null;
+  }>({ open: false, campaign: null });
+  const [checkoutModal, setCheckoutModal] = useState<{
+    open: boolean; campaign: CampaignData | null;
+  }>({ open: false, campaign: null });
+  const [infoModal, setInfoModal] = useState<{
     open: boolean; campaign: CampaignData | null;
   }>({ open: false, campaign: null });
 
@@ -121,7 +136,7 @@ export function CampaignsTable({
                   );
 
                   return (
-                    <>
+                    <Fragment key={c.id}>
                       {isUnidentified ? rowContent : (
                         <CampaignContextMenu
                           key={`ctx-${c.id}`}
@@ -129,6 +144,9 @@ export function CampaignsTable({
                           onToggle={() => onToggle(c.id, "campaign", c.status !== "active")}
                           onEditBudget={() => setBudgetModal({ open: true, campaign: c })}
                           onEditTags={() => setTagsModal({ open: true, campaign: c })}
+                          onDefineVideo={() => setVideoModal({ open: true, campaign: c })}
+                          onDefineCheckout={() => setCheckoutModal({ open: true, campaign: c })}
+                          onViewInfo={() => setInfoModal({ open: true, campaign: c })}
                         >
                           {rowContent}
                         </CampaignContextMenu>
@@ -145,7 +163,7 @@ export function CampaignsTable({
                           </TableCell>
                         </TableRow>
                       )}
-                    </>
+                    </Fragment>
                   );
                 })}
               </TableBody>
@@ -192,6 +210,45 @@ export function CampaignsTable({
           campaignId={tagsModal.campaign.id}
           currentTags={tagsMap[tagsModal.campaign.id] || []}
           onSave={onSaveTags}
+        />
+      )}
+
+      {videoModal.campaign && onSaveMarker && (
+        <DefineVideoModal
+          open={videoModal.open}
+          onOpenChange={(open) => setVideoModal((prev) => ({ ...prev, open }))}
+          campaignName={videoModal.campaign.name}
+          currentVideoId={markersMap[videoModal.campaign.id]?.video?.reference_id}
+          onSave={async (refId, refLabel) => {
+            if (videoModal.campaign) {
+              await onSaveMarker(videoModal.campaign.id, "video", refId, refLabel);
+            }
+          }}
+        />
+      )}
+
+      {checkoutModal.campaign && onSaveMarker && (
+        <DefineCheckoutModal
+          open={checkoutModal.open}
+          onOpenChange={(open) => setCheckoutModal((prev) => ({ ...prev, open }))}
+          campaignName={checkoutModal.campaign.name}
+          currentCheckoutId={markersMap[checkoutModal.campaign.id]?.checkout?.reference_id}
+          onSave={async (refId, refLabel) => {
+            if (checkoutModal.campaign) {
+              await onSaveMarker(checkoutModal.campaign.id, "checkout", refId, refLabel);
+            }
+          }}
+        />
+      )}
+
+      {infoModal.campaign && (
+        <CampaignInfoModal
+          open={infoModal.open}
+          onOpenChange={(open) => setInfoModal((prev) => ({ ...prev, open }))}
+          campaignName={infoModal.campaign.name}
+          tags={tagsMap[infoModal.campaign.id] || []}
+          videoMarker={markersMap[infoModal.campaign.id]?.video}
+          checkoutMarker={markersMap[infoModal.campaign.id]?.checkout}
         />
       )}
     </>

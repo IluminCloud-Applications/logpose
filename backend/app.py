@@ -20,6 +20,7 @@ from api.products.stats import router as product_stats_router
 from api.funnel.data import router as funnel_router
 from api.sales.transactions import router as sales_router
 from api.customers.list import router as customers_router
+from api.customers.filter_options import router as customers_filter_options_router
 from api.recovery.config import router as recovery_config_router
 from api.recovery.list import router as recovery_list_router
 from api.dashboard.overview import router as dashboard_router
@@ -28,12 +29,14 @@ from api.campaigns.toggle import router as campaigns_toggle_router
 from api.campaigns.budget import router as campaigns_budget_router
 from api.campaigns.presets import router as campaigns_presets_router
 from api.campaigns.tags import router as campaigns_tags_router
+from api.campaigns.markers import router as campaigns_markers_router
 from api.campaigns.filters import router as campaigns_filters_router
 from api.webhook.receive import router as webhook_receiver_router
 from api.csv_import.preview import router as import_preview_router
 from api.csv_import.execute import router as import_execute_router
 from api.refunds.list import router as refunds_list_router
 from api.refunds.reasons import router as refunds_reasons_router
+from api.vturb.players import router as vturb_players_router
 
 # Create tables
 Base.metadata.create_all(bind=engine)
@@ -64,6 +67,7 @@ app.include_router(product_stats_router, prefix="/api")
 app.include_router(funnel_router, prefix="/api")
 app.include_router(sales_router, prefix="/api")
 app.include_router(customers_router, prefix="/api")
+app.include_router(customers_filter_options_router, prefix="/api")
 app.include_router(recovery_config_router, prefix="/api")
 app.include_router(dashboard_router, prefix="/api")
 app.include_router(recovery_list_router, prefix="/api")
@@ -72,12 +76,14 @@ app.include_router(campaigns_toggle_router, prefix="/api")
 app.include_router(campaigns_budget_router, prefix="/api")
 app.include_router(campaigns_presets_router, prefix="/api")
 app.include_router(campaigns_tags_router, prefix="/api")
+app.include_router(campaigns_markers_router, prefix="/api")
 app.include_router(campaigns_filters_router, prefix="/api")
 app.include_router(webhook_receiver_router, prefix="/api")
 app.include_router(import_preview_router, prefix="/api")
 app.include_router(import_execute_router, prefix="/api")
 app.include_router(refunds_list_router, prefix="/api")
 app.include_router(refunds_reasons_router, prefix="/api")
+app.include_router(vturb_players_router, prefix="/api")
 
 # SPA Middleware (serves frontend in production)
 _frontend_dir = os.path.join(os.path.dirname(__file__), "frontend_dist")
