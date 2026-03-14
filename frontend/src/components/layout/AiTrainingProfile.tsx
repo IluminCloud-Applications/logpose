@@ -35,7 +35,7 @@ export function AiTrainingProfile() {
     <TooltipProvider>
       <Tooltip>
         <TooltipTrigger asChild>
-          <div className="mx-2 mb-2 rounded-xl bg-card/50 border border-border/40 p-3 cursor-default">
+          <div className="mx-2 mb-2 rounded-xl bg-sidebar-accent/50 border border-sidebar-border p-3 cursor-default">
             {/* Header */}
             <div className="flex items-center gap-2 mb-2.5">
               <div className={`rounded-lg p-1.5 bg-gradient-to-br ${config.color} shadow-md ${config.glow}`}>
@@ -64,16 +64,11 @@ export function AiTrainingProfile() {
                 <div className="absolute inset-0 rounded-full bg-gradient-to-r from-transparent via-white/30 to-transparent animate-pulse" />
               )}
             </div>
-
-            {/* Records count */}
-            <p className="text-[9px] text-sidebar-foreground/40 mt-1.5 text-center">
-              {data.count} / {data.max_records} ações registradas
-            </p>
           </div>
         </TooltipTrigger>
-        <TooltipContent side="right" className="max-w-[220px]">
-          <p className="text-xs font-medium mb-1">Nível de Treinamento da AI</p>
-          <p className="text-[11px] text-muted-foreground">
+        <TooltipContent side="right" className="max-w-[220px] flex flex-col gap-1">
+          <p className="text-xs font-medium">Nível de Treinamento da AI</p>
+          <p className="text-[11px] text-muted-foreground leading-relaxed">
             A AI aprende com suas ações nas campanhas (escalar, pausar, ajustar orçamento). 
             Quanto mais ela aprende, melhores são as recomendações.
           </p>
