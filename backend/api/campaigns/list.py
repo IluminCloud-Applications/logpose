@@ -15,7 +15,7 @@ from api.campaigns.helpers import (
 )
 from api.campaigns.merge import merge_campaigns, merge_ads
 from integrations.meta_ads.service import MetaAdsService
-from integrations.vturb.plays_by_utm import fetch_vturb_plays_by_campaign
+from integrations.vturb.plays_by_utm import fetch_vturb_stats_by_campaign
 
 router = APIRouter(prefix="/campaigns", tags=["campaigns"])
 
@@ -64,20 +64,20 @@ async def get_campaigns_data(
     # 4. Fazer o merge
     campaigns = merge_campaigns(meta_campaigns, meta_adsets, meta_ads, transactions)
 
-    # 5. Buscar plays do VTurb por utm_campaign
+    # 5. Buscar stats (views/plays) do VTurb por utm_campaign
     campaign_ids = [c["id"] for c in campaigns]
     campaign_names = [c["name"] for c in campaigns]
     try:
-        plays_map = await fetch_vturb_plays_by_campaign(
+        stats_map = await fetch_vturb_stats_by_campaign(
             db, date_start, date_end, campaign_ids, campaign_names,
         )
     except Exception as e:
         import logging
-        logging.getLogger(__name__).warning(f"Erro ao buscar plays do VTurb: {e}")
-        plays_map = {}
+        logging.getLogger(__name__).warning(f"Erro ao buscar stats do VTurb: {e}")
+        stats_map = {}
 
-    # Atribuir plays a cada campanha
-    _apply_vturb_plays(campaigns, plays_map)
+    # Atribuir stats a cada campanha
+    _apply_vturb_stats(campaigns, stats_map)
 
     # 6. Filtrar por status se necessário
     if status_filter and status_filter != "all":
@@ -106,21 +106,41 @@ def _get_fb_transactions(db: Session, date_start: str, date_end: str) -> list[Tr
     return query.all()
 
 
-def _apply_vturb_plays(
+def _apply_vturb_stats(
     campaigns: list[dict],
-    plays_map: dict[str, int],
+    stats_map: dict[str, dict[str, int]],
 ) -> None:
-    """Atribui plays do VTurb a cada campanha por ID ou nome."""
+    """Atribui views e plays do VTurb a cada campanha por ID e nome (soma ambos)."""
+    import logging
+    lg = logging.getLogger(__name__)
+    lg.warning(f"[VTURB-APPLY] stats_map recebido: {stats_map}")
+    
     for camp in campaigns:
-        plays = plays_map.get(camp["id"], 0)
-        if not plays:
-            plays = plays_map.get(camp["name"], 0)
+        views = 0
+        plays = 0
 
+        # Somar stats por ID
+        by_id = stats_map.get(camp["id"])
+        if by_id:
+            views += by_id["views"]
+            plays += by_id["plays"]
+
+        # Somar stats por nome (pode ter vindo de UTMs sem pipe)
+        by_name = stats_map.get(camp["name"])
+        if by_name:
+            views += by_name["views"]
+            plays += by_name["plays"]
+
+        camp["views_vsl"] = views
         camp["plays_vsl"] = plays
-        clicks = camp.get("clicks", 0)
+        
+        # Real Play Rate = plays / views
         camp["play_rate"] = (
-            round((plays / clicks) * 100, 1) if clicks > 0 and plays > 0 else 0
+            round((plays / views) * 100, 1) if views > 0 and plays > 0 else 0
         )
+        
+        if views > 0 or plays > 0:
+            lg.warning(f"[VTURB-APPLY] camp={camp['name'][:40]} views={views} plays={plays}")
 
 
 def _build_unidentified(db: Session, date_start: str, date_end: str) -> dict:
@@ -145,5 +165,5 @@ def _build_unidentified(db: Session, date_start: str, date_end: str) -> dict:
         "cpc": 0, "ctr": 0, "cpa": 0, "roas": 0,
         "landing_page_views": 0, "initiate_checkout": 0,
         "connect_rate": 0, "no_id_sales": 0,
-        "plays_vsl": 0, "play_rate": 0,
+        "views_vsl": 0, "plays_vsl": 0, "play_rate": 0,
     }

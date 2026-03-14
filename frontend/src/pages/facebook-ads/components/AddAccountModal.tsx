@@ -90,6 +90,7 @@ export function AddAccountModal({
               value={label}
               onChange={(e) => setLabel(e.target.value)}
               disabled={isLoading}
+              autoComplete="off"
             />
           </div>
           <AccountIdBadges
@@ -107,6 +108,7 @@ export function AddAccountModal({
               onChange={(e) => setAccessToken(e.target.value)}
               disabled={isLoading || isDuplicate}
               required
+              autoComplete="off"
             />
           </div>
           <div className="rounded-lg bg-muted/50 p-3">

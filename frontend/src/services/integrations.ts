@@ -90,3 +90,62 @@ export async function createWebhook(
 export async function deleteWebhook(id: number): Promise<void> {
   await apiRequest(`/platforms/webhooks/${id}`, { method: "DELETE" });
 }
+
+// ─── Gemini AI ───────────────────────────────────────────────────────
+
+export interface GeminiAccountAPI {
+  id: number;
+  name: string;
+  api_key: string;
+  model: string;
+  created_at: string | null;
+}
+
+export interface GeminiModelAPI {
+  id: string;
+  name: string;
+  description: string;
+}
+
+export async function fetchGeminiAccounts(): Promise<GeminiAccountAPI[]> {
+  return apiRequest<GeminiAccountAPI[]>("/gemini/accounts");
+}
+
+export async function createGeminiAccount(
+  name: string, apiKey: string, model: string
+): Promise<GeminiAccountAPI> {
+  return apiRequest<GeminiAccountAPI>("/gemini/accounts", {
+    method: "POST",
+    body: { name, api_key: apiKey, model },
+  });
+}
+
+export async function updateGeminiAccountModel(
+  id: number, model: string
+): Promise<GeminiAccountAPI> {
+  return apiRequest<GeminiAccountAPI>(`/gemini/accounts/${id}`, {
+    method: "PATCH",
+    body: { model },
+  });
+}
+
+export async function deleteGeminiAccount(id: number): Promise<void> {
+  await apiRequest(`/gemini/accounts/${id}`, { method: "DELETE" });
+}
+
+export async function fetchGeminiModels(apiKey: string): Promise<GeminiModelAPI[]> {
+  return apiRequest<GeminiModelAPI[]>(`/gemini/models?api_key=${encodeURIComponent(apiKey)}`);
+}
+
+export async function geminiChatStatus(): Promise<{ configured: boolean; count: number }> {
+  return apiRequest("/gemini/status");
+}
+
+export async function geminiChat(
+  message: string, history: { role: string; content: string }[], accountId?: number
+): Promise<{ response: string }> {
+  return apiRequest<{ response: string }>("/gemini/chat", {
+    method: "POST",
+    body: { message, history, account_id: accountId },
+  });
+}

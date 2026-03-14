@@ -7,14 +7,21 @@ import {
 } from "@/services/campaigns";
 import { invalidateCacheByPrefix } from "@/lib/queryCache";
 
+export type MarkerMap = Record<string, {
+  video?: CampaignMarkerAPI;
+  checkout?: CampaignMarkerAPI;
+  product?: CampaignMarkerAPI;
+  platform?: CampaignMarkerAPI;
+}>;
+
 export function useCampaignMarkers() {
   const { data, isLoading, reload } = useCachedQuery<CampaignMarkerAPI[]>({
     cachePrefix: "campaign-markers",
     queryFn: fetchCampaignMarkers,
   });
 
-  const markersMap = useMemo(() => {
-    const map: Record<string, { video?: CampaignMarkerAPI; checkout?: CampaignMarkerAPI }> = {};
+  const markersMap = useMemo<MarkerMap>(() => {
+    const map: MarkerMap = {};
     (data ?? []).forEach((m) => {
       if (!map[m.campaign_id]) map[m.campaign_id] = {};
       map[m.campaign_id][m.marker_type] = m;
@@ -24,7 +31,7 @@ export function useCampaignMarkers() {
 
   const saveMarker = async (
     campaignId: string,
-    markerType: "video" | "checkout",
+    markerType: "video" | "checkout" | "product" | "platform",
     referenceId: string,
     referenceLabel: string,
   ) => {

@@ -17,7 +17,10 @@ class VturbClient:
         self.api_token = api_token
         self._client = httpx.AsyncClient(
             timeout=DEFAULT_TIMEOUT,
-            headers={"X-Api-Token": self.api_token}
+            headers={
+                "X-Api-Token": self.api_token,
+                "X-Api-Version": "v1"
+            }
         )
 
     async def get_players(
@@ -48,6 +51,11 @@ class VturbClient:
         Retorna as estatísticas de todas as sessões de um player (vídeo)
         em um determinado período. Inclui plays (started), views, clicks, etc.
         """
+        if " " not in start_date and "T" not in start_date:
+            start_date = f"{start_date} 00:00:00 UTC"
+        if " " not in end_date and "T" not in end_date:
+            end_date = f"{end_date} 23:59:59 UTC"
+
         payload = {
             "player_id": player_id,
             "start_date": start_date,
@@ -74,6 +82,11 @@ class VturbClient:
         Cada item tem 'grouped_field' (valor da UTM) e métricas
         como 'total_started_session_uniq' (unique plays).
         """
+        if " " not in start_date and "T" not in start_date:
+            start_date = f"{start_date} 00:00:00 UTC"
+        if " " not in end_date and "T" not in end_date:
+            end_date = f"{end_date} 23:59:59 UTC"
+
         payload = {
             "player_id": player_id,
             "query_keys": query_keys,

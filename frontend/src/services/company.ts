@@ -10,10 +10,10 @@ export async function updateCompanySettings(
 ): Promise<CompanySettings> {
   return apiRequest<CompanySettings>("/company/settings", {
     method: "PUT",
-    body: JSON.stringify({
+    body: {
       tax_rate: settings.tax_rate,
       operational_costs: settings.operational_costs,
-    }),
+    },
   });
 }
 

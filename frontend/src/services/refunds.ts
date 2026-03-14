@@ -92,6 +92,6 @@ export async function saveRefundReason(payload: {
 }): Promise<{ id: number }> {
   return apiRequest("/refunds/reasons", {
     method: "POST",
-    body: JSON.stringify(payload),
+    body: payload,
   });
 }

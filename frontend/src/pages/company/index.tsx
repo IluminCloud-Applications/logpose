@@ -8,7 +8,7 @@ import { useCompany } from "@/hooks/use-company";
 import { Skeleton } from "@/components/ui/skeleton";
 
 export default function CompanyPage() {
-  const { settings, dashboard, loading, saving, saveSettings } = useCompany();
+  const { settings, dashboard, loading, saving, saveSettings, reload } = useCompany();
   const [drawerOpen, setDrawerOpen] = useState(false);
 
   if (loading || !settings || !dashboard) {
@@ -27,7 +27,7 @@ export default function CompanyPage() {
 
   return (
     <div className="flex flex-col gap-6 p-6">
-      <CompanyHeader onOpenSettings={() => setDrawerOpen(true)} />
+      <CompanyHeader onOpenSettings={() => setDrawerOpen(true)} onRefresh={reload} />
       <CompanyKpis
         data={dashboard.monthly}
         settings={settings}

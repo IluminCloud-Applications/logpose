@@ -4,7 +4,7 @@ import {
 import {
   RiPlayCircleLine, RiPauseCircleLine, RiPriceTag3Line,
   RiMoneyDollarCircleLine, RiVideoLine, RiShoppingBag2Line,
-  RiInformationLine,
+  RiInformationLine, RiBox3Line, RiStoreLine,
 } from "@remixicon/react";
 
 interface CampaignContextMenuProps {
@@ -15,12 +15,15 @@ interface CampaignContextMenuProps {
   onEditTags: () => void;
   onDefineVideo: () => void;
   onDefineCheckout: () => void;
+  onDefineProduct: () => void;
+  onDefinePlatform: () => void;
   onViewInfo: () => void;
 }
 
 export function CampaignContextMenu({
   children, isActive, onToggle, onEditBudget, onEditTags,
-  onDefineVideo, onDefineCheckout, onViewInfo,
+  onDefineVideo, onDefineCheckout, onDefineProduct, onDefinePlatform,
+  onViewInfo,
 }: CampaignContextMenuProps) {
   return (
     <ContextMenu>
@@ -57,6 +60,14 @@ export function CampaignContextMenu({
         <ContextMenuItem onClick={onDefineCheckout} className="gap-2">
           <RiShoppingBag2Line className="size-4 text-muted-foreground" />
           Definir Checkout
+        </ContextMenuItem>
+        <ContextMenuItem onClick={onDefineProduct} className="gap-2">
+          <RiBox3Line className="size-4 text-muted-foreground" />
+          Definir Produto
+        </ContextMenuItem>
+        <ContextMenuItem onClick={onDefinePlatform} className="gap-2">
+          <RiStoreLine className="size-4 text-muted-foreground" />
+          Definir Plataforma
         </ContextMenuItem>
         <ContextMenuSeparator />
         <ContextMenuItem onClick={onViewInfo} className="gap-2">

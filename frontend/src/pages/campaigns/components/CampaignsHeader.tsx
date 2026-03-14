@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils";
 import type { ColumnPreset } from "./columnPresets";
 import { BlurToggle, type BlurState } from "./BlurToggle";
 import { UtmParamsGuide } from "./UtmParamsGuide";
+import { RefreshButton } from "@/components/RefreshButton";
 
 interface CampaignsHeaderProps {
   search: string;
@@ -15,12 +16,13 @@ interface CampaignsHeaderProps {
   onCreatePreset: () => void;
   blur: BlurState;
   onBlurChange: (blur: BlurState) => void;
+  onRefresh: () => Promise<void>;
 }
 
 export function CampaignsHeader({
   search, onSearchChange,
   presets, activePresetId, onPresetChange, onCreatePreset,
-  blur, onBlurChange,
+  blur, onBlurChange, onRefresh,
 }: CampaignsHeaderProps) {
   return (
     <div className="flex flex-col gap-4">
@@ -48,6 +50,7 @@ export function CampaignsHeader({
           </div>
           <BlurToggle blur={blur} onBlurChange={onBlurChange} />
           <UtmParamsGuide />
+          <RefreshButton onRefresh={onRefresh} />
         </div>
       </div>
 

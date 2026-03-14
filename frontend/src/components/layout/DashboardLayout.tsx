@@ -11,7 +11,7 @@ export function DashboardLayout() {
       <div className="flex flex-1 h-full p-2.5 gap-2.5">
         <AppSidebar />
         <SidebarInset className="overflow-auto flex-1">
-          <div className="mx-auto w-full max-w-[1400px] min-h-full rounded-xl border border-border/40 bg-background shadow-sm">
+          <div className="mx-auto w-full min-h-full rounded-xl border border-border/40 bg-background shadow-sm" style={{ maxWidth: "min(1600px, 100%)" }}>
             <Outlet />
           </div>
         </SidebarInset>

@@ -11,7 +11,7 @@ router = APIRouter(prefix="/campaigns", tags=["campaign-markers"])
 
 class MarkerPayload(BaseModel):
     campaign_id: str
-    marker_type: str  # "video" | "checkout"
+    marker_type: str  # "video" | "checkout" | "product" | "platform"
     reference_id: str
     reference_label: str
 

@@ -15,7 +15,7 @@ export interface SalesFilters {
 
 export const defaultSalesFilters: SalesFilters = {
   dateRange: { preset: "today", startDate: "", endDate: "" },
-  status: "all",
+  status: "approved",
   platform: "all",
   productId: "all",
   campaign: "all",
@@ -40,6 +40,7 @@ export function useSales() {
     if (filters.status !== "all") p.status = filters.status;
     if (filters.platform !== "all") p.platform = filters.platform;
     if (filters.productId !== "all") p.product_id = Number(filters.productId);
+    if (filters.campaign !== "all") p.campaign = filters.campaign;
     if (filters.search) p.search = filters.search;
     return p;
   }, [filters, page]);

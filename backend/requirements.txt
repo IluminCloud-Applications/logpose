@@ -10,3 +10,5 @@ alembic
 httpx
 openpyxl
 python-multipart
+langchain
+langchain-google-genai

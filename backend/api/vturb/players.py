@@ -23,8 +23,8 @@ def _fetch_plays(api_key: str) -> dict[str, int]:
     Retorna dict {player_id: total_plays}.
     """
     now = datetime.utcnow()
-    end = now.strftime("%Y-%m-%d")
-    start = (now - timedelta(days=30)).strftime("%Y-%m-%d")
+    end = f"{now.strftime('%Y-%m-%d')} 23:59:59 UTC"
+    start = f"{(now - timedelta(days=30)).strftime('%Y-%m-%d')} 00:00:00 UTC"
 
     try:
         resp = httpx.post(

@@ -1,11 +1,13 @@
 import { RiBuildingLine, RiSettings3Line } from "@remixicon/react";
 import { Button } from "@/components/ui/button";
+import { RefreshButton } from "@/components/RefreshButton";
 
 interface CompanyHeaderProps {
   onOpenSettings: () => void;
+  onRefresh: () => Promise<void>;
 }
 
-export function CompanyHeader({ onOpenSettings }: CompanyHeaderProps) {
+export function CompanyHeader({ onOpenSettings, onRefresh }: CompanyHeaderProps) {
   return (
     <div className="flex items-center justify-between">
       <div className="flex items-center gap-3">
@@ -19,14 +21,17 @@ export function CompanyHeader({ onOpenSettings }: CompanyHeaderProps) {
           </p>
         </div>
       </div>
-      <Button
-        variant="outline"
-        className="gap-2 h-9"
-        onClick={onOpenSettings}
-      >
-        <RiSettings3Line className="size-4" />
-        Configurações
-      </Button>
+      <div className="flex items-center gap-2">
+        <RefreshButton onRefresh={onRefresh} />
+        <Button
+          variant="outline"
+          className="gap-2 h-9"
+          onClick={onOpenSettings}
+        >
+          <RiSettings3Line className="size-4" />
+          Configurações
+        </Button>
+      </div>
     </div>
   );
 }

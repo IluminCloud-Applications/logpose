@@ -77,6 +77,7 @@ export function CreateWebhookModal({ open, onOpenChange, onCreate, isLoading }: 
               onChange={(e) => setName(e.target.value)}
               disabled={isLoading}
               required
+              autoComplete="off"
             />
           </div>
 

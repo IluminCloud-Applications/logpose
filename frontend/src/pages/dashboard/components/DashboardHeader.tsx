@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { getStoredUser } from "@/services/auth";
+import { RefreshButton } from "@/components/RefreshButton";
 
 function getGreeting(): string {
   const now = new Date();
@@ -49,7 +50,11 @@ function formatClock(date: Date) {
   return { time, label: `${weekday}, ${dateStr}` };
 }
 
-export function DashboardHeader() {
+interface DashboardHeaderProps {
+  onRefresh: () => Promise<void>;
+}
+
+export function DashboardHeader({ onRefresh }: DashboardHeaderProps) {
   const user = getStoredUser();
   const firstName = user?.name?.split(" ")[0] || "CEO";
   const greeting = getGreeting();
@@ -71,13 +76,16 @@ export function DashboardHeader() {
           Aqui está o resumo da sua operação
         </p>
       </div>
-      <div className="flex flex-col items-end">
-        <span className="text-3xl font-bold tracking-tight tabular-nums">
-          {clock.time}
-        </span>
-        <span className="text-sm text-muted-foreground">
-          {clock.label}
-        </span>
+      <div className="flex items-center gap-3">
+        <RefreshButton onRefresh={onRefresh} />
+        <div className="flex flex-col items-end">
+          <span className="text-3xl font-bold tracking-tight tabular-nums">
+            {clock.time}
+          </span>
+          <span className="text-sm text-muted-foreground">
+            {clock.label}
+          </span>
+        </div>
       </div>
     </div>
   );

@@ -11,6 +11,7 @@ import {
   RiPlayCircleLine,
   RiBuildingLine,
   RiRefundLine,
+  RiGeminiLine,
 } from "@remixicon/react";
 import { useLocation, useNavigate } from "react-router-dom";
 import {
@@ -53,6 +54,7 @@ const navGroups = [
       { title: "Plataformas", icon: RiWalletLine, url: "/platforms" },
       { title: "Facebook Ads", icon: RiMetaLine, url: "/facebook-ads" },
       { title: "VTurb", icon: RiPlayCircleLine, url: "/vturb" },
+      { title: "Gemini API", icon: RiGeminiLine, url: "/gemini" },
     ],
   },
 ];

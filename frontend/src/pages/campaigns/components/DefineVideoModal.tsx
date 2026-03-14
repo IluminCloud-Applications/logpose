@@ -97,6 +97,7 @@ export function DefineVideoModal({
               onChange={(e) => setSearch(e.target.value)}
               className="pl-9"
               autoFocus
+              autoComplete="off"
             />
           </div>
 

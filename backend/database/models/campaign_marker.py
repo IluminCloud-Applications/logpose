@@ -7,6 +7,8 @@ import enum
 class MarkerType(str, enum.Enum):
     VIDEO = "video"
     CHECKOUT = "checkout"
+    PRODUCT = "product"
+    PLATFORM = "platform"
 
 
 class CampaignMarker(Base):

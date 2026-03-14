@@ -134,6 +134,7 @@ def merge_campaigns(
             "roas": roas,
             "cpa": cpa,
             "no_id_sales": no_id_count,
+            "views_vsl": 0,
             "plays_vsl": 0,
             "play_rate": 0,
             "adsets": adsets_merged,
@@ -182,6 +183,7 @@ def _merge_adsets_for_campaign(
             "roas": roas,
             "cpa": cpa,
             "no_id_sales": no_id_count,
+            "views_vsl": 0,
             "plays_vsl": 0,
             "play_rate": 0,
             "ads": ads_merged,
@@ -225,6 +227,7 @@ def merge_ads(
             "roas": roas,
             "cpa": cpa,
             "no_id_sales": no_id_count,
+            "views_vsl": 0,
             "plays_vsl": 0,
             "play_rate": 0,
         })

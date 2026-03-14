@@ -17,6 +17,8 @@ import VturbPage from "@/pages/vturb";
 import ProfilePage from "@/pages/profile";
 import CompanyPage from "@/pages/company";
 import RefundsPage from "@/pages/refunds";
+import GeminiPage from "@/pages/gemini";
+import { AIChatProvider } from "@/components/ai-chat/AIChatProvider";
 import { Toaster } from "@/components/ui/sonner";
 
 export default function App() {
@@ -42,6 +44,7 @@ export default function App() {
               <Route path="/vturb" element={<VturbPage />} />
               <Route path="/company" element={<CompanyPage />} />
               <Route path="/profile" element={<ProfilePage />} />
+              <Route path="/gemini" element={<GeminiPage />} />
             </Route>
 
             <Route path="/" element={<Navigate to="/dashboard" replace />} />
@@ -50,6 +53,7 @@ export default function App() {
         </AppGuard>
       </TooltipProvider>
       <Toaster richColors position="top-right" />
+      <AIChatProvider />
     </BrowserRouter>
   );
 }

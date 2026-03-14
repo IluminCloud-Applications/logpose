@@ -39,7 +39,7 @@ export function AdSetsSubTable({ adSets, columns, onToggle, onBudgetChange: _onB
       <Table>
         <TableHeader>
           <TableRow className="text-xs">
-            <TableHead className="pl-10 min-w-[220px]">Conjunto</TableHead>
+            <TableHead className="pl-10 min-w-[180px]">Conjunto</TableHead>
             {visibleCols.map((col) => (
               <TableHead key={col} className="text-right">
                 {allColumns[col] || col}

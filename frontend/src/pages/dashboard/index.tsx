@@ -11,7 +11,7 @@ import { fetchCustomersFilterOptions } from "@/services/customers";
 import { Skeleton } from "@/components/ui/skeleton";
 
 export default function DashboardPage() {
-  const { data, settings, loading, filters, setFilters } = useDashboard();
+  const { data, settings, loading, filters, setFilters, reload } = useDashboard();
   const [products, setProducts] = useState<{ id: number; name: string }[]>([]);
   const [platforms, setPlatforms] = useState<{ value: string; label: string }[]>([]);
 
@@ -24,7 +24,7 @@ export default function DashboardPage() {
 
   return (
     <div className="flex flex-col gap-6 p-6">
-      <DashboardHeader />
+      <DashboardHeader onRefresh={reload} />
       <GlobalFilterBar
         filters={filters}
         onFiltersChange={setFilters}

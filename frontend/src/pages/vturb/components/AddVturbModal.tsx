@@ -49,6 +49,7 @@ export function AddVturbModal({ open, onOpenChange, onAdd, isLoading }: AddVturb
               onChange={(e) => setName(e.target.value)}
               disabled={isLoading}
               required
+              autoComplete="off"
             />
           </div>
           <div className="space-y-2">
@@ -61,6 +62,7 @@ export function AddVturbModal({ open, onOpenChange, onAdd, isLoading }: AddVturb
               onChange={(e) => setApiKey(e.target.value)}
               disabled={isLoading}
               required
+              autoComplete="off"
             />
           </div>
           <div className="rounded-lg bg-muted/50 p-3">

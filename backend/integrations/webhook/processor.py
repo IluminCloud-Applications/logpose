@@ -7,6 +7,10 @@ from database.models.transaction import Transaction, TransactionStatus
 from database.models.product import Product
 from database.models.customer_product import CustomerProduct
 from database.core.timezone import now_sp
+from integrations.webhook.recovery_helper import (
+    create_recovery_if_pending,
+    mark_recovery_as_recovered,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -22,6 +26,7 @@ def process_webhook_event(db: Session, event: StandardizedWebhookEvent):
     1. Customer (cria ou atualiza saldos se for compra aprovada)
     2. Transaction (registra a transação com suas utms)
     3. CustomerProduct (libera o produto para o usuário se não tinha e se for aprovada)
+    4. Recovery (cria registro de recuperação se for pendente)
     """
     logger.info(f"Processando webhook event: {event.external_id} | Status: {event.status}")
     
@@ -40,9 +45,8 @@ def process_webhook_event(db: Session, event: StandardizedWebhookEvent):
             total_orders=0
         )
         db.add(customer)
-        db.flush()  # Para dar o customer.id para a transação logo abaixo
+        db.flush()
     else:
-        # Atualiza dados apenas se vieram
         if event.customer_name and not customer.name:
             customer.name = event.customer_name
         if event.customer_cpf and not customer.cpf:
@@ -50,13 +54,6 @@ def process_webhook_event(db: Session, event: StandardizedWebhookEvent):
         if event.customer_phone and not customer.phone:
             customer.phone = event.customer_phone
 
-    # Se a transação for aprovada, incrementa métricas do customer
-    # Nota: Poderíamos checar se a transação JÁ era aprovada antes,
-    # para não incrementar duas vezes se re-enviarem o webhook aprovado.
-    # Mas como é uma base inicial e external_id é unique logo abaixo no trans, 
-    # o SQLAlchemy vai dar ConstraintError se rodar 2x com mesmo ID caso não tratarmos.
-    # Aqui, dependendo da necessidade, podemos checar primeiro a Transaction.
-    
     # -------------------------------------------------------------
     # 2. SE A TRANSAÇÃO JÁ EXISTIR
     # -------------------------------------------------------------
@@ -64,13 +61,10 @@ def process_webhook_event(db: Session, event: StandardizedWebhookEvent):
     
     if existing_tx:
         logger.info(f"Transação {event.external_id} já existia. Status: {existing_tx.status} -> {event.status}")
-        # Só atualizamos metrics de Customer se antes não era APPROVED e agora é,
-        # ou se antes ERA APPROVED e agora virou REFUNDED (debito). Voltando o schema:
         is_newly_approved = existing_tx.status != TransactionStatus.APPROVED and event.status == TransactionStatus.APPROVED
         is_newly_refunded = existing_tx.status == TransactionStatus.APPROVED and event.status in [TransactionStatus.REFUNDED, TransactionStatus.CHARGEBACK]
         
         existing_tx.status = event.status
-        # atualizas infos que podem ter chegado agora? As UTMs geralmente não mudam.
         
         if is_newly_approved:
             customer.total_spent += event.amount
@@ -78,15 +72,17 @@ def process_webhook_event(db: Session, event: StandardizedWebhookEvent):
             customer.last_purchase_at = get_saopaulo_time()
             if not customer.first_purchase_at:
                 customer.first_purchase_at = customer.last_purchase_at
+            mark_recovery_as_recovered(db, event.customer_email, event.product_name)
                 
         elif is_newly_refunded:
-            customer.total_spent -= existing_tx.amount  # usa o amount gravado
+            customer.total_spent -= existing_tx.amount
             customer.total_orders -= 1
             if customer.total_orders < 0:
                 customer.total_orders = 0
             if customer.total_spent < 0:
                 customer.total_spent = 0.0
 
+        create_recovery_if_pending(db, event, customer)
         db.commit()
         return existing_tx
     
@@ -100,7 +96,6 @@ def process_webhook_event(db: Session, event: StandardizedWebhookEvent):
         if not customer.first_purchase_at:
             customer.first_purchase_at = customer.last_purchase_at
 
-    # Buscar Produto por ID Externo para fazer a ligação
     product = db.query(Product).filter(Product.external_id == event.product_external_id).first()
     product_id_to_save = product.id if product else None
     
@@ -140,6 +135,11 @@ def process_webhook_event(db: Session, event: StandardizedWebhookEvent):
                 has_access=True
             )
             db.add(new_cp)
+
+    # -------------------------------------------------------------
+    # 5. CRIAR RECOVERY SE PENDENTE
+    # -------------------------------------------------------------
+    create_recovery_if_pending(db, event, customer)
     
     db.commit()
     logger.info(f"Webhook processado com sucesso. Transação: {new_tx.id}")

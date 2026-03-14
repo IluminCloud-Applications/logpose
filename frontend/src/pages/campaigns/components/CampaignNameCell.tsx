@@ -66,7 +66,7 @@ export function CampaignNameCell({
       <div className="flex flex-col min-w-0">
         <div className="flex items-center gap-1.5">
           <span
-            className={cn("font-medium truncate max-w-[220px] block", blurName && blurClass)}
+            className={cn("font-medium truncate max-w-[280px] block", blurName && blurClass)}
             title={campaign.name}
           >
             {campaign.name}

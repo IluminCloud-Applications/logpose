@@ -83,7 +83,7 @@ export function BottleneckTable({ data, hasVturb }: BottleneckTableProps) {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="min-w-[220px]">Campanha</TableHead>
+                <TableHead className="min-w-[160px]">Campanha</TableHead>
                 {funnelStages.map((stage) => (
                   <TableHead key={stage.label} className="text-right">
                     {stage.label}
@@ -107,13 +107,13 @@ export function BottleneckTable({ data, hasVturb }: BottleneckTableProps) {
 function BottleneckRow({ campaign, showLosses, funnelStages }: { campaign: CampaignData; showLosses: boolean; funnelStages: FunnelStage[] }) {
   return (
     <TableRow>
-      <TableCell>
+      <TableCell className="max-w-[200px]">
         <div className="flex items-center gap-2.5">
           <RiCircleFill className={cn("size-2 shrink-0",
             campaign.status === "active" ? "text-[var(--color-success)]" :
             campaign.status === "paused" ? "text-destructive" : "text-muted-foreground"
           )} />
-          <span className="font-medium">{campaign.name}</span>
+          <span className="font-medium truncate" title={campaign.name}>{campaign.name}</span>
         </div>
       </TableCell>
       {funnelStages.map((stage, i) => {

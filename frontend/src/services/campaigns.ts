@@ -192,7 +192,7 @@ export async function fetchCampaignFilterOptions(): Promise<CampaignFilterOption
 export interface CampaignMarkerAPI {
   id: number;
   campaign_id: string;
-  marker_type: "video" | "checkout";
+  marker_type: "video" | "checkout" | "product" | "platform";
   reference_id: string;
   reference_label: string;
 }
@@ -203,7 +203,7 @@ export async function fetchCampaignMarkers(): Promise<CampaignMarkerAPI[]> {
 
 export async function upsertCampaignMarker(data: {
   campaign_id: string;
-  marker_type: "video" | "checkout";
+  marker_type: "video" | "checkout" | "product" | "platform";
   reference_id: string;
   reference_label: string;
 }): Promise<CampaignMarkerAPI> {
@@ -232,3 +232,30 @@ export interface VturbPlayer {
 export async function fetchVturbPlayers(): Promise<VturbPlayer[]> {
   return apiRequest<VturbPlayer[]>("/vturb/players");
 }
+
+// ─── Campaign Conversion ──────────────────────────────────────────────
+
+export interface CampaignConversionData {
+  campaign_id: string;
+  total_transactions: number;
+  approved_count: number;
+  approved_revenue: number;
+  pending_count: number;
+  pending_revenue: number;
+  refunded_count: number;
+  refunded_revenue: number;
+  chargeback_count: number;
+  chargeback_revenue: number;
+  approval_rate: number;
+  recovery_rate: number;
+  loss_rate: number;
+}
+
+export async function fetchCampaignConversion(
+  dateStart: string,
+  dateEnd: string,
+): Promise<CampaignConversionData[]> {
+  const params = new URLSearchParams({ date_start: dateStart, date_end: dateEnd });
+  return apiRequest<CampaignConversionData[]>(`/campaigns/conversion?${params}`);
+}
+

@@ -4,7 +4,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
-  RiVideoLine, RiShoppingBag2Line,
+  RiVideoLine, RiShoppingBag2Line, RiBox3Line, RiStoreLine,
   RiExternalLinkLine, RiAlertLine, RiPriceTag3Line,
 } from "@remixicon/react";
 import type { CampaignMarkerAPI } from "@/services/campaigns";
@@ -16,6 +16,8 @@ interface CampaignInfoModalProps {
   tags?: string[];
   videoMarker?: CampaignMarkerAPI;
   checkoutMarker?: CampaignMarkerAPI;
+  productMarker?: CampaignMarkerAPI;
+  platformMarker?: CampaignMarkerAPI;
 }
 
 function buildVturbUrl(videoId: string): string {
@@ -24,11 +26,14 @@ function buildVturbUrl(videoId: string): string {
 
 export function CampaignInfoModal({
   open, onOpenChange, campaignName, tags = [],
-  videoMarker, checkoutMarker,
+  videoMarker, checkoutMarker, productMarker, platformMarker,
 }: CampaignInfoModalProps) {
   const hasVideo = !!videoMarker;
   const hasCheckout = !!checkoutMarker;
+  const hasProduct = !!productMarker;
+  const hasPlatform = !!platformMarker;
   const hasTags = tags.length > 0;
+  const hasAny = hasVideo || hasCheckout || hasProduct || hasPlatform || hasTags;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -41,7 +46,6 @@ export function CampaignInfoModal({
         </DialogHeader>
 
         <div className="space-y-4 pt-1">
-          {/* Video Section */}
           <InfoSection
             icon={<RiVideoLine className="size-4" />}
             label="Vídeo VTurb"
@@ -58,7 +62,6 @@ export function CampaignInfoModal({
             )}
           </InfoSection>
 
-          {/* Checkout Section */}
           <InfoSection
             icon={<RiShoppingBag2Line className="size-4" />}
             label="Checkout"
@@ -75,7 +78,34 @@ export function CampaignInfoModal({
             )}
           </InfoSection>
 
-          {/* Tags Section */}
+          <InfoSection
+            icon={<RiBox3Line className="size-4" />}
+            label="Produto"
+            hasData={hasProduct}
+            emptyText="Nenhum produto definido"
+          >
+            {hasProduct && productMarker && (
+              <InfoCard
+                title={productMarker.reference_label}
+                subtitle={`ID: ${productMarker.reference_id}`}
+              />
+            )}
+          </InfoSection>
+
+          <InfoSection
+            icon={<RiStoreLine className="size-4" />}
+            label="Plataforma"
+            hasData={hasPlatform}
+            emptyText="Nenhuma plataforma definida"
+          >
+            {hasPlatform && platformMarker && (
+              <InfoCard
+                title={platformMarker.reference_label}
+                subtitle={platformMarker.reference_id}
+              />
+            )}
+          </InfoSection>
+
           <InfoSection
             icon={<RiPriceTag3Line className="size-4" />}
             label="Tags"
@@ -97,14 +127,14 @@ export function CampaignInfoModal({
             )}
           </InfoSection>
 
-          {!hasVideo && !hasCheckout && !hasTags && (
+          {!hasAny && (
             <div className="flex flex-col items-center justify-center py-6 gap-2 text-muted-foreground">
               <RiAlertLine className="size-8 opacity-40" />
               <p className="text-sm">
                 Nenhuma informação definida para esta campanha.
               </p>
               <p className="text-xs">
-                Use o botão direito na campanha para definir vídeo, checkout e tags.
+                Use o botão direito na campanha para definir vídeo, checkout, produto e plataforma.
               </p>
             </div>
           )}
@@ -153,8 +183,8 @@ function InfoSection({ icon, label, hasData, emptyText, children }: InfoSectionP
 interface InfoCardProps {
   title: string;
   subtitle: string;
-  actionLabel: string;
-  actionUrl: string | null;
+  actionLabel?: string;
+  actionUrl?: string | null;
 }
 
 function InfoCard({ title, subtitle, actionLabel, actionUrl }: InfoCardProps) {
@@ -168,7 +198,7 @@ function InfoCard({ title, subtitle, actionLabel, actionUrl }: InfoCardProps) {
           {subtitle}
         </span>
       </div>
-      {actionUrl && (
+      {actionLabel && actionUrl && (
         <Button
           variant="outline"
           size="sm"
@@ -185,10 +215,6 @@ function InfoCard({ title, subtitle, actionLabel, actionUrl }: InfoCardProps) {
 
 // ─── Helpers ────────────────────────────────────────────────────────────
 
-/**
- * Tenta extrair a URL do checkout a partir do reference_label.
- * O label é salvo como "Produto → URL", então pega a parte após " → ".
- */
 function extractCheckoutUrl(referenceLabel: string): string | null {
   const parts = referenceLabel.split(" → ");
   if (parts.length >= 2) {

@@ -29,7 +29,7 @@ export async function updateChannelConfigs(
 ): Promise<ChannelConfig[]> {
   return apiRequest<ChannelConfig[]>("/recovery/config", {
     method: "PUT",
-    body: JSON.stringify({ configs }),
+    body: { configs },
   });
 }
 

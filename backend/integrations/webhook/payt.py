@@ -41,11 +41,13 @@ def parse_payt_webhook(payload: Dict[str, Any]) -> Optional[StandardizedWebhookE
         if not tx_id:
             tx_id = payload.get("cart_id", "")
         
-        # Amount (prioridade da transaction, dps product)
-        amount_cents = payload.get("transaction", {}).get("total_price")
-        if amount_cents is None:
-            # ex: abandono não tem transaction
-            amount_cents = payload.get("product", {}).get("price", 0.0)
+        # Amount: buscar comissão do producer (quanto vamos receber), não total_price (quanto o cliente pagou)
+        amount_cents = 0.0
+        commissions = payload.get("commission", [])
+        for comm in commissions:
+            if comm.get("type") == "producer":
+                amount_cents = comm.get("amount", 0.0)
+                break
             
         amount = float(amount_cents) / 100.0
 

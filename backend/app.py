@@ -32,12 +32,26 @@ from api.campaigns.presets import router as campaigns_presets_router
 from api.campaigns.tags import router as campaigns_tags_router
 from api.campaigns.markers import router as campaigns_markers_router
 from api.campaigns.filters import router as campaigns_filters_router
+from api.campaigns.conversion import router as campaigns_conversion_router
 from api.webhook.receive import router as webhook_receiver_router
 from api.csv_import.preview import router as import_preview_router
 from api.csv_import.execute import router as import_execute_router
 from api.refunds.list import router as refunds_list_router
 from api.refunds.reasons import router as refunds_reasons_router
 from api.vturb.players import router as vturb_players_router
+from api.gemini.accounts import router as gemini_accounts_router
+from api.gemini.models import router as gemini_models_router
+from api.gemini.chat import router as gemini_chat_router
+
+# Extend the markertype enum with new values (PostgreSQL doesn't auto-expand enums)
+from sqlalchemy import text as _text
+with engine.connect() as _conn:
+    for _val in ("product", "platform"):
+        try:
+            _conn.execute(_text(f"ALTER TYPE markertype ADD VALUE IF NOT EXISTS '{_val}'"))
+            _conn.commit()
+        except Exception:
+            _conn.rollback()
 
 # Create tables
 Base.metadata.create_all(bind=engine)
@@ -80,12 +94,16 @@ app.include_router(campaigns_presets_router, prefix="/api")
 app.include_router(campaigns_tags_router, prefix="/api")
 app.include_router(campaigns_markers_router, prefix="/api")
 app.include_router(campaigns_filters_router, prefix="/api")
+app.include_router(campaigns_conversion_router, prefix="/api")
 app.include_router(webhook_receiver_router, prefix="/api")
 app.include_router(import_preview_router, prefix="/api")
 app.include_router(import_execute_router, prefix="/api")
 app.include_router(refunds_list_router, prefix="/api")
 app.include_router(refunds_reasons_router, prefix="/api")
 app.include_router(vturb_players_router, prefix="/api")
+app.include_router(gemini_accounts_router, prefix="/api")
+app.include_router(gemini_models_router, prefix="/api")
+app.include_router(gemini_chat_router, prefix="/api")
 
 # SPA Middleware (serves frontend in production)
 _frontend_dir = os.path.join(os.path.dirname(__file__), "frontend_dist")

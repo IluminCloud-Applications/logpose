@@ -54,8 +54,8 @@ def parse_kiwify_webhook(payload: Dict[str, Any]) -> Optional[StandardizedWebhoo
         order_status = payload.get("order_status", "pending")
         status = _map_status(order_status)
         
-        # Valor vem em centavos e pode vir de Commissions ou payment_merchant se diferente
-        amount_cents = payload.get("Commissions", {}).get("charge_amount")
+        # Valor que o produtor recebe (my_commission), não o que o cliente pagou (charge_amount)
+        amount_cents = payload.get("Commissions", {}).get("my_commission")
         if amount_cents is None:
             amount_cents = 0.0
         amount = float(amount_cents) / 100.0

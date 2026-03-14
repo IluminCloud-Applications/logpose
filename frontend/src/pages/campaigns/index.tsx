@@ -1,7 +1,7 @@
 import { useState, useMemo } from "react";
 import { CampaignsHeader } from "./components/CampaignsHeader";
 import { CampaignsTable } from "./components/CampaignsTable";
-import { BottleneckTable } from "./components/BottleneckTable";
+import { BottleneckTabs } from "./components/BottleneckTabs";
 import { CampaignsKpis } from "./components/CampaignsKpis";
 import { PresetDrawer } from "./components/PresetDrawer";
 import {
@@ -12,7 +12,7 @@ import { defaultPresets, type ColumnPreset } from "./components/columnPresets";
 import type { BlurState } from "./components/BlurToggle";
 import { QuickFiltersBadges } from "@/components/QuickFiltersBadges";
 import { AddValueFilterPopover } from "@/components/AddValueFilterPopover";
-import { useCampaigns, useCampaignPresets, useCampaignFilterOptions } from "@/hooks/useCampaigns";
+import { useCampaigns, useCampaignPresets } from "@/hooks/useCampaigns";
 import { useCampaignTags } from "@/hooks/useCampaignTags";
 import { useCampaignMarkers } from "@/hooks/useCampaignMarkers";
 import { useVturbAccounts } from "@/hooks/useVturbAccounts";
@@ -31,7 +31,6 @@ export default function CampaignsPage() {
 
   const { tagsMap, allUniqueTags, updateTags } = useCampaignTags();
   const { markersMap, saveMarker } = useCampaignMarkers();
-  const { filterOptions } = useCampaignFilterOptions();
   const { accounts: vturbAccounts } = useVturbAccounts();
   const hasVturb = vturbAccounts.length > 0;
 
@@ -49,7 +48,8 @@ export default function CampaignsPage() {
 
   const {
     campaigns, unidentified, isLoading, error,
-    activeAccountId, toggle, changeBudget,
+    accounts: fbAccounts, activeAccountId, setSelectedAccountId,
+    toggle, changeBudget, reload,
   } = useCampaigns(dateStart, dateEnd);
 
   const allRows = useMemo(() => {
@@ -71,6 +71,20 @@ export default function CampaignsPage() {
           const cTags = tagsMap[c.id] || [];
           if (!cTags.includes(filters.tag)) return false;
         }
+        // Marker-based filters
+        const cMarkers = markersMap[c.id];
+        if (filters.product !== "all") {
+          if (!cMarkers?.product || cMarkers.product.reference_id !== filters.product) return false;
+        }
+        if (filters.platform !== "all") {
+          if (!cMarkers?.platform || cMarkers.platform.reference_id !== filters.platform) return false;
+        }
+        if (filters.video !== "all") {
+          if (!cMarkers?.video || cMarkers.video.reference_id !== filters.video) return false;
+        }
+        if (filters.checkout !== "all") {
+          if (!cMarkers?.checkout || cMarkers.checkout.reference_id !== filters.checkout) return false;
+        }
       }
       for (const vf of filters.valueFilters) {
         const num = parseFloat(vf.value);
@@ -86,12 +100,12 @@ export default function CampaignsPage() {
       }
       return true;
     });
-  }, [allRows, search, filters, tagsMap]);
+  }, [allRows, search, filters, tagsMap, markersMap]);
 
   const quickFilters = useQuickFilters({
     filters,
-    products: filterOptions.products,
-    platforms: filterOptions.platforms,
+    accounts: fbAccounts,
+    markersMap,
     tags: allUniqueTags,
   });
 
@@ -110,8 +124,14 @@ export default function CampaignsPage() {
       }
     } else if (key === "status") setFilters((p) => ({ ...p, status: value }));
     else if (key === "objective") setFilters((p) => ({ ...p, objective: value }));
+    else if (key === "account") {
+      setFilters((p) => ({ ...p, account: value }));
+      setSelectedAccountId(value === "all" ? undefined : Number(value));
+    }
     else if (key === "product") setFilters((p) => ({ ...p, product: value }));
     else if (key === "platform") setFilters((p) => ({ ...p, platform: value }));
+    else if (key === "video") setFilters((p) => ({ ...p, video: value }));
+    else if (key === "checkout") setFilters((p) => ({ ...p, checkout: value }));
     else if (key === "tag") setFilters((p) => ({ ...p, tag: value }));
     else if (key.startsWith("vf_")) {
       const id = key.replace("vf_", "");
@@ -136,6 +156,7 @@ export default function CampaignsPage() {
         onCreatePreset={() => setDrawerOpen(true)}
         blur={blur}
         onBlurChange={setBlur}
+        onRefresh={reload}
       />
       <CampaignsKpis data={metricsForKpi} />
       <div className="flex flex-wrap items-center gap-2">
@@ -147,7 +168,7 @@ export default function CampaignsPage() {
       ) : error ? (
         <div className="text-center py-12 text-destructive">{error}</div>
       ) : activePresetId === "gargalos" ? (
-        <BottleneckTable data={filtered} hasVturb={hasVturb} />
+        <BottleneckTabs data={filtered} hasVturb={hasVturb} dateStart={dateStart} dateEnd={dateEnd} />
       ) : (
         <CampaignsTable
           data={filtered}

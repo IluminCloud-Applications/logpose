@@ -114,6 +114,7 @@ export function DefineCheckoutModal({
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   className="pl-9"
+                  autoComplete="off"
                 />
               </div>
 

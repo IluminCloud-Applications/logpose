@@ -35,7 +35,36 @@ def _parse_date_range(preset: str, start: Optional[str], end: Optional[str]):
         except ValueError:
             return None, None
 
-    return None, None  # "all" — sem filtro de data
+    return None, None
+
+
+def _apply_filters(
+    query, preset, start_date, end_date,
+    status, platform, product_id, campaign, search,
+):
+    """Aplica filtros comuns de vendas à query."""
+    date_start, date_end = _parse_date_range(preset, start_date, end_date)
+    if date_start:
+        query = query.filter(Transaction.created_at >= date_start)
+    if date_end:
+        query = query.filter(Transaction.created_at <= date_end)
+    if status and status != "all":
+        try:
+            query = query.filter(Transaction.status == TransactionStatus(status))
+        except ValueError:
+            pass
+    if platform and platform != "all":
+        try:
+            query = query.filter(Transaction.platform == PaymentPlatform(platform))
+        except ValueError:
+            pass
+    if product_id:
+        query = query.filter(Transaction.product_id == product_id)
+    if campaign and campaign != "all":
+        query = query.filter(Transaction.utm_campaign == campaign)
+    if search:
+        query = query.filter(Transaction.customer_email.ilike(f"%{search}%"))
+    return query
 
 
 @router.get("/transactions")
@@ -46,55 +75,26 @@ def list_transactions(
     status: Optional[str] = Query(None),
     platform: Optional[str] = Query(None),
     product_id: Optional[int] = Query(None),
+    campaign: Optional[str] = Query(None),
     search: Optional[str] = Query(None),
     page: int = Query(1, ge=1),
     per_page: int = Query(50, ge=1, le=200),
     db: Session = Depends(get_db),
     _=Depends(get_current_user),
 ):
-    query = db.query(Transaction)
-
-    # Date filter
-    date_start, date_end = _parse_date_range(preset, start_date, end_date)
-    if date_start:
-        query = query.filter(Transaction.created_at >= date_start)
-    if date_end:
-        query = query.filter(Transaction.created_at <= date_end)
-
-    # Status filter
-    if status and status != "all":
-        try:
-            query = query.filter(Transaction.status == TransactionStatus(status))
-        except ValueError:
-            pass
-
-    # Platform filter
-    if platform and platform != "all":
-        try:
-            query = query.filter(Transaction.platform == PaymentPlatform(platform))
-        except ValueError:
-            pass
-
-    # Product filter
-    if product_id:
-        query = query.filter(Transaction.product_id == product_id)
-
-    # Search by email
-    if search:
-        query = query.filter(Transaction.customer_email.ilike(f"%{search}%"))
-
+    query = _apply_filters(
+        db.query(Transaction), preset, start_date, end_date,
+        status, platform, product_id, campaign, search,
+    )
     total = query.count()
-
     transactions = (
         query.order_by(Transaction.created_at.desc())
         .offset((page - 1) * per_page)
         .limit(per_page)
         .all()
     )
-
     return {
-        "total": total,
-        "page": page,
+        "total": total, "page": page,
         "per_page": per_page,
         "items": [_serialize(t) for t in transactions],
     }
@@ -108,32 +108,16 @@ def sales_summary(
     status: Optional[str] = Query(None),
     platform: Optional[str] = Query(None),
     product_id: Optional[int] = Query(None),
+    campaign: Optional[str] = Query(None),
     search: Optional[str] = Query(None),
     db: Session = Depends(get_db),
     _=Depends(get_current_user),
 ):
     """KPIs agregados com os mesmos filtros da listagem."""
-    query = db.query(Transaction)
-
-    date_start, date_end = _parse_date_range(preset, start_date, end_date)
-    if date_start:
-        query = query.filter(Transaction.created_at >= date_start)
-    if date_end:
-        query = query.filter(Transaction.created_at <= date_end)
-    if status and status != "all":
-        try:
-            query = query.filter(Transaction.status == TransactionStatus(status))
-        except ValueError:
-            pass
-    if platform and platform != "all":
-        try:
-            query = query.filter(Transaction.platform == PaymentPlatform(platform))
-        except ValueError:
-            pass
-    if product_id:
-        query = query.filter(Transaction.product_id == product_id)
-    if search:
-        query = query.filter(Transaction.customer_email.ilike(f"%{search}%"))
+    query = _apply_filters(
+        db.query(Transaction), preset, start_date, end_date,
+        status, platform, product_id, campaign, search,
+    )
 
     total = query.count()
     approved = query.filter(Transaction.status == TransactionStatus.APPROVED).count()
@@ -148,12 +132,9 @@ def sales_summary(
     avg_ticket = (float(revenue) / approved) if approved > 0 else 0
 
     return {
-        "total": total,
-        "approved": approved,
-        "refunded": refunded,
-        "chargebacks": chargebacks,
-        "pending": pending,
-        "revenue": float(revenue),
+        "total": total, "approved": approved,
+        "refunded": refunded, "chargebacks": chargebacks,
+        "pending": pending, "revenue": float(revenue),
         "avg_ticket": round(avg_ticket, 2),
     }
 
