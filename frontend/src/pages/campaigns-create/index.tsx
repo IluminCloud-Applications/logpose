@@ -20,7 +20,7 @@ export default function CampaignsCreatePage() {
   const navigate = useNavigate();
   const [isPublishing, setIsPublishing] = useState(false);
   const { accounts, isLoading: accountsLoading } = useFacebookAccounts();
-  const { form, currentStep, updateField, addAd, updateAd, removeAd, resetForm, nextStep, prevStep, goToStep } = useCampaignForm();
+  const { form, currentStep, updateField, addAd, updateAd, removeAd, updateBulkData, resetForm, nextStep, prevStep, goToStep } = useCampaignForm();
   const { pixels, load: loadPixels } = usePixels();
   const { pages, load: loadPages } = usePages();
   const { results: interests, search: searchInterest } = useInterestSearch();
@@ -114,7 +114,7 @@ export default function CampaignsCreatePage() {
             interestResults={interests} onSearchInterest={(q) => form.accountId && searchInterest(form.accountId, q)} />
         )}
         {currentStep === 3 && (
-          <AdsStep form={form} onUpdate={updateField} onAddAd={addAd} onUpdateAd={updateAd} onRemoveAd={removeAd} />
+          <AdsStep form={form} onUpdate={updateField} onAddAd={addAd} onUpdateAd={updateAd} onRemoveAd={removeAd} onUpdateBulk={updateBulkData} />
         )}
         {currentStep === 4 && <ReviewStep form={form} />}
       </div>

@@ -1,4 +1,5 @@
 import { RiMegaphoneLine, RiSearchLine, RiAddLine, RiSettings3Line } from "@remixicon/react";
+import { useNavigate } from "react-router-dom";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -25,6 +26,8 @@ export function CampaignsHeader({
   presets, activePresetId, onPresetChange, onCreatePreset,
   blur, onBlurChange, onRefresh, onOpenSettings,
 }: CampaignsHeaderProps) {
+  const navigate = useNavigate();
+
   return (
     <div className="flex flex-col gap-4">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -49,6 +52,14 @@ export function CampaignsHeader({
               className="pl-9 w-[220px] h-9 text-sm"
             />
           </div>
+          <Button
+            size="sm"
+            className="gap-1.5 h-9"
+            onClick={() => navigate("/campaigns/create")}
+          >
+            <RiAddLine className="size-4" />
+            Nova Campanha
+          </Button>
           <BlurToggle blur={blur} onBlurChange={onBlurChange} />
           <UtmParamsGuide />
           <Button

@@ -162,13 +162,13 @@ interface InfoSectionProps {
 
 function InfoSection({ icon, label, hasData, emptyText, children }: InfoSectionProps) {
   return (
-    <div className="rounded-lg border border-border/50 p-3.5 space-y-2">
+    <div className="rounded-lg border border-border/50 p-3.5 space-y-2 overflow-hidden">
       <div className="flex items-center gap-2">
-        <span className="text-muted-foreground">{icon}</span>
-        <span className="text-sm font-medium">{label}</span>
+        <span className="text-muted-foreground shrink-0">{icon}</span>
+        <span className="text-sm font-medium truncate">{label}</span>
         <Badge
           variant={hasData ? "default" : "secondary"}
-          className="text-[10px] px-1.5 py-0 h-4 ml-auto"
+          className="text-[10px] px-1.5 py-0 h-4 ml-auto shrink-0"
         >
           {hasData ? "Definido" : "Pendente"}
         </Badge>
@@ -189,12 +189,12 @@ interface InfoCardProps {
 
 function InfoCard({ title, subtitle, actionLabel, actionUrl }: InfoCardProps) {
   return (
-    <div className="flex items-center justify-between gap-3 pl-6 overflow-hidden">
-      <div className="flex flex-col min-w-0 overflow-hidden flex-1">
+    <div className="flex items-center justify-between gap-3 pl-6 min-w-0">
+      <div className="flex flex-col min-w-0 flex-1">
         <span className="text-sm font-medium truncate block" title={title}>
           {title}
         </span>
-        <span className="text-[11px] text-muted-foreground truncate block">
+        <span className="text-[11px] text-muted-foreground truncate block" title={subtitle}>
           {subtitle}
         </span>
       </div>

@@ -1,6 +1,6 @@
 import { useState, useCallback } from "react";
 import type { InterestData } from "@/services/campaignCreator";
-import { DEFAULT_UTM_PARAMS } from "../utils/defaults";
+import { DEFAULT_UTM_PARAMS, DEFAULT_CTA } from "../utils/defaults";
 import { getNextMidnightSP } from "../utils/schedule";
 
 export interface AdFormData {
@@ -16,6 +16,25 @@ export interface AdFormData {
   file: File | null;
   preview_url: string;
 }
+
+/** Dados da edição em massa — persistem independente dos ads */
+export interface BulkEditData {
+  primary_text: string;
+  headline: string;
+  description: string;
+  link: string;
+  extra_params: string;
+  cta_type: string;
+}
+
+export const INITIAL_BULK_DATA: BulkEditData = {
+  primary_text: "",
+  headline: "",
+  description: "",
+  link: "",
+  extra_params: "",
+  cta_type: DEFAULT_CTA,
+};
 
 export interface CampaignFormState {
   // Step 0 — Conta de anúncio
@@ -47,6 +66,7 @@ export interface CampaignFormState {
   instagramActorId: string;
   // Step 3 — Anúncios
   batchMode: boolean;
+  bulkData: BulkEditData;
   ads: AdFormData[];
 }
 
@@ -76,6 +96,7 @@ const INITIAL_STATE: CampaignFormState = {
   pageId: "",
   instagramActorId: "",
   batchMode: true,
+  bulkData: { ...INITIAL_BULK_DATA },
   ads: [],
 };
 
@@ -92,20 +113,23 @@ export function useCampaignForm() {
 
   const addAd = useCallback((file: File) => {
     const isVideo = file.type.startsWith("video/");
-    const newAd: AdFormData = {
-      name: "",
-      primary_text: "",
-      headline: "",
-      description: "",
-      link: "",
-      utm_params: DEFAULT_UTM_PARAMS,
-      extra_params: "",
-      cta_type: "LEARN_MORE",
-      media_type: isVideo ? "video" : "image",
-      file,
-      preview_url: URL.createObjectURL(file),
-    };
-    setForm((prev) => ({ ...prev, ads: [...prev.ads, newAd] }));
+    setForm((prev) => {
+      const bulk = prev.bulkData;
+      const newAd: AdFormData = {
+        name: "",
+        primary_text: prev.batchMode ? bulk.primary_text : "",
+        headline: prev.batchMode ? bulk.headline : "",
+        description: prev.batchMode ? bulk.description : "",
+        link: prev.batchMode ? bulk.link : "",
+        utm_params: DEFAULT_UTM_PARAMS,
+        extra_params: prev.batchMode ? bulk.extra_params : "",
+        cta_type: prev.batchMode ? bulk.cta_type : DEFAULT_CTA,
+        media_type: isVideo ? "video" : "image",
+        file,
+        preview_url: URL.createObjectURL(file),
+      };
+      return { ...prev, ads: [...prev.ads, newAd] };
+    });
   }, []);
 
   const updateAd = useCallback((index: number, data: Partial<AdFormData>) => {
@@ -120,6 +144,15 @@ export function useCampaignForm() {
     setForm((prev) => {
       const ads = prev.ads.filter((_, i) => i !== index);
       return { ...prev, ads };
+    });
+  }, []);
+
+  /** Atualiza bulkData e sincroniza com todos os ads existentes */
+  const updateBulkData = useCallback((data: Partial<BulkEditData>) => {
+    setForm((prev) => {
+      const newBulk = { ...prev.bulkData, ...data };
+      const ads = prev.ads.map((ad) => ({ ...ad, ...data }));
+      return { ...prev, bulkData: newBulk, ads };
     });
   }, []);
 
@@ -139,6 +172,7 @@ export function useCampaignForm() {
     addAd,
     updateAd,
     removeAd,
+    updateBulkData,
     resetForm,
     nextStep,
     prevStep,

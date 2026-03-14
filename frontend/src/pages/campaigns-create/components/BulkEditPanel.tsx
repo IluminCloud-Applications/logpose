@@ -5,12 +5,12 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import type { CampaignFormState, AdFormData } from "../hooks/useCampaignForm";
+import type { CampaignFormState, BulkEditData } from "../hooks/useCampaignForm";
 import { CTA_OPTIONS, DEFAULT_UTM_PARAMS } from "../utils/defaults";
 
 interface BulkEditPanelProps {
   form: CampaignFormState;
-  onUpdateAllAds: (data: Partial<AdFormData>) => void;
+  onUpdateBulk: (data: Partial<BulkEditData>) => void;
 }
 
 /** Extrai URL base sem query params */
@@ -30,18 +30,17 @@ function hasQueryParams(url: string): boolean {
   return url.includes("?");
 }
 
-export function BulkEditPanel({ form, onUpdateAllAds }: BulkEditPanelProps) {
-  const firstAd = form.ads[0];
-  if (!firstAd) return null;
+export function BulkEditPanel({ form, onUpdateBulk }: BulkEditPanelProps) {
+  const bulk = form.bulkData;
 
-  const [showExtra, setShowExtra] = useState(!!firstAd.extra_params);
+  const [showExtra, setShowExtra] = useState(!!bulk.extra_params);
 
   const handleLinkChange = (value: string) => {
     if (hasQueryParams(value)) {
       // Bloqueia: remove os params automaticamente
-      onUpdateAllAds({ link: stripQueryParams(value) });
+      onUpdateBulk({ link: stripQueryParams(value) });
     } else {
-      onUpdateAllAds({ link: value });
+      onUpdateBulk({ link: value });
     }
   };
 
@@ -50,9 +49,11 @@ export function BulkEditPanel({ form, onUpdateAllAds }: BulkEditPanelProps) {
       <CardHeader className="pb-3">
         <CardTitle className="text-sm flex items-center gap-2">
           Edição em Massa
-          <span className="text-xs font-normal text-muted-foreground">
-            Aplica para todos os {form.ads.length} criativos
-          </span>
+          {form.ads.length > 0 && (
+            <span className="text-xs font-normal text-muted-foreground">
+              Aplica para todos os {form.ads.length} criativos
+            </span>
+          )}
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -61,8 +62,8 @@ export function BulkEditPanel({ form, onUpdateAllAds }: BulkEditPanelProps) {
           <Label className="text-xs">Texto Principal</Label>
           <Textarea
             placeholder="O texto que aparece acima da mídia do anúncio..."
-            value={firstAd.primary_text}
-            onChange={(e) => onUpdateAllAds({ primary_text: e.target.value })}
+            value={bulk.primary_text}
+            onChange={(e) => onUpdateBulk({ primary_text: e.target.value })}
             rows={3}
           />
         </div>
@@ -73,8 +74,8 @@ export function BulkEditPanel({ form, onUpdateAllAds }: BulkEditPanelProps) {
             <Label className="text-xs">Título</Label>
             <Input
               placeholder="Título do anúncio"
-              value={firstAd.headline}
-              onChange={(e) => onUpdateAllAds({ headline: e.target.value })}
+              value={bulk.headline}
+              onChange={(e) => onUpdateBulk({ headline: e.target.value })}
               autoComplete="off"
             />
           </div>
@@ -82,8 +83,8 @@ export function BulkEditPanel({ form, onUpdateAllAds }: BulkEditPanelProps) {
             <Label className="text-xs">Descrição</Label>
             <Input
               placeholder="Descrição abaixo do título"
-              value={firstAd.description}
-              onChange={(e) => onUpdateAllAds({ description: e.target.value })}
+              value={bulk.description}
+              onChange={(e) => onUpdateBulk({ description: e.target.value })}
               autoComplete="off"
             />
           </div>
@@ -94,11 +95,11 @@ export function BulkEditPanel({ form, onUpdateAllAds }: BulkEditPanelProps) {
           <Label className="text-xs">Link de Destino</Label>
           <Input
             placeholder="https://suaoferta.com"
-            value={firstAd.link}
+            value={bulk.link}
             onChange={(e) => handleLinkChange(e.target.value)}
             autoComplete="off"
           />
-          {hasQueryParams(firstAd.link) && (
+          {hasQueryParams(bulk.link) && (
             <p className="text-xs text-orange-500">
               Parâmetros removidos. Use "Parâmetros Adicionais" abaixo.
             </p>
@@ -112,8 +113,8 @@ export function BulkEditPanel({ form, onUpdateAllAds }: BulkEditPanelProps) {
         <div className="space-y-1.5">
           <Label className="text-xs">CTA (Botão de Ação)</Label>
           <Select
-            value={firstAd.cta_type}
-            onValueChange={(v) => onUpdateAllAds({ cta_type: v })}
+            value={bulk.cta_type}
+            onValueChange={(v) => onUpdateBulk({ cta_type: v })}
           >
             <SelectTrigger className="w-full"><SelectValue /></SelectTrigger>
             <SelectContent>
@@ -134,7 +135,7 @@ export function BulkEditPanel({ form, onUpdateAllAds }: BulkEditPanelProps) {
                 checked={showExtra}
                 onCheckedChange={(v) => {
                   setShowExtra(v);
-                  if (!v) onUpdateAllAds({ extra_params: "" });
+                  if (!v) onUpdateBulk({ extra_params: "" });
                 }}
                 className="scale-75"
               />
@@ -158,8 +159,8 @@ export function BulkEditPanel({ form, onUpdateAllAds }: BulkEditPanelProps) {
               <Input
                 className="font-mono text-xs"
                 placeholder="src=cloaker&token=abc123"
-                value={firstAd.extra_params}
-                onChange={(e) => onUpdateAllAds({ extra_params: e.target.value })}
+                value={bulk.extra_params}
+                onChange={(e) => onUpdateBulk({ extra_params: e.target.value })}
                 autoComplete="off"
               />
               <p className="text-[10px] text-muted-foreground">

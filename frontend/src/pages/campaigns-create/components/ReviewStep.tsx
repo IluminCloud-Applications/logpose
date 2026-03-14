@@ -14,7 +14,10 @@ export function ReviewStep({ form }: ReviewStepProps) {
     BID_STRATEGY_OPTIONS.find((o) => o.value === form.bidStrategy)?.label ?? form.bidStrategy;
   const genderLabel = form.gender === 1 ? "Masculino" : form.gender === 2 ? "Feminino" : "Todos";
   const firstAd = form.ads[0];
-  const ctaLabel = CTA_OPTIONS.find((o) => o.value === firstAd?.cta_type)?.label ?? firstAd?.cta_type;
+  const adData = form.batchMode
+    ? { ...form.bulkData }
+    : firstAd ?? { cta_type: "", link: "", extra_params: "", primary_text: "", headline: "" };
+  const ctaLabel = CTA_OPTIONS.find((o) => o.value === adData.cta_type)?.label ?? adData.cta_type;
 
   return (
     <div className="space-y-4">
@@ -91,13 +94,13 @@ export function ReviewStep({ form }: ReviewStepProps) {
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-1.5 text-sm">
-          {firstAd && (
+          {(adData.cta_type || adData.link || adData.primary_text) && (
             <>
               <Row label="CTA" value={ctaLabel} />
-              <Row label="Link" value={firstAd.link || "—"} />
-              {firstAd.extra_params && <Row label="Params Extra" value={firstAd.extra_params} />}
-              <Row label="Texto" value={truncate(firstAd.primary_text, 80)} />
-              <Row label="Título" value={firstAd.headline || "—"} />
+              <Row label="Link" value={adData.link || "—"} />
+              {adData.extra_params && <Row label="Params Extra" value={adData.extra_params} />}
+              <Row label="Texto" value={truncate(adData.primary_text, 80)} />
+              <Row label="Título" value={adData.headline || "—"} />
             </>
           )}
           <div className="flex flex-wrap gap-2 mt-3">

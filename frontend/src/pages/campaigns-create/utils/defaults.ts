@@ -5,6 +5,9 @@
 export const DEFAULT_UTM_PARAMS =
   "utm_source=FB&utm_campaign={{campaign.name}}|{{campaign.id}}&utm_medium={{adset.name}}|{{adset.id}}&utm_content={{ad.name}}|{{ad.id}}&utm_term={{placement}}";
 
+/** CTA padrão para novos anúncios */
+export const DEFAULT_CTA = "LEARN_MORE";
+
 /**
  * Opções de CTA disponíveis para anúncios.
  */

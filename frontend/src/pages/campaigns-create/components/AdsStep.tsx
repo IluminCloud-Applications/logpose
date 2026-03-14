@@ -2,7 +2,7 @@ import { useCallback } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-import type { CampaignFormState, AdFormData } from "../hooks/useCampaignForm";
+import type { CampaignFormState, AdFormData, BulkEditData } from "../hooks/useCampaignForm";
 import { AdCard } from "./AdCard";
 import { BulkEditPanel } from "./BulkEditPanel";
 import { RiUploadCloud2Line } from "@remixicon/react";
@@ -13,9 +13,10 @@ interface AdsStepProps {
   onAddAd: (file: File) => void;
   onUpdateAd: (index: number, data: Partial<AdFormData>) => void;
   onRemoveAd: (index: number) => void;
+  onUpdateBulk: (data: Partial<BulkEditData>) => void;
 }
 
-export function AdsStep({ form, onUpdate, onAddAd, onUpdateAd, onRemoveAd }: AdsStepProps) {
+export function AdsStep({ form, onUpdate, onAddAd, onUpdateAd, onRemoveAd, onUpdateBulk }: AdsStepProps) {
   const handleDrop = useCallback(
     (e: React.DragEvent) => {
       e.preventDefault();
@@ -36,13 +37,6 @@ export function AdsStep({ form, onUpdate, onAddAd, onUpdateAd, onRemoveAd }: Ads
       e.target.value = "";
     },
     [onAddAd]
-  );
-
-  const updateAllAds = useCallback(
-    (data: Partial<AdFormData>) => {
-      form.ads.forEach((_, index) => onUpdateAd(index, data));
-    },
-    [form.ads, onUpdateAd]
   );
 
   return (
@@ -85,9 +79,9 @@ export function AdsStep({ form, onUpdate, onAddAd, onUpdateAd, onRemoveAd }: Ads
         />
       </div>
 
-      {/* Batch edit panel */}
-      {form.batchMode && form.ads.length > 0 && (
-        <BulkEditPanel form={form} onUpdateAllAds={updateAllAds} />
+      {/* Batch edit panel — always visible when batchMode is on */}
+      {form.batchMode && (
+        <BulkEditPanel form={form} onUpdateBulk={onUpdateBulk} />
       )}
 
       {/* Grid de criativos */}

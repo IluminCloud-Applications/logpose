@@ -37,6 +37,7 @@ export function buildExportPayload(form: CampaignFormState): Record<string, unkn
       extra_params: a.extra_params, cta_type: a.cta_type, media_type: a.media_type,
     })),
     batch_mode: form.batchMode,
+    bulk_data: form.bulkData,
   };
 }
 
@@ -109,6 +110,29 @@ export function handleImportCampaign(
 
       if (data.batch_mode !== undefined) {
         updateField("batchMode", Boolean(data.batch_mode));
+      }
+
+      // Import bulkData
+      if (data.bulk_data) {
+        updateField("bulkData", {
+          primary_text: data.bulk_data.primary_text ?? "",
+          headline: data.bulk_data.headline ?? "",
+          description: data.bulk_data.description ?? "",
+          link: data.bulk_data.link ?? "",
+          extra_params: data.bulk_data.extra_params ?? "",
+          cta_type: data.bulk_data.cta_type ?? "LEARN_MORE",
+        });
+      } else if (Array.isArray(data.ads) && data.ads.length > 0) {
+        // Backwards compat: derive bulkData from first ad
+        const firstAd = data.ads[0];
+        updateField("bulkData", {
+          primary_text: (firstAd.primary_text as string) ?? "",
+          headline: (firstAd.headline as string) ?? "",
+          description: (firstAd.description as string) ?? "",
+          link: (firstAd.link as string) ?? "",
+          extra_params: (firstAd.extra_params as string) ?? "",
+          cta_type: (firstAd.cta_type as string) ?? "LEARN_MORE",
+        });
       }
 
       toast.success("Campanha importada! Revise os dados e adicione as mídias.");
