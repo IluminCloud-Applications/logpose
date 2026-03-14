@@ -18,11 +18,14 @@ import ProfilePage from "@/pages/profile";
 import CompanyPage from "@/pages/company";
 import RefundsPage from "@/pages/refunds";
 import GeminiPage from "@/pages/gemini";
+import CampaignsCreatePage from "@/pages/campaigns-create";
 import { AIChatProvider } from "@/components/ai-chat/AIChatProvider";
 import { Toaster } from "@/components/ui/sonner";
+import { PageDataProvider } from "@/contexts/PageDataContext";
 
 export default function App() {
   return (
+    <PageDataProvider>
     <BrowserRouter>
       <TooltipProvider>
         <AppGuard>
@@ -33,6 +36,7 @@ export default function App() {
             <Route element={<DashboardLayout />}>
               <Route path="/dashboard" element={<DashboardPage />} />
               <Route path="/campaigns" element={<CampaignsPage />} />
+              <Route path="/campaigns/create" element={<CampaignsCreatePage />} />
               <Route path="/sales" element={<SalesPage />} />
               <Route path="/customers" element={<CustomersPage />} />
               <Route path="/recovery" element={<RecoveryPage />} />
@@ -55,5 +59,6 @@ export default function App() {
       <Toaster richColors position="top-right" />
       <AIChatProvider />
     </BrowserRouter>
+    </PageDataProvider>
   );
 }

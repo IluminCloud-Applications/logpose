@@ -10,7 +10,9 @@ import asyncio
 
 from database.core.connection import get_db
 from database.models.gemini_account import GeminiAccount
+from database.models.company import CompanySettings
 from api.auth.deps import get_current_user
+from api.campaigns.actions import fetch_learning_data
 from ai.service import run_agent
 
 router = APIRouter(prefix="/gemini", tags=["gemini"])
@@ -20,6 +22,7 @@ class ChatRequest(BaseModel):
     message: str
     history: list[dict] = []
     account_id: int | None = None
+    page_context: str | None = None
 
 
 class ChatResponse(BaseModel):
@@ -47,12 +50,22 @@ async def chat_with_ai(
             detail="Nenhuma conta Gemini configurada. Adicione uma API Key em Integrações → Gemini API."
         )
 
+    # Buscar instruções personalizadas do usuário
+    settings = db.query(CompanySettings).first()
+    ai_instructions = settings.ai_instructions if settings else None
+
+    # Buscar dados de aprendizado (ações do CEO)
+    learning_data = fetch_learning_data(db)
+
     try:
         response = await run_agent(
             api_key=account.api_key,
             model=account.model,
             user_message=payload.message,
             history=payload.history,
+            page_context=payload.page_context,
+            ai_instructions=ai_instructions,
+            learning_data=learning_data,
         )
         return ChatResponse(response=response)
     except Exception as e:

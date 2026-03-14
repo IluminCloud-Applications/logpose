@@ -1,4 +1,4 @@
-import { RiMegaphoneLine, RiSearchLine, RiAddLine } from "@remixicon/react";
+import { RiMegaphoneLine, RiSearchLine, RiAddLine, RiSettings3Line } from "@remixicon/react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -17,12 +17,13 @@ interface CampaignsHeaderProps {
   blur: BlurState;
   onBlurChange: (blur: BlurState) => void;
   onRefresh: () => Promise<void>;
+  onOpenSettings: () => void;
 }
 
 export function CampaignsHeader({
   search, onSearchChange,
   presets, activePresetId, onPresetChange, onCreatePreset,
-  blur, onBlurChange, onRefresh,
+  blur, onBlurChange, onRefresh, onOpenSettings,
 }: CampaignsHeaderProps) {
   return (
     <div className="flex flex-col gap-4">
@@ -50,6 +51,15 @@ export function CampaignsHeader({
           </div>
           <BlurToggle blur={blur} onBlurChange={onBlurChange} />
           <UtmParamsGuide />
+          <Button
+            variant="outline"
+            size="icon"
+            className="size-9"
+            onClick={onOpenSettings}
+            title="Configurações dos KPIs"
+          >
+            <RiSettings3Line className="size-4" />
+          </Button>
           <RefreshButton onRefresh={onRefresh} />
         </div>
       </div>

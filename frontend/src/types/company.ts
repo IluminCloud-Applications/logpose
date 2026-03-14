@@ -1,3 +1,41 @@
+// ── KPI Colors types ───────────────────────────────────
+export interface KpiThreshold {
+  min?: number | null;
+  max?: number | null;
+}
+
+export interface KpiColorEntry {
+  green: KpiThreshold;
+  yellow: KpiThreshold;
+  red: KpiThreshold;
+}
+
+export interface KpiColorsConfig {
+  roas: KpiColorEntry | null;
+  cpa: KpiColorEntry | null;
+  ctr: KpiColorEntry | null;
+  cpc: KpiColorEntry | null;
+}
+
+// ── AI Instructions types ──────────────────────────────
+export interface MetricRule {
+  good: string;
+  bad: string;
+  average: string;
+}
+
+export interface AiMetricsConfig {
+  roas: MetricRule | null;
+  cpa: MetricRule | null;
+  cpc: MetricRule | null;
+  connect_rate: MetricRule | null;
+}
+
+export interface AiInstructions {
+  metrics: AiMetricsConfig;
+  additional_prompt: string;
+}
+
 // ── Company types ──────────────────────────────────────
 
 export interface OperationalCost {

@@ -34,12 +34,7 @@ async def fetch_vturb_stats_by_campaign(
     4. Match por campaign_id primeiro, depois por campaign_name
     """
     accounts = db.query(VturbAccount).all()
-    logger.warning(f"[VTURB] === INICIO fetch_vturb_stats_by_campaign ===")
-    logger.warning(f"[VTURB] contas={len(accounts)}, period={date_start}..{date_end}")
-    logger.warning(f"[VTURB] campaign_ids (primeiros 5): {campaign_ids[:5]}")
-    logger.warning(f"[VTURB] campaign_names (primeiros 5): {campaign_names[:5]}")
     if not accounts:
-        logger.warning("[VTURB] Nenhuma conta VTurb configurada")
         return {}
 
     stats_by_campaign: dict[str, dict[str, int]] = {}
@@ -56,10 +51,6 @@ async def fetch_vturb_stats_by_campaign(
         finally:
             await client.close()
 
-    logger.warning(
-        f"[VTURB] === RESULTADO FINAL: {len(stats_by_campaign)} matches ==="
-    )
-    logger.warning(f"[VTURB] stats_map: {stats_by_campaign}")
     return stats_by_campaign
 
 
@@ -74,20 +65,14 @@ async def _process_account(
     """Busca stats (views/plays) de todos os players de uma conta VTurb."""
     all_players = await client.get_players()
     if not all_players:
-        logger.debug("Nenhum player encontrado na conta VTurb")
         return
 
-    logger.warning(f"[VTURB] {len(all_players)} players encontrados. date={date_start}..{date_end}")
-
-    # Buscar stats por utm_campaign para TODOS os players (paralelo)
     tasks = []
     valid_players = []
-    skipped = 0
     for player in all_players:
         pid = player.get("id", "")
         duration = player.get("duration", 0)
         if not pid or not duration:
-            skipped += 1
             continue
         valid_players.append(pid)
         tasks.append(
@@ -96,27 +81,15 @@ async def _process_account(
             )
         )
 
-    logger.warning(f"[VTURB] {len(tasks)} tasks criadas, {skipped} skipped (sem id/duration)")
     if not tasks:
         return
 
     results = await asyncio.gather(*tasks)
     for pid, day_stats in zip(valid_players, results):
-        logger.warning(
-            f"[VTURB] player {pid}: {len(day_stats)} records. "
-            f"Fields: {[s.get('grouped_field', '?') for s in day_stats[:5]]}"
-        )
-        if day_stats:
-            # Log raw keys from first record for debugging
-            logger.warning(f"[VTURB] player {pid} raw keys: {list(day_stats[0].keys())}")
-            logger.warning(f"[VTURB] player {pid} raw first: {day_stats[0]}")
-        # Agregar por grouped_field (soma de todos os dias)
         aggregated = _aggregate_by_utm(day_stats)
-        logger.warning(f"[VTURB] player {pid} aggregated: {aggregated}")
         _match_stats_to_campaigns(
             aggregated, campaign_ids, campaign_names, stats_by_campaign,
         )
-        logger.warning(f"[VTURB] stats_by_campaign apos player {pid}: {stats_by_campaign}")
 
 
 async def _safe_fetch_stats_by_day(
@@ -136,7 +109,7 @@ async def _safe_fetch_stats_by_day(
             video_duration=video_duration,
         )
     except Exception as e:
-        logger.warning(f"VTurb stats_by_day player {player_id}: {e}")
+        logger.error(f"VTurb stats_by_day player {player_id}: {e}")
         return []
 
 
@@ -173,7 +146,6 @@ def _normalize_utm(raw: str) -> str:
     """Normaliza UTM: decode URL-encoding e remove pipe+id."""
     from urllib.parse import unquote_plus
     decoded = unquote_plus(raw)
-    # Se tem pipe, pegar apenas a parte do nome (antes do pipe)
     if "|" in decoded:
         decoded = decoded.rsplit("|", 1)[0]
     return decoded.strip()
@@ -209,14 +181,12 @@ def _match_stats_to_campaigns(
         # 1. Tentar match direto por ID
         if utm_raw in id_set:
             _add_stats(utm_raw, stats)
-            logger.warning(f"[VTURB-MATCH] '{utm_raw}' → ID direto. {stats}")
             continue
 
         # 2. Extrair ID do formato nome|id
         extracted_id = _extract_id_from_utm(utm_raw)
         if extracted_id and extracted_id in id_set:
             _add_stats(extracted_id, stats)
-            logger.warning(f"[VTURB-MATCH] '{utm_raw}' → ID via pipe ({extracted_id}). {stats}")
             continue
 
         # 3. Normalizar nome (decode URL + remover pipe)
@@ -226,14 +196,9 @@ def _match_stats_to_campaigns(
         matched_name = name_lower_map.get(normalized.lower())
         if matched_name:
             _add_stats(matched_name, stats)
-            logger.warning(f"[VTURB-MATCH] '{utm_raw}' → nome '{matched_name}'. {stats}")
             continue
 
         # 5. Tentar match pelo nome original sem decode
         matched_name = name_lower_map.get(utm_raw.lower())
         if matched_name:
             _add_stats(matched_name, stats)
-            logger.warning(f"[VTURB-MATCH] '{utm_raw}' → nome raw '{matched_name}'. {stats}")
-            continue
-
-        logger.warning(f"[VTURB-MATCH] '{utm_raw[:60]}' → SEM MATCH. {stats}")

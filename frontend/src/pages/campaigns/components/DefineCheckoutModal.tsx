@@ -19,11 +19,20 @@ interface DefineCheckoutModalProps {
   campaignName: string;
   currentCheckoutId?: string;
   onSave: (referenceId: string, referenceLabel: string) => Promise<void>;
+  /** Chamado ao salvar com dados do produto selecionado */
+  onProductResolved?: (productId: string, productName: string) => void;
+  /** Chamado ao salvar com a plataforma do produto selecionado */
+  onPlatformResolved?: (platformId: string, platformLabel: string) => void;
 }
+
+const PLATFORM_LABELS: Record<string, string> = {
+  kiwify: "Kiwify",
+  payt: "PayT",
+};
 
 export function DefineCheckoutModal({
   open, onOpenChange, campaignName,
-  currentCheckoutId, onSave,
+  currentCheckoutId, onSave, onProductResolved, onPlatformResolved,
 }: DefineCheckoutModalProps) {
   const [products, setProducts] = useState<ProductAPI[]>([]);
   const [selectedProductId, setSelectedProductId] = useState<string>("");
@@ -63,17 +72,29 @@ export function DefineCheckoutModal({
     return checkouts.filter((c) => c.url.toLowerCase().includes(q));
   }, [checkouts, search]);
 
-  const productName = products.find(
+  const selectedProduct = products.find(
     (p) => String(p.id) === selectedProductId,
-  )?.name;
+  );
 
   const handleSave = async () => {
     if (!selectedId) return;
     const checkout = checkouts.find((c) => String(c.id) === selectedId);
-    if (!checkout) return;
+    if (!checkout || !selectedProduct) return;
+
     setSaving(true);
-    const label = `${productName} → ${checkout.url}`;
+    const label = `${selectedProduct.name} → ${checkout.url}`;
     await onSave(String(checkout.id), label);
+
+    // Resolve produto automaticamente
+    if (onProductResolved) {
+      onProductResolved(String(selectedProduct.id), selectedProduct.name);
+    }
+    // Resolve plataforma automaticamente
+    if (onPlatformResolved) {
+      const platformLabel = PLATFORM_LABELS[selectedProduct.platform] ?? selectedProduct.platform;
+      onPlatformResolved(selectedProduct.platform, platformLabel);
+    }
+
     setSaving(false);
     onOpenChange(false);
   };

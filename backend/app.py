@@ -42,6 +42,10 @@ from api.vturb.players import router as vturb_players_router
 from api.gemini.accounts import router as gemini_accounts_router
 from api.gemini.models import router as gemini_models_router
 from api.gemini.chat import router as gemini_chat_router
+from api.gemini.daily_report import router as gemini_daily_report_router
+from api.campaigns_create.fetch_data import router as campaign_create_fetch_router
+from api.campaigns_create.create import router as campaign_create_router
+from api.campaigns_create.export_import import router as campaign_create_export_router
 
 # Extend the markertype enum with new values (PostgreSQL doesn't auto-expand enums)
 from sqlalchemy import text as _text
@@ -52,6 +56,19 @@ with engine.connect() as _conn:
             _conn.commit()
         except Exception:
             _conn.rollback()
+
+# Add kpi_colors column to company_settings if missing
+with engine.connect() as _conn:
+    try:
+        _conn.execute(_text(
+            "ALTER TABLE company_settings ADD COLUMN IF NOT EXISTS kpi_colors JSONB"
+        ))
+        _conn.execute(_text(
+            "ALTER TABLE company_settings ADD COLUMN IF NOT EXISTS ai_instructions JSONB"
+        ))
+        _conn.commit()
+    except Exception:
+        _conn.rollback()
 
 # Create tables
 Base.metadata.create_all(bind=engine)
@@ -104,6 +121,10 @@ app.include_router(vturb_players_router, prefix="/api")
 app.include_router(gemini_accounts_router, prefix="/api")
 app.include_router(gemini_models_router, prefix="/api")
 app.include_router(gemini_chat_router, prefix="/api")
+app.include_router(gemini_daily_report_router, prefix="/api")
+app.include_router(campaign_create_fetch_router, prefix="/api")
+app.include_router(campaign_create_router, prefix="/api")
+app.include_router(campaign_create_export_router, prefix="/api")
 
 # SPA Middleware (serves frontend in production)
 _frontend_dir = os.path.join(os.path.dirname(__file__), "frontend_dist")

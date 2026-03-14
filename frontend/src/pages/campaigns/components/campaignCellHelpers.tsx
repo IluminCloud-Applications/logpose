@@ -1,6 +1,7 @@
 import { RiArrowUpSLine, RiArrowDownSLine } from "@remixicon/react";
 import { productsData } from "@/data/mock-products";
 import { cn } from "@/lib/utils";
+import type { KpiColorsConfig, KpiColorEntry } from "@/types/company";
 
 /** Shared metric fields used by Campaign, AdSet and Ad rows */
 export interface MetricRow {
@@ -21,6 +22,23 @@ export interface MetricRow {
   budget: number;
   playsVsl: number;
   playRate: number;
+}
+
+/** Returns the CSS class for a KPI value given its color entry config */
+function getKpiColor(value: number, config: KpiColorEntry | null): string {
+  if (!config) return "";
+  const { green, yellow, red } = config;
+
+  const inRange = (v: number, min?: number | null, max?: number | null) => {
+    if (min != null && v < min) return false;
+    if (max != null && v >= max) return false;
+    return true;
+  };
+
+  if (inRange(value, green.min, green.max)) return "text-[var(--color-success)]";
+  if (inRange(value, yellow.min, yellow.max)) return "text-[var(--color-warning)]";
+  if (inRange(value, red.min, red.max)) return "text-destructive";
+  return "";
 }
 
 function getCpaStatus(
@@ -46,13 +64,30 @@ export function fmt(v: number): string {
   });
 }
 
-export function getCellValue(c: MetricRow, col: string): React.ReactNode {
+export function getCellValue(
+  c: MetricRow,
+  col: string,
+  kpiColors?: KpiColorsConfig | null,
+): React.ReactNode {
   const checkoutConv =
     c.landingPageViews > 0
       ? (c.initiateCheckout / c.landingPageViews) * 100
       : 0;
   const saleRate =
     c.initiateCheckout > 0 ? (c.sales / c.initiateCheckout) * 100 : 0;
+
+  // Resolve CPA color: use custom config if set, otherwise fall back to product-based
+  const cpaColor = kpiColors?.cpa
+    ? getKpiColor(c.cpa, kpiColors.cpa)
+    : getCpaStatus(c.cpa, c.name) === "good"
+      ? "text-[var(--color-success)]"
+      : getCpaStatus(c.cpa, c.name) === "bad"
+        ? "text-destructive"
+        : "";
+
+  const cpaArrow = kpiColors?.cpa
+    ? (getKpiColor(c.cpa, kpiColors.cpa).includes("success") ? "down" : getKpiColor(c.cpa, kpiColors.cpa).includes("destructive") ? "up" : null)
+    : (getCpaStatus(c.cpa, c.name) === "good" ? "down" : getCpaStatus(c.cpa, c.name) === "bad" ? "up" : null);
 
   const map: Record<string, React.ReactNode> = {
     spend: fmt(c.spend),
@@ -70,11 +105,7 @@ export function getCellValue(c: MetricRow, col: string): React.ReactNode {
       <span
         className={cn(
           "font-semibold",
-          c.roas >= 3
-            ? "text-[var(--color-success)]"
-            : c.roas >= 2
-            ? "text-[var(--color-warning)]"
-            : "text-destructive"
+          getKpiColor(c.roas, kpiColors?.roas ?? null),
         )}
       >
         {c.roas.toFixed(2)}x
@@ -82,26 +113,23 @@ export function getCellValue(c: MetricRow, col: string): React.ReactNode {
     ),
     cpa: (
       <span
-        className={cn(
-          "inline-flex items-center gap-0.5 font-medium",
-          getCpaStatus(c.cpa, c.name) === "good"
-            ? "text-[var(--color-success)]"
-            : getCpaStatus(c.cpa, c.name) === "bad"
-            ? "text-destructive"
-            : ""
-        )}
+        className={cn("inline-flex items-center gap-0.5 font-medium", cpaColor)}
       >
-        {getCpaStatus(c.cpa, c.name) === "good" && (
-          <RiArrowDownSLine className="size-3.5" />
-        )}
-        {getCpaStatus(c.cpa, c.name) === "bad" && (
-          <RiArrowUpSLine className="size-3.5" />
-        )}
+        {cpaArrow === "down" && <RiArrowDownSLine className="size-3.5" />}
+        {cpaArrow === "up" && <RiArrowUpSLine className="size-3.5" />}
         {fmt(c.cpa)}
       </span>
     ),
-    cpc: `R$ ${c.cpc.toFixed(2)}`,
-    ctr: `${c.ctr.toFixed(2)}%`,
+    cpc: (
+      <span className={cn("font-medium", getKpiColor(c.cpc, kpiColors?.cpc ?? null))}>
+        R$ {c.cpc.toFixed(2)}
+      </span>
+    ),
+    ctr: (
+      <span className={cn("font-medium", getKpiColor(c.ctr, kpiColors?.ctr ?? null))}>
+        {c.ctr.toFixed(2)}%
+      </span>
+    ),
     clicks: c.clicks.toLocaleString("pt-BR"),
     impressions: c.impressions.toLocaleString("pt-BR"),
     lpv: c.landingPageViews.toLocaleString("pt-BR"),

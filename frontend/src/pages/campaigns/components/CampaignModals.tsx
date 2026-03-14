@@ -30,7 +30,7 @@ interface CampaignModalsProps {
   setInfoModal: React.Dispatch<React.SetStateAction<CampaignModalState>>;
   tagsMap: Record<string, string[]>;
   markersMap: MarkerMap;
-  onBudgetChange: (id: string, type: "campaign" | "adset", budget: number) => Promise<void>;
+  onBudgetChange: (id: string, type: "campaign" | "adset", budget: number, entityName?: string, budgetBefore?: number, metrics?: Record<string, number>) => Promise<void>;
   onSaveTags?: (campaignId: string, tags: string[]) => Promise<void>;
   onSaveMarker?: (campaignId: string, type: "video" | "checkout" | "product" | "platform", refId: string, refLabel: string) => Promise<void>;
 }
@@ -56,7 +56,11 @@ export function CampaignModals({
           currentBudget={budgetModal.campaign.budget}
           onSave={async (newBudget) => {
             if (budgetModal.campaign) {
-              await onBudgetChange(budgetModal.campaign.id, "campaign", newBudget);
+              const c = budgetModal.campaign;
+              await onBudgetChange(
+                c.id, "campaign", newBudget, c.name, c.budget,
+                { spend: c.spend, revenue: c.revenue, profit: c.profit, sales: c.sales, roas: c.roas, cpa: c.cpa, cpc: c.cpc, ctr: c.ctr, clicks: c.clicks, impressions: c.impressions },
+              );
             }
           }}
         />

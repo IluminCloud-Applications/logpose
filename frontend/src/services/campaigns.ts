@@ -108,6 +108,9 @@ export async function toggleCampaignStatus(
   entityId: string,
   entityType: "campaign" | "adset" | "ad",
   active: boolean,
+  entityName?: string,
+  metrics?: Record<string, number>,
+  budget?: number,
 ): Promise<{ status: string; new_status: string }> {
   return apiRequest("/campaigns/toggle", {
     method: "POST",
@@ -116,6 +119,9 @@ export async function toggleCampaignStatus(
       entity_id: entityId,
       entity_type: entityType,
       active,
+      entity_name: entityName || "",
+      metrics: metrics || {},
+      budget: budget || 0,
     },
   });
 }
@@ -125,6 +131,9 @@ export async function updateBudget(
   entityId: string,
   entityType: "campaign" | "adset",
   dailyBudget: number,
+  entityName?: string,
+  budgetBefore?: number,
+  metrics?: Record<string, number>,
 ): Promise<{ status: string; daily_budget: number }> {
   return apiRequest("/campaigns/budget", {
     method: "POST",
@@ -133,6 +142,9 @@ export async function updateBudget(
       entity_id: entityId,
       entity_type: entityType,
       daily_budget: dailyBudget,
+      entity_name: entityName || "",
+      budget_before: budgetBefore || 0,
+      metrics: metrics || {},
     },
   });
 }

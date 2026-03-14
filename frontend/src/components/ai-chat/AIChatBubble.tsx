@@ -2,13 +2,22 @@ import { useState, useRef, useEffect } from "react";
 import { RiBrain3Line, RiCloseLine, RiDeleteBinLine } from "@remixicon/react";
 import { ChatMessages } from "./ChatMessages";
 import { ChatInput } from "./ChatInput";
+import { PageDataToggle } from "./PageDataToggle";
 import { geminiChat } from "@/services/integrations";
+import { usePageDataValue } from "@/contexts/PageDataContext";
 
 const STORAGE_KEY = "logpose-ai-chat";
 
 interface ChatMessage {
   role: "user" | "assistant";
   content: string;
+}
+
+interface AIChatBubbleProps {
+  dailyReport?: string | null;
+  dailyReportLoading?: boolean;
+  shouldAutoOpen?: boolean;
+  onAutoOpened?: () => void;
 }
 
 function loadMessages(): ChatMessage[] {
@@ -24,11 +33,19 @@ function saveMessages(messages: ChatMessage[]) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(messages));
 }
 
-export function AIChatBubble() {
+export function AIChatBubble({
+  dailyReport,
+  dailyReportLoading,
+  shouldAutoOpen,
+  onAutoOpened,
+}: AIChatBubbleProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>(loadMessages);
   const [isLoading, setIsLoading] = useState(false);
+  const [usePageContext, setUsePageContext] = useState(true);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const snapshot = usePageDataValue();
+  const hasInjectedReport = useRef(false);
 
   useEffect(() => {
     saveMessages(messages);
@@ -38,6 +55,21 @@ export function AIChatBubble() {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, isOpen]);
 
+  // Auto-abrir com relatório diário
+  useEffect(() => {
+    if (!shouldAutoOpen || !dailyReport || hasInjectedReport.current) return;
+    hasInjectedReport.current = true;
+
+    const reportMsg: ChatMessage = { role: "assistant", content: dailyReport };
+    setMessages((prev) => {
+      // Se já tem mensagens, adiciona no início
+      if (prev.length > 0) return [reportMsg, ...prev];
+      return [reportMsg];
+    });
+    setIsOpen(true);
+    onAutoOpened?.();
+  }, [shouldAutoOpen, dailyReport, onAutoOpened]);
+
   const handleSend = async (text: string) => {
     const userMsg: ChatMessage = { role: "user", content: text };
     const updated = [...messages, userMsg];
@@ -46,7 +78,8 @@ export function AIChatBubble() {
 
     try {
       const history = updated.map((m) => ({ role: m.role, content: m.content }));
-      const result = await geminiChat(text, history.slice(0, -1));
+      const pageContext = usePageContext && snapshot ? snapshot.data : undefined;
+      const result = await geminiChat(text, history.slice(0, -1), undefined, pageContext);
       const aiMsg: ChatMessage = { role: "assistant", content: result.response };
       setMessages((prev) => [...prev, aiMsg]);
     } catch (err) {
@@ -106,16 +139,21 @@ export function AIChatBubble() {
           {/* Messages */}
           <ChatMessages
             messages={messages}
-            isLoading={isLoading}
+            isLoading={isLoading || !!dailyReportLoading}
             messagesEndRef={messagesEndRef}
           />
 
-          {/* Input */}
+          {/* Page Data Toggle + Input */}
+          <PageDataToggle
+            snapshot={snapshot}
+            enabled={usePageContext}
+            onToggle={setUsePageContext}
+          />
           <ChatInput onSend={handleSend} isLoading={isLoading} />
         </div>
       )}
 
-      {/* Floating Bubble */}
+      {/* Floating Bubble — sem circle azul piscando */}
       {!isOpen && (
         <button
           onClick={() => setIsOpen(true)}
@@ -123,7 +161,6 @@ export function AIChatBubble() {
           title="Abrir assistente AI"
         >
           <RiBrain3Line className="size-6 group-hover:rotate-12 transition-transform" />
-          <span className="absolute -top-1 -right-1 size-3 rounded-full bg-blue-500 animate-pulse" />
         </button>
       )}
     </>

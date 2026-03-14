@@ -1,11 +1,12 @@
-import { RiGeminiLine, RiAddCircleLine } from "@remixicon/react";
+import { RiGeminiLine, RiAddCircleLine, RiFileTextLine } from "@remixicon/react";
 import { Button } from "@/components/ui/button";
 
 interface GeminiHeaderProps {
   onAddAccount: () => void;
+  onOpenInstructions: () => void;
 }
 
-export function GeminiHeader({ onAddAccount }: GeminiHeaderProps) {
+export function GeminiHeader({ onAddAccount, onOpenInstructions }: GeminiHeaderProps) {
   return (
     <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
       <div className="flex items-center gap-3">
@@ -19,10 +20,16 @@ export function GeminiHeader({ onAddAccount }: GeminiHeaderProps) {
           </p>
         </div>
       </div>
-      <Button onClick={onAddAccount} className="gap-1.5 h-9">
-        <RiAddCircleLine className="size-4" />
-        Adicionar Chave
-      </Button>
+      <div className="flex items-center gap-2">
+        <Button variant="outline" onClick={onOpenInstructions} className="gap-1.5 h-9">
+          <RiFileTextLine className="size-4" />
+          Instruções
+        </Button>
+        <Button onClick={onAddAccount} className="gap-1.5 h-9">
+          <RiAddCircleLine className="size-4" />
+          Adicionar Chave
+        </Button>
+      </div>
     </div>
   );
 }

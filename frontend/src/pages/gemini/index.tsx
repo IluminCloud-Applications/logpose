@@ -2,13 +2,17 @@ import { useState } from "react";
 import { GeminiHeader } from "./components/GeminiHeader";
 import { GeminiTable } from "./components/GeminiTable";
 import { AddGeminiModal } from "./components/AddGeminiModal";
+import { AiInstructionsModal } from "./components/AiInstructionsModal";
 import { ConfirmDeleteModal } from "@/components/ConfirmDeleteModal";
 import { useGeminiAccounts } from "@/hooks/useGeminiAccounts";
+import { useAiInstructions } from "@/hooks/useAiInstructions";
 import type { GeminiAccountAPI } from "@/services/integrations";
 
 export default function GeminiPage() {
   const { accounts, isLoading, addAccount, removeAccount } = useGeminiAccounts();
+  const { instructions, save: saveInstructions } = useAiInstructions();
   const [modalOpen, setModalOpen] = useState(false);
+  const [instructionsOpen, setInstructionsOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<GeminiAccountAPI | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [isAdding, setIsAdding] = useState(false);
@@ -44,7 +48,10 @@ export default function GeminiPage() {
 
   return (
     <div className="flex flex-col gap-6 p-6">
-      <GeminiHeader onAddAccount={() => setModalOpen(true)} />
+      <GeminiHeader
+        onAddAccount={() => setModalOpen(true)}
+        onOpenInstructions={() => setInstructionsOpen(true)}
+      />
       <GeminiTable
         accounts={accounts}
         isLoading={isLoading}
@@ -55,6 +62,12 @@ export default function GeminiPage() {
         onOpenChange={setModalOpen}
         onAdd={handleAdd}
         isLoading={isAdding}
+      />
+      <AiInstructionsModal
+        open={instructionsOpen}
+        onOpenChange={setInstructionsOpen}
+        instructions={instructions}
+        onSave={saveInstructions}
       />
       <ConfirmDeleteModal
         open={!!deleteTarget}

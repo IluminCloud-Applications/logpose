@@ -57,11 +57,15 @@ export function CampaignNameCell({
       />
       <Switch
         size="sm"
+        className="after:pointer-events-none"
         checked={isActive}
         onCheckedChange={async (checked) => {
           await onToggle(checked);
         }}
         onClick={(e) => e.stopPropagation()}
+        onPointerDown={(e) => e.stopPropagation()}
+        onMouseDown={(e) => e.stopPropagation()}
+        onKeyDown={(e) => e.stopPropagation()}
       />
       <div className="flex flex-col min-w-0">
         <div className="flex items-center gap-1.5">

@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef } from "react";
 import { useCachedQuery } from "./useCachedQuery";
 import {
   fetchCampaignsData,
@@ -22,6 +22,9 @@ export function useCampaigns(dateStart: string, dateEnd: string) {
   const [optimisticOverrides, setOptimisticOverrides] = useState<
     Record<string, { status?: string; budget?: number }>
   >({});
+
+  // Guard against concurrent toggles on the same entity
+  const toggleInProgressRef = useRef<Set<string>>(new Set());
 
   const activeAccountId = selectedAccountId ?? accounts[0]?.id;
 
@@ -56,38 +59,60 @@ export function useCampaigns(dateStart: string, dateEnd: string) {
     [optimisticOverrides],
   );
 
-  const toggle = async (
-    entityId: string,
-    entityType: "campaign" | "adset" | "ad",
-    active: boolean,
-  ) => {
-    if (!activeAccountId) return;
-    const newStatus = active ? "active" : "paused";
-    setOptimisticOverrides((prev) => ({
-      ...prev,
-      [entityId]: { ...prev[entityId], status: newStatus },
-    }));
-    try {
-      await toggleCampaignStatus(activeAccountId, entityId, entityType, active);
-      invalidateCacheByPrefix("campaigns");
-      await reload();
-    } catch {
-      // revert
-    }
+  const clearOverride = (entityId: string, key: "status" | "budget") => {
     setOptimisticOverrides((prev) => {
       const next = { ...prev };
       if (next[entityId]) {
-        delete next[entityId].status;
+        delete next[entityId][key];
         if (Object.keys(next[entityId]).length === 0) delete next[entityId];
       }
       return next;
     });
   };
 
+  const toggle = async (
+    entityId: string,
+    entityType: "campaign" | "adset" | "ad",
+    active: boolean,
+    entityName?: string,
+    metrics?: Record<string, number>,
+    budget?: number,
+  ) => {
+    if (!activeAccountId) return;
+
+    // Prevent concurrent toggles on the same entity
+    if (toggleInProgressRef.current.has(entityId)) return;
+    toggleInProgressRef.current.add(entityId);
+
+    const newStatus = active ? "active" : "paused";
+    setOptimisticOverrides((prev) => ({
+      ...prev,
+      [entityId]: { ...prev[entityId], status: newStatus },
+    }));
+    try {
+      await toggleCampaignStatus(
+        activeAccountId, entityId, entityType, active,
+        entityName, metrics, budget,
+      );
+      invalidateCacheByPrefix("campaigns");
+      await reload();
+      // On success, clear override only after reload brings fresh data
+      clearOverride(entityId, "status");
+    } catch {
+      // Revert on error only
+      clearOverride(entityId, "status");
+    } finally {
+      toggleInProgressRef.current.delete(entityId);
+    }
+  };
+
   const changeBudget = async (
     entityId: string,
     entityType: "campaign" | "adset",
     dailyBudget: number,
+    entityName?: string,
+    budgetBefore?: number,
+    metrics?: Record<string, number>,
   ) => {
     if (!activeAccountId) return;
     setOptimisticOverrides((prev) => ({
@@ -95,20 +120,16 @@ export function useCampaigns(dateStart: string, dateEnd: string) {
       [entityId]: { ...prev[entityId], budget: dailyBudget },
     }));
     try {
-      await updateBudget(activeAccountId, entityId, entityType, dailyBudget);
+      await updateBudget(
+        activeAccountId, entityId, entityType, dailyBudget,
+        entityName, budgetBefore, metrics,
+      );
       invalidateCacheByPrefix("campaigns");
       await reload();
+      clearOverride(entityId, "budget");
     } catch {
-      // revert
+      clearOverride(entityId, "budget");
     }
-    setOptimisticOverrides((prev) => {
-      const next = { ...prev };
-      if (next[entityId]) {
-        delete next[entityId].budget;
-        if (Object.keys(next[entityId]).length === 0) delete next[entityId];
-      }
-      return next;
-    });
   };
 
   const rawCampaigns = data?.campaigns ?? [];

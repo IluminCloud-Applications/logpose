@@ -12,6 +12,7 @@ import {
   RiBuildingLine,
   RiRefundLine,
   RiGeminiLine,
+  RiAddCircleLine,
 } from "@remixicon/react";
 import { useLocation, useNavigate } from "react-router-dom";
 import {
@@ -29,6 +30,7 @@ const navGroups = [
     items: [
       { title: "Dashboard", icon: RiDashboardLine, url: "/dashboard" },
       { title: "Campanhas", icon: RiMegaphoneLine, url: "/campaigns" },
+      { title: "Criar Campanha", icon: RiAddCircleLine, url: "/campaigns/create" },
       { title: "Empresa", icon: RiBuildingLine, url: "/company" },
     ],
   },

@@ -4,6 +4,8 @@ import { CampaignsTable } from "./components/CampaignsTable";
 import { BottleneckTabs } from "./components/BottleneckTabs";
 import { CampaignsKpis } from "./components/CampaignsKpis";
 import { PresetDrawer } from "./components/PresetDrawer";
+import { KpiColorsDrawer } from "./components/KpiColorsDrawer";
+import { KpiColorsProvider } from "./components/KpiColorsContext";
 import {
   defaultCampaignFilters,
   type CampaignFilterState,
@@ -22,17 +24,21 @@ import { CampaignsLoading } from "./components/CampaignsLoading";
 import { getDefaultDateRange, computeDateRange } from "./components/dateHelpers";
 import { useQuickFilters } from "./components/useQuickFilters";
 import type { ValueFilter } from "@/components/ValueFiltersSection";
+import { useCampaignPageData } from "@/hooks/useCampaignPageData";
+import { useKpiColors } from "@/hooks/useKpiColors";
 
 export default function CampaignsPage() {
   const [search, setSearch] = useState("");
   const [filters, setFilters] = useState<CampaignFilterState>(defaultCampaignFilters);
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
   const [blur, setBlur] = useState<BlurState>({ name: false, values: false, hideUnidentified: false });
 
   const { tagsMap, allUniqueTags, updateTags } = useCampaignTags();
   const { markersMap, saveMarker } = useCampaignMarkers();
   const { accounts: vturbAccounts } = useVturbAccounts();
   const hasVturb = vturbAccounts.length > 0;
+  const { kpiColors, save: saveKpiColors } = useKpiColors();
 
   const { presets: dbPresets, addPreset } = useCampaignPresets();
   const allPresets: ColumnPreset[] = useMemo(() => {
@@ -145,6 +151,9 @@ export default function CampaignsPage() {
 
   const metricsForKpi = filtered.map(campaignToMetricRow);
 
+  // Registra dados da página para a AI
+  useCampaignPageData(filtered, filters, dateStart, dateEnd);
+
   return (
     <div className="flex flex-col gap-6 p-6">
       <CampaignsHeader
@@ -157,6 +166,7 @@ export default function CampaignsPage() {
         blur={blur}
         onBlurChange={setBlur}
         onRefresh={reload}
+        onOpenSettings={() => setSettingsOpen(true)}
       />
       <CampaignsKpis data={metricsForKpi} />
       <div className="flex flex-wrap items-center gap-2">
@@ -170,25 +180,33 @@ export default function CampaignsPage() {
       ) : activePresetId === "gargalos" ? (
         <BottleneckTabs data={filtered} hasVturb={hasVturb} dateStart={dateStart} dateEnd={dateEnd} />
       ) : (
-        <CampaignsTable
-          data={filtered}
-          columns={activePreset.columns}
-          blur={blur}
-          tagsMap={tagsMap}
-          markersMap={markersMap}
-          onToggle={toggle}
-          onBudgetChange={changeBudget}
-          onSaveTags={async (id, tags) => { await updateTags(id, tags); }}
-          onSaveMarker={async (id, type, refId, refLabel) => {
-            await saveMarker(id, type, refId, refLabel);
-          }}
-          accountId={activeAccountId}
-        />
+        <KpiColorsProvider value={kpiColors}>
+          <CampaignsTable
+            data={filtered}
+            columns={activePreset.columns}
+            blur={blur}
+            tagsMap={tagsMap}
+            markersMap={markersMap}
+            onToggle={toggle}
+            onBudgetChange={changeBudget}
+            onSaveTags={async (id, tags) => { await updateTags(id, tags); }}
+            onSaveMarker={async (id, type, refId, refLabel) => {
+              await saveMarker(id, type, refId, refLabel);
+            }}
+            accountId={activeAccountId}
+          />
+        </KpiColorsProvider>
       )}
       <PresetDrawer
         open={drawerOpen}
         onOpenChange={setDrawerOpen}
         onSave={async (preset: ColumnPreset) => { await addPreset(preset.name, preset.columns); }}
+      />
+      <KpiColorsDrawer
+        open={settingsOpen}
+        onOpenChange={setSettingsOpen}
+        kpiColors={kpiColors}
+        onSave={saveKpiColors}
       />
     </div>
   );

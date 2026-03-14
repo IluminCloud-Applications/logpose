@@ -1,10 +1,11 @@
 import { useState, useEffect } from "react";
 import { AIChatBubble } from "./AIChatBubble";
 import { geminiChatStatus } from "@/services/integrations";
+import { useDailyReport } from "./useDailyReport";
 
 /**
  * Wrapper que só renderiza a AI bubble se houver API key configurada.
- * Faz check na montagem e cacheia o resultado.
+ * Gerencia o relatório diário automático.
  */
 export function AIChatProvider() {
   const [isConfigured, setIsConfigured] = useState(false);
@@ -19,7 +20,21 @@ export function AIChatProvider() {
       .catch(() => setChecked(true));
   }, []);
 
+  const {
+    report,
+    isLoading: reportLoading,
+    shouldAutoOpen,
+    clearAutoOpen,
+  } = useDailyReport(isConfigured && checked);
+
   if (!checked || !isConfigured) return null;
 
-  return <AIChatBubble />;
+  return (
+    <AIChatBubble
+      dailyReport={report}
+      dailyReportLoading={reportLoading}
+      shouldAutoOpen={shouldAutoOpen}
+      onAutoOpened={clearAutoOpen}
+    />
+  );
 }

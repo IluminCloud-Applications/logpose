@@ -10,6 +10,7 @@ import { allColumns } from "./columnPresets";
 import { getCellValue } from "./campaignCellHelpers";
 import { AdsSubTable } from "./AdsSubTable";
 import { adsetToMetricRow } from "./mappers";
+import { useKpiColorsContext } from "./KpiColorsContext";
 
 interface AdSetsSubTableProps {
   adSets: CampaignAdSetData[];
@@ -21,6 +22,7 @@ interface AdSetsSubTableProps {
 export function AdSetsSubTable({ adSets, columns, onToggle, onBudgetChange: _onBudgetChange }: AdSetsSubTableProps) {
   const [expandedAdSetId, setExpandedAdSetId] = useState<string | null>(null);
   const visibleCols = columns.filter((c) => c !== "name");
+  const kpiColors = useKpiColorsContext();
 
   if (adSets.length === 0) {
     return (
@@ -73,11 +75,15 @@ export function AdSetsSubTable({ adSets, columns, onToggle, onBudgetChange: _onB
                       />
                       <Switch
                         size="sm"
+                        className="after:pointer-events-none"
                         checked={isActive}
                         onCheckedChange={async (checked) => {
                           await onToggle(as_.id, "adset", checked);
                         }}
                         onClick={(e) => e.stopPropagation()}
+                        onPointerDown={(e) => e.stopPropagation()}
+                        onMouseDown={(e) => e.stopPropagation()}
+                        onKeyDown={(e) => e.stopPropagation()}
                       />
                       <span className="font-medium truncate max-w-[200px] block" title={as_.name}>
                         {as_.name}
@@ -86,7 +92,7 @@ export function AdSetsSubTable({ adSets, columns, onToggle, onBudgetChange: _onB
                   </TableCell>
                   {visibleCols.map((col) => (
                     <TableCell key={col} className="text-right tabular-nums">
-                      {getCellValue(row, col)}
+                      {getCellValue(row, col, kpiColors)}
                     </TableCell>
                   ))}
                 </TableRow>

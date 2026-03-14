@@ -15,6 +15,7 @@ from database.models.campaign_tag import CampaignTag
 from database.models.campaign_marker import CampaignMarker, MarkerType
 from database.models.refund_reason import RefundReason
 from database.models.gemini_account import GeminiAccount
+from database.models.campaign_action import CampaignAction, ActionType
 
 __all__ = [
     "Admin",
@@ -43,4 +44,6 @@ __all__ = [
     "MarkerType",
     "RefundReason",
     "GeminiAccount",
+    "CampaignAction",
+    "ActionType",
 ]

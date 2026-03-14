@@ -142,10 +142,19 @@ export async function geminiChatStatus(): Promise<{ configured: boolean; count: 
 }
 
 export async function geminiChat(
-  message: string, history: { role: string; content: string }[], accountId?: number
+  message: string,
+  history: { role: string; content: string }[],
+  accountId?: number,
+  pageContext?: string,
 ): Promise<{ response: string }> {
   return apiRequest<{ response: string }>("/gemini/chat", {
     method: "POST",
-    body: { message, history, account_id: accountId },
+    body: { message, history, account_id: accountId, page_context: pageContext },
+  });
+}
+
+export async function geminiDailyReport(): Promise<{ response: string; spend_today: number }> {
+  return apiRequest<{ response: string; spend_today: number }>("/gemini/daily-report", {
+    method: "POST",
   });
 }
