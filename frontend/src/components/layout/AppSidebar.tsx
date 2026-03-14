@@ -23,6 +23,7 @@ import {
 } from "@/components/ui/sidebar";
 import { SidebarNavGroup } from "./SidebarNavGroup";
 import { SidebarUser } from "./SidebarUser";
+import { AiTrainingProfile } from "./AiTrainingProfile";
 
 const navGroups = [
   {
@@ -90,6 +91,7 @@ export function AppSidebar() {
         ))}
       </SidebarContent>
       <SidebarFooter className="p-2">
+        <AiTrainingProfile />
         <SidebarUser />
       </SidebarFooter>
     </Sidebar>

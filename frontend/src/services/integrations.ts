@@ -175,3 +175,16 @@ export async function executeAiAction(data: AiAction): Promise<{ status: string;
     body: data,
   });
 }
+
+// ─── AI Training ──────────────────────────────────────────────────────
+
+export interface AiTrainingLevel {
+  count: number;
+  percentage: number;
+  level: string;
+  max_records: number;
+}
+
+export async function fetchAiTrainingLevel(): Promise<AiTrainingLevel> {
+  return apiRequest<AiTrainingLevel>("/ai/training-level");
+}

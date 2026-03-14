@@ -44,6 +44,7 @@ from api.gemini.accounts import router as gemini_accounts_router
 from api.gemini.models import router as gemini_models_router
 from api.gemini.chat import router as gemini_chat_router
 from api.gemini.daily_report import router as gemini_daily_report_router
+from api.ai.training_level import router as ai_training_router
 from api.campaigns_create.fetch_data import router as campaign_create_fetch_router
 from api.campaigns_create.create import router as campaign_create_router
 from api.campaigns_create.export_import import router as campaign_create_export_router
@@ -124,6 +125,7 @@ app.include_router(gemini_accounts_router, prefix="/api")
 app.include_router(gemini_models_router, prefix="/api")
 app.include_router(gemini_chat_router, prefix="/api")
 app.include_router(gemini_daily_report_router, prefix="/api")
+app.include_router(ai_training_router, prefix="/api")
 app.include_router(campaign_create_fetch_router, prefix="/api")
 app.include_router(campaign_create_router, prefix="/api")
 app.include_router(campaign_create_export_router, prefix="/api")
