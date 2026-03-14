@@ -3,6 +3,9 @@ import Markdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { dracula } from 'react-syntax-highlighter/dist/esm/styles/prism';
+import { ActionButton } from "./ActionButton";
+import { parseActionBlocks, hasActionBlocks } from "./actionParser";
+import type { AiAction } from "@/services/integrations";
 
 interface ChatMessage {
   role: "user" | "assistant";
@@ -13,6 +16,7 @@ interface ChatMessagesProps {
   messages: ChatMessage[];
   isLoading: boolean;
   messagesEndRef: React.RefObject<HTMLDivElement | null>;
+  onExecuteAction?: (action: AiAction) => Promise<void>;
 }
 
 const SUGGESTED_QUESTIONS = [
@@ -22,7 +26,7 @@ const SUGGESTED_QUESTIONS = [
   "Quanto estou perdendo em recuperação?",
 ];
 
-export function ChatMessages({ messages, isLoading, messagesEndRef }: ChatMessagesProps) {
+export function ChatMessages({ messages, isLoading, messagesEndRef, onExecuteAction }: ChatMessagesProps) {
   if (messages.length === 0 && !isLoading) {
     return (
       <div className="flex-1 overflow-y-auto px-4 py-6 flex flex-col items-center justify-center gap-4 text-center">
@@ -53,81 +57,120 @@ export function ChatMessages({ messages, isLoading, messagesEndRef }: ChatMessag
           key={idx}
           className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
         >
-          <div
-            className={`max-w-[85%] rounded-2xl px-3.5 py-2.5 text-[13px] leading-relaxed whitespace-pre-wrap ${
-              msg.role === "user"
-                ? "bg-primary text-primary-foreground rounded-br-md"
-                : "bg-muted/70 text-foreground rounded-bl-md chat-markdown"
-            }`}
-          >
-            {msg.role === "user" ? (
-              msg.content
-            ) : (
-              <Markdown 
-                remarkPlugins={[remarkGfm]}
-                components={{
-                  code({ node, inline, className, children, ...props }: any) {
-                    const match = /language-(\w+)/.exec(className || '');
-                    return !inline && match ? (
-                      <SyntaxHighlighter
-                        style={dracula as any}
-                        language={match[1]}
-                        PreTag="div"
-                        className="rounded-md !my-2 !text-[11px]"
-                        {...props}
-                      >
-                        {String(children).replace(/\n$/, '')}
-                      </SyntaxHighlighter>
-                    ) : (
-                      <code className={`${className} bg-background/50 px-1 py-0.5 rounded-sm`} {...props}>
-                        {children}
-                      </code>
-                    );
-                  },
-                  p({ children, ...props }: any) {
-                    return <p className="mb-2 last:mb-0" {...props}>{children}</p>;
-                  },
-                  ul({ children, ...props }: any) {
-                    return <ul className="list-disc pl-4 mb-2" {...props}>{children}</ul>;
-                  },
-                  ol({ children, ...props }: any) {
-                    return <ol className="list-decimal pl-4 mb-2" {...props}>{children}</ol>;
-                  },
-                  li({ children, ...props }: any) {
-                    return <li className="mb-1" {...props}>{children}</li>;
-                  },
-                  h1({ children, ...props }: any) {
-                    return <h1 className="text-lg font-bold mb-2 mt-3" {...props}>{children}</h1>;
-                  },
-                  h2({ children, ...props }: any) {
-                    return <h2 className="text-base font-bold mb-2 mt-3" {...props}>{children}</h2>;
-                  },
-                  h3({ children, ...props }: any) {
-                    return <h3 className="text-sm font-bold mb-2 mt-2" {...props}>{children}</h3>;
-                  },
-                  a({ children, ...props }: any) {
-                    return <a className="text-blue-500 hover:underline" target="_blank" rel="noopener noreferrer" {...props}>{children}</a>;
-                  }
-                }}
-              >
-                {msg.content}
-              </Markdown>
-            )}
-          </div>
+          {msg.role === "user" ? (
+            <UserBubble content={msg.content} />
+          ) : (
+            <AssistantBubble
+              content={msg.content}
+              onExecuteAction={onExecuteAction}
+            />
+          )}
         </div>
       ))}
-      {isLoading && (
-        <div className="flex justify-start">
-          <div className="bg-muted/70 rounded-2xl rounded-bl-md px-4 py-3">
-            <div className="flex gap-1">
-              <span className="size-1.5 rounded-full bg-muted-foreground/50 animate-bounce [animation-delay:0ms]" />
-              <span className="size-1.5 rounded-full bg-muted-foreground/50 animate-bounce [animation-delay:150ms]" />
-              <span className="size-1.5 rounded-full bg-muted-foreground/50 animate-bounce [animation-delay:300ms]" />
-            </div>
-          </div>
-        </div>
-      )}
+      {isLoading && <LoadingIndicator />}
       <div ref={messagesEndRef} />
+    </div>
+  );
+}
+
+/* ──────── User Bubble ──────── */
+function UserBubble({ content }: { content: string }) {
+  return (
+    <div className="max-w-[85%] rounded-2xl px-3.5 py-2.5 text-[13px] leading-relaxed whitespace-pre-wrap bg-primary text-primary-foreground rounded-br-md">
+      {content}
+    </div>
+  );
+}
+
+/* ──────── Assistant Bubble ──────── */
+function AssistantBubble({
+  content,
+  onExecuteAction,
+}: {
+  content: string;
+  onExecuteAction?: (action: AiAction) => Promise<void>;
+}) {
+  const hasActions = hasActionBlocks(content);
+
+  if (!hasActions) {
+    return (
+      <div className="max-w-[85%] rounded-2xl px-3.5 py-2.5 text-[13px] leading-relaxed whitespace-pre-wrap bg-muted/70 text-foreground rounded-bl-md chat-markdown">
+        <MarkdownContent text={content} />
+      </div>
+    );
+  }
+
+  // Parsear segmentos (texto + ação)
+  const { segments } = parseActionBlocks(content);
+
+  return (
+    <div className="max-w-[85%] rounded-2xl px-3.5 py-2.5 text-[13px] leading-relaxed bg-muted/70 text-foreground rounded-bl-md chat-markdown space-y-2">
+      {segments.map((seg, i) =>
+        seg.type === "text" ? (
+          <MarkdownContent key={i} text={seg.content} />
+        ) : seg.action && onExecuteAction ? (
+          <ActionButton
+            key={i}
+            action={seg.action}
+            onExecute={onExecuteAction}
+          />
+        ) : null
+      )}
+    </div>
+  );
+}
+
+/* ──────── Markdown Renderer ──────── */
+function MarkdownContent({ text }: { text: string }) {
+  return (
+    <Markdown
+      remarkPlugins={[remarkGfm]}
+      components={{
+        code({ className, children, ...props }: any) {
+          const match = /language-(\w+)/.exec(className || '');
+          const inline = !match;
+          return !inline && match ? (
+            <SyntaxHighlighter
+              style={dracula as any}
+              language={match[1]}
+              PreTag="div"
+              className="rounded-md !my-2 !text-[11px]"
+              {...props}
+            >
+              {String(children).replace(/\n$/, '')}
+            </SyntaxHighlighter>
+          ) : (
+            <code className={`${className} bg-background/50 px-1 py-0.5 rounded-sm`} {...props}>
+              {children}
+            </code>
+          );
+        },
+        p: ({ children, ...props }: any) => <p className="mb-2 last:mb-0" {...props}>{children}</p>,
+        ul: ({ children, ...props }: any) => <ul className="list-disc pl-4 mb-2" {...props}>{children}</ul>,
+        ol: ({ children, ...props }: any) => <ol className="list-decimal pl-4 mb-2" {...props}>{children}</ol>,
+        li: ({ children, ...props }: any) => <li className="mb-1" {...props}>{children}</li>,
+        h1: ({ children, ...props }: any) => <h1 className="text-lg font-bold mb-2 mt-3" {...props}>{children}</h1>,
+        h2: ({ children, ...props }: any) => <h2 className="text-base font-bold mb-2 mt-3" {...props}>{children}</h2>,
+        h3: ({ children, ...props }: any) => <h3 className="text-sm font-bold mb-2 mt-2" {...props}>{children}</h3>,
+        a: ({ children, ...props }: any) => <a className="text-blue-500 hover:underline" target="_blank" rel="noopener noreferrer" {...props}>{children}</a>,
+      }}
+    >
+      {text}
+    </Markdown>
+  );
+}
+
+/* ──────── Loading ──────── */
+function LoadingIndicator() {
+  return (
+    <div className="flex justify-start">
+      <div className="bg-muted/70 rounded-2xl rounded-bl-md px-4 py-3">
+        <div className="flex gap-1">
+          <span className="size-1.5 rounded-full bg-muted-foreground/50 animate-bounce [animation-delay:0ms]" />
+          <span className="size-1.5 rounded-full bg-muted-foreground/50 animate-bounce [animation-delay:150ms]" />
+          <span className="size-1.5 rounded-full bg-muted-foreground/50 animate-bounce [animation-delay:300ms]" />
+        </div>
+      </div>
     </div>
   );
 }

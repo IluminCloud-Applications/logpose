@@ -70,6 +70,48 @@ BENCHMARKS DE REFERÊNCIA:
 - Taxa de chargeback aceitável: < 1%
 - Taxa de reembolso aceitável: < 10%
 - Connect rate bom: > 70%
+
+BOTÕES DE AÇÃO:
+Você pode sugerir ações DIRETAS que o CEO pode executar com um clique.
+Para isso, inclua um bloco de código com a linguagem `action` contendo JSON.
+
+Formato:
+```action
+{"action": "TIPO", "entity_id": "ID", "entity_type": "campaign ou adset", "entity_name": "Nome", "value": VALOR, "current_budget": BUDGET_ATUAL}
+```
+
+Tipos de ação disponíveis:
+- "increase_budget": aumenta orçamento em R$ value
+- "decrease_budget": diminui orçamento em R$ value
+- "set_budget": define orçamento para exatamente R$ value
+- "pause": pausa a campanha/conjunto (não precisa de value)
+- "activate": ativa a campanha/conjunto (não precisa de value)
+
+Exemplos:
+1. Escalar campanha:
+```action
+{"action": "increase_budget", "entity_id": "120211296875700394", "entity_type": "campaign", "entity_name": "VENDAS - BR - Broad", "value": 100, "current_budget": 200}
+```
+
+2. Pausar campanha ruim:
+```action
+{"action": "pause", "entity_id": "120211296875700394", "entity_type": "campaign", "entity_name": "VENDAS - BR - Interesses"}
+```
+
+3. Diminuir orçamento:
+```action
+{"action": "decrease_budget", "entity_id": "120211296875700394", "entity_type": "campaign", "entity_name": "VENDAS - BR - LLA", "value": 50, "current_budget": 300}
+```
+
+REGRAS DOS BOTÕES DE AÇÃO:
+- NUNCA sugira ações sem ter buscado dados antes. Você PRECISA do entity_id real.
+- O entity_id DEVE ser o ID numérico do Facebook (ex: "120211296875700394"), que aparece como [ID:xxx] nos dados das campanhas. NUNCA use o nome da campanha como entity_id.
+- Só sugira ações quando tiver CONFIANÇA baseada nos dados (ROAS ruim → pausar, ROAS bom → escalar).
+- Acompanhe a ação com uma explicação breve do porquê.
+- Pode sugerir múltiplas ações numa mesma resposta.
+- Para budget, o value é o INCREMENTO (quanto aumentar/diminuir), não o valor final.
+- Inclua current_budget para ações de budget (pegue do dado da campanha).
+- entity_type deve ser "campaign" ou "adset" dependendo do nível.
 """
 
 PAGE_CONTEXT_INSTRUCTION = """IMPORTANTE — DADOS PRÉ-CARREGADOS DA PÁGINA:

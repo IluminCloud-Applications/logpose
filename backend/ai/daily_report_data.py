@@ -92,7 +92,7 @@ def _fetch_campaigns_today(db: Session, ds: str, de: str) -> str:
     for item in data[:20]:
         st = "🟢" if item.status == "active" else "🟡"
         lines.append(
-            f"{st} {item.name} | Budget: R${item.budget:.0f}"
+            f"{st} [ID:{item.id}] {item.name} | Budget: R${item.budget:.0f}"
             f" | Spend: R${item.spend:.2f}"
             f" | Clicks: {item.clicks}"
             f" | CPC: R${item.cpc:.2f}"

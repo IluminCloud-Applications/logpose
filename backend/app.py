@@ -33,6 +33,7 @@ from api.campaigns.tags import router as campaigns_tags_router
 from api.campaigns.markers import router as campaigns_markers_router
 from api.campaigns.filters import router as campaigns_filters_router
 from api.campaigns.conversion import router as campaigns_conversion_router
+from api.campaigns.ai_action import router as campaigns_ai_action_router
 from api.webhook.receive import router as webhook_receiver_router
 from api.csv_import.preview import router as import_preview_router
 from api.csv_import.execute import router as import_execute_router
@@ -112,6 +113,7 @@ app.include_router(campaigns_tags_router, prefix="/api")
 app.include_router(campaigns_markers_router, prefix="/api")
 app.include_router(campaigns_filters_router, prefix="/api")
 app.include_router(campaigns_conversion_router, prefix="/api")
+app.include_router(campaigns_ai_action_router, prefix="/api")
 app.include_router(webhook_receiver_router, prefix="/api")
 app.include_router(import_preview_router, prefix="/api")
 app.include_router(import_execute_router, prefix="/api")

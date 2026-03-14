@@ -190,7 +190,8 @@ def _handle_meta_campaigns(db, date_start, date_end, **kwargs):
     for item in data[:15]:
         st = "🟢" if item.status == "active" else "🟡"
         lines.append(
-            f"{st} {item.name} | Spend: R${item.spend:,.2f} | "
+            f"{st} [ID:{item.id}] {item.name} | "
+            f"Budget: R${item.budget:,.0f} | Spend: R${item.spend:,.2f} | "
             f"Clicks: {item.clicks} | CPC: R${item.cpc:,.2f} | "
             f"CTR: {item.ctr:.2f}% | LPV: {item.landing_page_views} | "
             f"Init Checkout: {item.initiate_checkout}"

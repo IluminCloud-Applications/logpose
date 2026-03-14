@@ -1,9 +1,9 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { RiBrain3Line, RiCloseLine, RiDeleteBinLine } from "@remixicon/react";
 import { ChatMessages } from "./ChatMessages";
 import { ChatInput } from "./ChatInput";
 import { PageDataToggle } from "./PageDataToggle";
-import { geminiChat } from "@/services/integrations";
+import { geminiChat, executeAiAction, type AiAction } from "@/services/integrations";
 import { usePageDataValue } from "@/contexts/PageDataContext";
 
 const STORAGE_KEY = "logpose-ai-chat";
@@ -62,7 +62,6 @@ export function AIChatBubble({
 
     const reportMsg: ChatMessage = { role: "assistant", content: dailyReport };
     setMessages((prev) => {
-      // Se já tem mensagens, adiciona no início
       if (prev.length > 0) return [reportMsg, ...prev];
       return [reportMsg];
     });
@@ -70,16 +69,12 @@ export function AIChatBubble({
     onAutoOpened?.();
   }, [shouldAutoOpen, dailyReport, onAutoOpened]);
 
-  const handleSend = async (text: string) => {
-    const userMsg: ChatMessage = { role: "user", content: text };
-    const updated = [...messages, userMsg];
-    setMessages(updated);
+  const sendToAI = useCallback(async (text: string, currentMessages: ChatMessage[]) => {
     setIsLoading(true);
-
     try {
-      const history = updated.map((m) => ({ role: m.role, content: m.content }));
+      const history = currentMessages.map((m) => ({ role: m.role, content: m.content }));
       const pageContext = usePageContext && snapshot ? snapshot.data : undefined;
-      const result = await geminiChat(text, history.slice(0, -1), undefined, pageContext);
+      const result = await geminiChat(text, history, undefined, pageContext);
       const aiMsg: ChatMessage = { role: "assistant", content: result.response };
       setMessages((prev) => [...prev, aiMsg]);
     } catch (err) {
@@ -91,20 +86,37 @@ export function AIChatBubble({
     } finally {
       setIsLoading(false);
     }
+  }, [usePageContext, snapshot]);
+
+  const handleSend = async (text: string) => {
+    const userMsg: ChatMessage = { role: "user", content: text };
+    const updated = [...messages, userMsg];
+    setMessages(updated);
+    await sendToAI(text, updated.slice(0, -1));
   };
+
+  /** Executa ação da AI e envia feedback para continuar conversa */
+  const handleExecuteAction = useCallback(async (action: AiAction) => {
+    const result = await executeAiAction(action);
+
+    // Feedback como mensagem do "usuário" para a AI continuar
+    const feedbackText = `✅ Ação executada com sucesso: ${result.message}. Continue a análise.`;
+    const feedbackMsg: ChatMessage = { role: "user", content: feedbackText };
+    setMessages((prev) => {
+      const updated = [...prev, feedbackMsg];
+      // Enviar para AI processar automaticamente
+      sendToAI(feedbackText, updated.slice(0, -1));
+      return updated;
+    });
+  }, [sendToAI]);
 
   const handleClear = () => {
     setMessages([]);
     localStorage.removeItem(STORAGE_KEY);
   };
 
-  const handleDismiss = () => {
-    setIsOpen(false);
-  };
-
   return (
     <>
-      {/* Chat Window */}
       {isOpen && (
         <div className="fixed bottom-20 right-6 z-50 w-[400px] h-[560px] rounded-2xl border border-border/60 bg-background shadow-2xl flex flex-col overflow-hidden animate-in slide-in-from-bottom-4 fade-in duration-200">
           {/* Header */}
@@ -127,7 +139,7 @@ export function AIChatBubble({
                 <RiDeleteBinLine className="size-3.5" />
               </button>
               <button
-                onClick={handleDismiss}
+                onClick={() => setIsOpen(false)}
                 className="p-1.5 rounded-md hover:bg-muted transition-colors text-muted-foreground hover:text-foreground"
                 title="Fechar"
               >
@@ -141,6 +153,7 @@ export function AIChatBubble({
             messages={messages}
             isLoading={isLoading || !!dailyReportLoading}
             messagesEndRef={messagesEndRef}
+            onExecuteAction={handleExecuteAction}
           />
 
           {/* Page Data Toggle + Input */}
@@ -153,7 +166,7 @@ export function AIChatBubble({
         </div>
       )}
 
-      {/* Floating Bubble — sem circle azul piscando */}
+      {/* Floating Bubble */}
       {!isOpen && (
         <button
           onClick={() => setIsOpen(true)}

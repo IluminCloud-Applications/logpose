@@ -158,3 +158,20 @@ export async function geminiDailyReport(): Promise<{ response: string; spend_tod
     method: "POST",
   });
 }
+
+export interface AiAction {
+  action: string;
+  entity_id: string;
+  entity_type: string;
+  entity_name: string;
+  value?: number;
+  current_budget?: number;
+  metrics?: Record<string, number>;
+}
+
+export async function executeAiAction(data: AiAction): Promise<{ status: string; message: string }> {
+  return apiRequest<{ status: string; message: string }>("/campaigns/ai-action", {
+    method: "POST",
+    body: data,
+  });
+}
