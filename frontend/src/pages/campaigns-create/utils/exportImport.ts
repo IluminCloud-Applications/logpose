@@ -1,4 +1,4 @@
-import type { CampaignFormState } from "../hooks/useCampaignForm";
+import type { CampaignFormState, AdFormData } from "../hooks/useCampaignForm";
 import { exportCampaign } from "@/services/campaignCreator";
 import { toast } from "sonner";
 
@@ -88,6 +88,29 @@ export function handleImportCampaign(
       }
       updateField("pageId", data.page_id ?? "");
       updateField("instagramActorId", data.instagram_actor_id ?? "");
+
+      // Import ads (sem file — precisam ser adicionados manualmente)
+      if (Array.isArray(data.ads) && data.ads.length > 0) {
+        const importedAds: AdFormData[] = data.ads.map((a: Record<string, unknown>) => ({
+          name: (a.name as string) ?? "",
+          primary_text: (a.primary_text as string) ?? "",
+          headline: (a.headline as string) ?? "",
+          description: (a.description as string) ?? "",
+          link: (a.link as string) ?? "",
+          utm_params: (a.utm_params as string) ?? "",
+          extra_params: (a.extra_params as string) ?? "",
+          cta_type: (a.cta_type as string) ?? "LEARN_MORE",
+          media_type: ((a.media_type as string) ?? "image") as "image" | "video",
+          file: null,
+          preview_url: "",
+        }));
+        updateField("ads", importedAds);
+      }
+
+      if (data.batch_mode !== undefined) {
+        updateField("batchMode", Boolean(data.batch_mode));
+      }
+
       toast.success("Campanha importada! Revise os dados e adicione as mídias.");
     } catch {
       toast.error("Arquivo JSON inválido");
@@ -95,3 +118,4 @@ export function handleImportCampaign(
   };
   input.click();
 }
+

@@ -271,3 +271,44 @@ export async function fetchCampaignConversion(
   return apiRequest<CampaignConversionData[]>(`/campaigns/conversion?${params}`);
 }
 
+// ─── Export Details ───────────────────────────────────────────────────
+
+export interface ExportAdDetails {
+  name: string;
+  primary_text: string;
+  headline: string;
+  description: string;
+  link: string;
+  utm_params: string;
+  extra_params: string;
+  cta_type: string;
+  media_type: string;
+}
+
+export interface CampaignExportDetails {
+  pixel_id: string;
+  start_time: string;
+  targeting: {
+    age_min: number;
+    age_max: number;
+    genders: number;
+    interests: { id: string; name: string }[];
+  };
+  page_id: string;
+  instagram_actor_id: string;
+  bid_strategy: string;
+  bid_amount: number | null;
+  roas_floor: number | null;
+  ads: ExportAdDetails[];
+}
+
+export async function fetchCampaignExportDetails(
+  campaignId: string,
+  accountId: number,
+): Promise<CampaignExportDetails> {
+  const params = new URLSearchParams({
+    campaign_id: campaignId,
+    account_id: String(accountId),
+  });
+  return apiRequest<CampaignExportDetails>(`/campaigns/export-details?${params}`);
+}

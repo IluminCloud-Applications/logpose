@@ -17,6 +17,7 @@ import { getCellValue, getFooterValue } from "./campaignCellHelpers";
 import { campaignToMetricRow } from "./mappers";
 import type { MarkerMap } from "@/hooks/useCampaignMarkers";
 import { useKpiColorsContext } from "./KpiColorsContext";
+import { handleExportCampaignFromTable } from "./exportCampaign";
 
 interface CampaignsTableProps {
   data: CampaignData[];
@@ -51,6 +52,7 @@ export function CampaignsTable({
   blur = { name: false, values: false, hideUnidentified: false },
   tagsMap = {}, markersMap = {},
   onToggle, onBudgetChange, onSaveTags, onSaveMarker,
+  accountId,
 }: CampaignsTableProps) {
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const ms: CampaignModalState = { open: false, campaign: null };
@@ -163,6 +165,7 @@ export function CampaignsTable({
                           onDefineCheckout={() => setCheckoutModal({ open: true, campaign: c })}
                           onDefineProduct={() => setProductModal({ open: true, campaign: c })}
                           onDefinePlatform={() => setPlatformModal({ open: true, campaign: c })}
+                          onExportCampaign={() => handleExportCampaignFromTable({ campaign: c, markersMap, accountId })}
                           onViewInfo={() => setInfoModal({ open: true, campaign: c })}
                         >{rowContent}</CampaignContextMenu>
                       )}
