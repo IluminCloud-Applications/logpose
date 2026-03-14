@@ -56,7 +56,6 @@ export function ReviewStep({ form }: ReviewStepProps) {
           {form.videoLabel && <Row label="Vídeo" value={form.videoLabel} />}
           {form.checkoutLabel && <Row label="Checkout" value={form.checkoutLabel} />}
           {form.productLabel && <Row label="Produto" value={form.productLabel} />}
-          {form.platformLabel && <Row label="Plataforma" value={form.platformLabel} />}
         </CardContent>
       </Card>
 

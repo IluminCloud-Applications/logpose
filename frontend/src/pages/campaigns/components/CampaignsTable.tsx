@@ -61,7 +61,6 @@ export function CampaignsTable({
   const [videoModal, setVideoModal] = useState<CampaignModalState>(ms);
   const [checkoutModal, setCheckoutModal] = useState<CampaignModalState>(ms);
   const [productModal, setProductModal] = useState<CampaignModalState>(ms);
-  const [platformModal, setPlatformModal] = useState<CampaignModalState>(ms);
   const [infoModal, setInfoModal] = useState<CampaignModalState>(ms);
   const [deactivateModal, setDeactivateModal] = useState<DeactivateState>(emptyDeactivate);
   const [deactivateLoading, setDeactivateLoading] = useState(false);
@@ -164,7 +163,6 @@ export function CampaignsTable({
                           onDefineVideo={() => setVideoModal({ open: true, campaign: c })}
                           onDefineCheckout={() => setCheckoutModal({ open: true, campaign: c })}
                           onDefineProduct={() => setProductModal({ open: true, campaign: c })}
-                          onDefinePlatform={() => setPlatformModal({ open: true, campaign: c })}
                           onExportCampaign={() => handleExportCampaignFromTable({ campaign: c, markersMap, accountId })}
                           onViewInfo={() => setInfoModal({ open: true, campaign: c })}
                         >{rowContent}</CampaignContextMenu>
@@ -201,7 +199,6 @@ export function CampaignsTable({
         videoModal={videoModal} setVideoModal={setVideoModal}
         checkoutModal={checkoutModal} setCheckoutModal={setCheckoutModal}
         productModal={productModal} setProductModal={setProductModal}
-        platformModal={platformModal} setPlatformModal={setPlatformModal}
         infoModal={infoModal} setInfoModal={setInfoModal}
         tagsMap={tagsMap} markersMap={markersMap}
         onBudgetChange={onBudgetChange} onSaveTags={onSaveTags} onSaveMarker={onSaveMarker}

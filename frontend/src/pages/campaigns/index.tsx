@@ -82,9 +82,6 @@ export default function CampaignsPage() {
         if (filters.product !== "all") {
           if (!cMarkers?.product || cMarkers.product.reference_id !== filters.product) return false;
         }
-        if (filters.platform !== "all") {
-          if (!cMarkers?.platform || cMarkers.platform.reference_id !== filters.platform) return false;
-        }
         if (filters.video !== "all") {
           if (!cMarkers?.video || cMarkers.video.reference_id !== filters.video) return false;
         }
@@ -135,7 +132,6 @@ export default function CampaignsPage() {
       setSelectedAccountId(value === "all" ? undefined : Number(value));
     }
     else if (key === "product") setFilters((p) => ({ ...p, product: value }));
-    else if (key === "platform") setFilters((p) => ({ ...p, platform: value }));
     else if (key === "video") setFilters((p) => ({ ...p, video: value }));
     else if (key === "checkout") setFilters((p) => ({ ...p, checkout: value }));
     else if (key === "tag") setFilters((p) => ({ ...p, tag: value }));

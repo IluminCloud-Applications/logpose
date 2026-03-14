@@ -24,13 +24,13 @@ export function SalesHeader({
           <RiLineChartLine className="size-5 text-primary" />
         </div>
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Vendas</h1>
+          <h1 className="text-xl sm:text-2xl font-bold tracking-tight">Vendas</h1>
           <p className="text-sm text-muted-foreground">
             Transações realizadas
           </p>
         </div>
       </div>
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2 flex-wrap">
         <DateRangeFilter value={dateRange} onChange={onDateRangeChange} />
         <div className="relative">
           <RiSearchLine className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
@@ -38,7 +38,7 @@ export function SalesHeader({
             placeholder="Buscar email..."
             value={search}
             onChange={(e) => onSearchChange(e.target.value)}
-            className="pl-9 w-[220px] h-9 text-sm"
+            className="pl-9 w-full sm:w-[220px] h-9 text-sm"
           />
         </div>
         <Button

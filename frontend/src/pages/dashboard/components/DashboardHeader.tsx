@@ -67,18 +67,18 @@ export function DashboardHeader({ onRefresh }: DashboardHeaderProps) {
   }, []);
 
   return (
-    <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+    <div className="flex items-center justify-between">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight">
+        <h1 className="text-xl sm:text-2xl font-bold tracking-tight">
           {greeting}, {firstName} 👋
         </h1>
-        <p className="text-sm text-muted-foreground">
+        <p className="text-xs sm:text-sm text-muted-foreground">
           Aqui está o resumo da sua operação
         </p>
       </div>
       <div className="flex items-center gap-3">
         <RefreshButton onRefresh={onRefresh} />
-        <div className="flex flex-col items-end">
+        <div className="hidden sm:flex flex-col items-end">
           <span className="text-3xl font-bold tracking-tight tabular-nums">
             {clock.time}
           </span>

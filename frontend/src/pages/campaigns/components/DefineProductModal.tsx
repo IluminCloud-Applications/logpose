@@ -4,7 +4,6 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { RiCheckLine, RiSearchLine, RiBox3Line } from "@remixicon/react";
 import { fetchProducts } from "@/services/products";
 import type { ProductAPI } from "@/types/product";
@@ -41,17 +40,10 @@ export function DefineProductModal({
     else setSelectedId("");
   }, [open, currentProductId]);
 
-  const platformLabels: Record<string, string> = {
-    kiwify: "Kiwify",
-    payt: "PayT",
-  };
-
   const filtered = useMemo(() => {
     if (!search) return products;
     const q = search.toLowerCase();
-    return products.filter(
-      (p) => p.name.toLowerCase().includes(q) || p.platform.toLowerCase().includes(q),
-    );
+    return products.filter((p) => p.name.toLowerCase().includes(q));
   }, [products, search]);
 
   const handleSave = async () => {
@@ -116,12 +108,6 @@ export function DefineProductModal({
                     <div className="flex items-center gap-2">
                       {isSelected && <RiCheckLine className="size-4 shrink-0" />}
                       <span className="truncate font-medium flex-1">{p.name}</span>
-                      <Badge variant="outline" className="shrink-0 text-[10px]">
-                        {platformLabels[p.platform] ?? p.platform}
-                      </Badge>
-                      <Badge variant="outline" className="shrink-0 text-[10px]">
-                        R$ {p.ticket.toFixed(0)}
-                      </Badge>
                     </div>
                   </button>
                 );

@@ -5,7 +5,7 @@ from datetime import datetime
 
 from database.core.connection import get_db
 from database.models.product import Product
-from database.models.product_items import Checkout, OrderBump, Upsell
+from database.models.product_items import Checkout, OrderBump, Upsell, CheckoutPlatform
 from api.auth.deps import get_current_user
 
 router = APIRouter(prefix="/products/{product_id}", tags=["product-items"])
@@ -16,12 +16,14 @@ router = APIRouter(prefix="/products/{product_id}", tags=["product-items"])
 class CheckoutCreate(BaseModel):
     url: str
     price: float = 0.0
+    platform: str  # "kiwify" | "payt"
 
 class CheckoutResponse(BaseModel):
     id: int
     product_id: int
     url: str
     price: float
+    platform: str
     created_at: datetime | None = None
     class Config:
         from_attributes = True
@@ -66,22 +68,36 @@ def _get_product(product_id: int, db: Session) -> Product:
     return product
 
 
+def _checkout_response(c: Checkout) -> CheckoutResponse:
+    return CheckoutResponse(
+        id=c.id, product_id=c.product_id, url=c.url,
+        price=c.price, platform=c.platform.value, created_at=c.created_at,
+    )
+
+
 # ── Checkout routes ──────────────────────────────────────────
 
 @router.get("/checkouts", response_model=list[CheckoutResponse])
 def list_checkouts(product_id: int, db: Session = Depends(get_db), _=Depends(get_current_user)):
     _get_product(product_id, db)
-    return db.query(Checkout).filter(Checkout.product_id == product_id).all()
+    items = db.query(Checkout).filter(Checkout.product_id == product_id).all()
+    return [_checkout_response(i) for i in items]
 
 
 @router.post("/checkouts", response_model=CheckoutResponse, status_code=201)
 def create_checkout(product_id: int, payload: CheckoutCreate, db: Session = Depends(get_db), _=Depends(get_current_user)):
     _get_product(product_id, db)
-    item = Checkout(product_id=product_id, url=payload.url, price=payload.price)
+    platform_val = payload.platform.lower()
+    if platform_val not in [p.value for p in CheckoutPlatform]:
+        raise HTTPException(status_code=400, detail="Plataforma inválida")
+    item = Checkout(
+        product_id=product_id, url=payload.url,
+        price=payload.price, platform=CheckoutPlatform(platform_val),
+    )
     db.add(item)
     db.commit()
     db.refresh(item)
-    return item
+    return _checkout_response(item)
 
 
 @router.delete("/checkouts/{item_id}", status_code=204)

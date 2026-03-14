@@ -4,7 +4,6 @@ import { TagsModal } from "./TagsModal";
 import { DefineVideoModal } from "./DefineVideoModal";
 import { DefineCheckoutModal } from "./DefineCheckoutModal";
 import { DefineProductModal } from "./DefineProductModal";
-import { DefinePlatformModal } from "./DefinePlatformModal";
 import { CampaignInfoModal } from "./CampaignInfoModal";
 import type { MarkerMap } from "@/hooks/useCampaignMarkers";
 
@@ -24,8 +23,6 @@ interface CampaignModalsProps {
   setCheckoutModal: React.Dispatch<React.SetStateAction<CampaignModalState>>;
   productModal: CampaignModalState;
   setProductModal: React.Dispatch<React.SetStateAction<CampaignModalState>>;
-  platformModal: CampaignModalState;
-  setPlatformModal: React.Dispatch<React.SetStateAction<CampaignModalState>>;
   infoModal: CampaignModalState;
   setInfoModal: React.Dispatch<React.SetStateAction<CampaignModalState>>;
   tagsMap: Record<string, string[]>;
@@ -41,7 +38,6 @@ export function CampaignModals({
   videoModal, setVideoModal,
   checkoutModal, setCheckoutModal,
   productModal, setProductModal,
-  platformModal, setPlatformModal,
   infoModal, setInfoModal,
   tagsMap, markersMap,
   onBudgetChange, onSaveTags, onSaveMarker,
@@ -119,20 +115,6 @@ export function CampaignModals({
         />
       )}
 
-      {platformModal.campaign && onSaveMarker && (
-        <DefinePlatformModal
-          open={platformModal.open}
-          onOpenChange={(open) => setPlatformModal((prev) => ({ ...prev, open }))}
-          campaignName={platformModal.campaign.name}
-          currentPlatformId={markersMap[platformModal.campaign.id]?.platform?.reference_id}
-          onSave={async (refId, refLabel) => {
-            if (platformModal.campaign) {
-              await onSaveMarker(platformModal.campaign.id, "platform", refId, refLabel);
-            }
-          }}
-        />
-      )}
-
       {infoModal.campaign && (
         <CampaignInfoModal
           open={infoModal.open}
@@ -142,7 +124,6 @@ export function CampaignModals({
           videoMarker={markersMap[infoModal.campaign.id]?.video}
           checkoutMarker={markersMap[infoModal.campaign.id]?.checkout}
           productMarker={markersMap[infoModal.campaign.id]?.product}
-          platformMarker={markersMap[infoModal.campaign.id]?.platform}
         />
       )}
     </>

@@ -38,13 +38,13 @@ export function KpiCard({
 }: KpiCardProps) {
   return (
     <Card className="group relative overflow-hidden border-border/40 transition-all duration-300 hover:shadow-lg hover:border-primary/20">
-      <CardContent className="p-5">
+      <CardContent className="p-3 sm:p-5">
         <div className="flex items-start justify-between">
           <div className="space-y-1.5">
-            <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+            <p className="text-[10px] sm:text-xs font-medium uppercase tracking-wider text-muted-foreground truncate">
               {title}
             </p>
-            <p className={cn("text-2xl font-bold tabular-nums", variantStyles[variant])}>
+            <p className={cn("text-lg sm:text-2xl font-bold tabular-nums truncate", variantStyles[variant])}>
               {value}
             </p>
             {subtitle && (
@@ -64,8 +64,8 @@ export function KpiCard({
               </div>
             )}
           </div>
-          <div className={cn("rounded-lg p-2.5", iconBgStyles[variant])}>
-            <Icon className={cn("size-5", variantStyles[variant])} />
+          <div className={cn("rounded-lg p-1.5 sm:p-2.5", iconBgStyles[variant])}>
+            <Icon className={cn("size-4 sm:size-5", variantStyles[variant])} />
           </div>
         </div>
       </CardContent>

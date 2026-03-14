@@ -151,19 +151,16 @@ def _calc_upsell_stats(db: Session, upsells: list[Upsell]):
             })
             continue
 
-        # Find a product that matches this upsell external_id
-        upsell_product = db.query(Product).filter(Product.external_id == up.external_id).first()
+        # Count transactions where product_name matches the upsell name
+        result = db.query(
+            func.count(Transaction.id),
+            func.coalesce(func.sum(Transaction.amount), 0),
+        ).filter(
+            Transaction.product_name == up.name,
+            Transaction.status == TransactionStatus.APPROVED,
+        ).first()
 
-        if upsell_product:
-            # Count transactions for this upsell product
-            result = db.query(
-                func.count(Transaction.id),
-                func.coalesce(func.sum(Transaction.amount), 0),
-            ).filter(
-                Transaction.product_id == upsell_product.id,
-                Transaction.status == TransactionStatus.APPROVED,
-            ).first()
-        else:
+        if not result:
             result = (0, 0)
 
         sales_count = result[0] if result else 0

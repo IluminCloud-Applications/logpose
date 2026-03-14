@@ -60,7 +60,7 @@ with engine.connect() as _conn:
         except Exception:
             _conn.rollback()
 
-# Add kpi_colors column to company_settings if missing
+# Add kpi_colors and ai_instructions columns to company_settings if missing
 with engine.connect() as _conn:
     try:
         _conn.execute(_text(
@@ -68,6 +68,22 @@ with engine.connect() as _conn:
         ))
         _conn.execute(_text(
             "ALTER TABLE company_settings ADD COLUMN IF NOT EXISTS ai_instructions JSONB"
+        ))
+        _conn.commit()
+    except Exception:
+        _conn.rollback()
+
+# Add CheckoutPlatform enum and platform column to checkouts table
+with engine.connect() as _conn:
+    try:
+        _conn.execute(_text(
+            "DO $$ BEGIN "
+            "CREATE TYPE checkoutplatform AS ENUM ('kiwify', 'payt'); "
+            "EXCEPTION WHEN duplicate_object THEN NULL; END $$;"
+        ))
+        _conn.execute(_text(
+            "ALTER TABLE checkouts "
+            "ADD COLUMN IF NOT EXISTS platform checkoutplatform NOT NULL DEFAULT 'kiwify'"
         ))
         _conn.commit()
     except Exception:

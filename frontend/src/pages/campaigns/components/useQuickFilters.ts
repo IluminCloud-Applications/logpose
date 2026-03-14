@@ -25,7 +25,7 @@ function formatCustomLabel(startDate: string, endDate: string): string {
 /** Extract unique marker options from the markersMap for a given marker type */
 function extractMarkerOptions(
   markersMap: MarkerMap,
-  type: "video" | "checkout" | "product" | "platform",
+  type: "video" | "checkout" | "product",
 ): { value: string; label: string }[] {
   const seen = new Map<string, string>();
   for (const markers of Object.values(markersMap)) {
@@ -43,7 +43,6 @@ export function useQuickFilters({ filters, accounts, markersMap, tags }: QuickFi
       : (datePresetLabels[datePreset] ?? "Hoje");
 
     const productOptions = extractMarkerOptions(markersMap, "product");
-    const platformOptions = extractMarkerOptions(markersMap, "platform");
     const videoOptions = extractMarkerOptions(markersMap, "video");
     const checkoutOptions = extractMarkerOptions(markersMap, "checkout");
 
@@ -103,20 +102,6 @@ export function useQuickFilters({ filters, accounts, markersMap, tags }: QuickFi
         options: [
           { value: "all", label: "Todos" },
           ...productOptions,
-        ],
-      });
-    }
-
-    // Platform filter (only shows if there are platforms defined)
-    if (platformOptions.length > 0) {
-      list.push({
-        key: "platform",
-        label: "Plataforma",
-        value: filters.platform,
-        isActive: filters.platform !== "all",
-        options: [
-          { value: "all", label: "Todas" },
-          ...platformOptions,
         ],
       });
     }

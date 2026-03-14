@@ -33,7 +33,7 @@ export default function DashboardPage() {
         platforms={platforms}
       />
       {loading || !data ? (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-3 grid-cols-2 lg:grid-cols-4">
           {Array.from({ length: 8 }).map((_, i) => (
             <Skeleton key={i} className="h-24 w-full" />
           ))}

@@ -21,8 +21,6 @@ interface DefineCheckoutModalProps {
   onSave: (referenceId: string, referenceLabel: string) => Promise<void>;
   /** Chamado ao salvar com dados do produto selecionado */
   onProductResolved?: (productId: string, productName: string) => void;
-  /** Chamado ao salvar com a plataforma do produto selecionado */
-  onPlatformResolved?: (platformId: string, platformLabel: string) => void;
 }
 
 const PLATFORM_LABELS: Record<string, string> = {
@@ -32,7 +30,7 @@ const PLATFORM_LABELS: Record<string, string> = {
 
 export function DefineCheckoutModal({
   open, onOpenChange, campaignName,
-  currentCheckoutId, onSave, onProductResolved, onPlatformResolved,
+  currentCheckoutId, onSave, onProductResolved,
 }: DefineCheckoutModalProps) {
   const [products, setProducts] = useState<ProductAPI[]>([]);
   const [selectedProductId, setSelectedProductId] = useState<string>("");
@@ -88,11 +86,6 @@ export function DefineCheckoutModal({
     // Resolve produto automaticamente
     if (onProductResolved) {
       onProductResolved(String(selectedProduct.id), selectedProduct.name);
-    }
-    // Resolve plataforma automaticamente
-    if (onPlatformResolved) {
-      const platformLabel = PLATFORM_LABELS[selectedProduct.platform] ?? selectedProduct.platform;
-      onPlatformResolved(selectedProduct.platform, platformLabel);
     }
 
     setSaving(false);
@@ -160,6 +153,9 @@ export function DefineCheckoutModal({
                       >
                         {isSelected && <RiCheckLine className="size-4 shrink-0" />}
                         <span className="truncate flex-1">{c.url}</span>
+                        <Badge variant="outline" className="shrink-0 text-[10px]">
+                          {PLATFORM_LABELS[c.platform] ?? c.platform}
+                        </Badge>
                         <Badge variant="outline" className="shrink-0 text-[10px]">
                           R$ {c.price.toFixed(2)}
                         </Badge>

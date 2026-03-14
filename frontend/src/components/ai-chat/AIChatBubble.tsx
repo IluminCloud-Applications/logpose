@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from "react";
-import { RiBrain3Line, RiCloseLine, RiDeleteBinLine } from "@remixicon/react";
+import { RiMessageAi3Line, RiCloseLine, RiDeleteBinLine } from "@remixicon/react";
 import { ChatMessages } from "./ChatMessages";
 import { ChatInput } from "./ChatInput";
 import { PageDataToggle } from "./PageDataToggle";
@@ -116,14 +116,14 @@ export function AIChatBubble({
   };
 
   return (
-    <>
+    <div className="hidden md:block">
       {isOpen && (
         <div className="fixed bottom-20 right-6 z-50 w-[400px] h-[560px] rounded-2xl border border-border/60 bg-background shadow-2xl flex flex-col overflow-hidden animate-in slide-in-from-bottom-4 fade-in duration-200">
           {/* Header */}
           <div className="flex items-center justify-between px-4 py-3 border-b border-border/40 bg-card">
             <div className="flex items-center gap-2.5">
               <div className="rounded-lg bg-blue-500/10 p-1.5">
-                <RiBrain3Line className="size-4 text-blue-500" />
+                <RiMessageAi3Line className="size-4 text-blue-500" />
               </div>
               <div>
                 <h3 className="text-sm font-semibold">LOG POSE AI</h3>
@@ -173,9 +173,9 @@ export function AIChatBubble({
           className="fixed bottom-6 right-6 z-50 rounded-full p-3.5 bg-primary text-primary-foreground shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105 active:scale-95 group"
           title="Abrir assistente AI"
         >
-          <RiBrain3Line className="size-6 group-hover:rotate-12 transition-transform" />
+          <RiMessageAi3Line className="size-6 group-hover:rotate-12 transition-transform" />
         </button>
       )}
-    </>
+    </div>
   );
 }

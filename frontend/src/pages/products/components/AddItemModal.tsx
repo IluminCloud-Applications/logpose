@@ -5,6 +5,9 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
+import {
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+} from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 
 type ItemType = "checkout" | "orderBump" | "upsell";
@@ -14,6 +17,7 @@ export interface NewItemData {
   externalId: string;
   name: string;
   price: number;
+  platform?: string;
 }
 
 interface AddItemModalProps {
@@ -49,6 +53,7 @@ export function AddItemModal({ open, onOpenChange, onAdd, productName }: AddItem
   const [externalId, setExternalId] = useState("");
   const [name, setName] = useState("");
   const [price, setPrice] = useState("");
+  const [platform, setPlatform] = useState("kiwify");
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -61,6 +66,7 @@ export function AddItemModal({ open, onOpenChange, onAdd, productName }: AddItem
         externalId: externalId.trim(),
         name: name.trim(),
         price: Number(price) || 0,
+        platform: type === "checkout" ? platform : undefined,
       });
       reset();
     } finally {
@@ -69,7 +75,7 @@ export function AddItemModal({ open, onOpenChange, onAdd, productName }: AddItem
   };
 
   const reset = () => {
-    setType(null); setExternalId(""); setName(""); setPrice("");
+    setType(null); setExternalId(""); setName(""); setPrice(""); setPlatform("kiwify");
   };
 
   const handleClose = (v: boolean) => {
@@ -117,6 +123,21 @@ export function AddItemModal({ open, onOpenChange, onAdd, productName }: AddItem
                   className="font-mono" required
                 />
               </div>
+
+              {type === "checkout" && (
+                <div className="space-y-2">
+                  <Label>Plataforma</Label>
+                  <Select value={platform} onValueChange={setPlatform}>
+                    <SelectTrigger className="w-full">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="kiwify">Kiwify</SelectItem>
+                      <SelectItem value="payt">PayT</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
 
               {type !== "checkout" && (
                 <div className="space-y-2">

@@ -29,8 +29,6 @@ export function buildExportPayload(form: CampaignFormState): Record<string, unkn
     checkout_label: form.checkoutLabel,
     product_id: form.productId,
     product_label: form.productLabel,
-    platform_id: form.platformId,
-    platform_label: form.platformLabel,
     ads: form.ads.map((a) => ({
       name: a.name, primary_text: a.primary_text, headline: a.headline,
       description: a.description, link: a.link, utm_params: a.utm_params,
@@ -79,8 +77,6 @@ export function handleImportCampaign(
       updateField("checkoutLabel", data.checkout_label ?? "");
       updateField("productId", data.product_id ?? "");
       updateField("productLabel", data.product_label ?? "");
-      updateField("platformId", data.platform_id ?? "");
-      updateField("platformLabel", data.platform_label ?? "");
       if (data.targeting) {
         updateField("ageMin", data.targeting.age_min ?? 18);
         updateField("ageMax", data.targeting.age_max ?? 65);

@@ -30,8 +30,7 @@ def _handle_products(db, date_start, date_end, **kwargs):
         s = len(approved)
         avg = rev / s if s > 0 else 0
         lines.append(
-            f"{p.name} | Ticket: R${p.ticket:,.2f} | "
-            f"CPA Ideal: R${p.ideal_cpa or 0:,.2f} | "
+            f"{p.name} | "
             f"Vendas: {s} | Revenue: R${rev:,.2f} | Ticket Real: R${avg:,.2f}"
         )
     return "\n".join(lines)

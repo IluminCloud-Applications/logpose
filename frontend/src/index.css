@@ -207,3 +207,57 @@
   background: oklch(0.62 0.15 50 / 30%);
   color: oklch(0.93 0 0);
 }
+
+/* Safe area padding for mobile bottom nav */
+.pb-safe {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+/* Mobile responsive overrides */
+@media (max-width: 767px) {
+  /* Reduce page padding on mobile */
+  .flex.flex-col.gap-6.p-6 {
+    padding: 1rem;
+    gap: 1rem;
+  }
+
+  /* Tables: horizontal scroll container */
+  .premium-table {
+    display: block;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Make table cells more compact on mobile */
+  .premium-table th,
+  .premium-table td {
+    white-space: nowrap;
+    font-size: 12px;
+    padding: 0.5rem 0.75rem;
+  }
+
+  /* Filter bar horizontal scroll on mobile */
+  .mobile-filter-scroll {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    flex-wrap: nowrap !important;
+    padding-bottom: 0.25rem;
+  }
+
+  /* KPI grid: 2 columns on mobile */
+  .grid.sm\:grid-cols-2.lg\:grid-cols-4 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.5rem;
+  }
+
+  /* Charts stack vertically */
+  .grid.lg\:grid-cols-3,
+  .grid.lg\:grid-cols-2 {
+    grid-template-columns: 1fr;
+  }
+
+  /* Card markdown text smaller on mobile */
+  .chat-markdown {
+    font-size: 12px;
+  }
+}

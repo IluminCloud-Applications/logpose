@@ -28,7 +28,7 @@ export interface ProductConfig {
   name: string;
   type: ProductType;
   parent_product_name: string | null;
-  ideal_cpa: number | null;
+  product_id: number | null;  // ID de produto existente para vincular
 }
 
 // ── Execute Result ──────────────────────────────────────────

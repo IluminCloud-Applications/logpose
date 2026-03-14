@@ -27,7 +27,9 @@ export function ProductAccordion({ product, onAddItem, onDeleteProduct }: Produc
   const obRevenue = product.orderBumps.reduce((s, c) => s + c.revenue, 0);
   const upRevenue = product.upsells.reduce((s, c) => s + c.revenue, 0);
   const grandTotal = totalRevenue + obRevenue + upRevenue;
-  const aov = totalSales > 0 ? grandTotal / totalSales : product.ticket;
+
+  // Platforms where this product has checkouts
+  const platforms = [...new Set(product.checkouts.map((c) => c.platform))];
 
   return (
     <Card className="border-border/40 overflow-hidden hover:border-border/60 transition-colors">
@@ -44,87 +46,93 @@ export function ProductAccordion({ product, onAddItem, onDeleteProduct }: Produc
                 <div className="text-left">
                   <div className="flex items-center gap-2.5">
                     <span className="font-semibold text-sm">{product.name}</span>
-                    <Badge variant="outline" className="text-[10px] font-medium border border-border/50 gap-1 px-2 py-0.5">
-                      <PlatformLogo platform={product.platform} size="sm" />
-                    </Badge>
+                    {platforms.map((p) => (
+                      <Badge key={p} variant="outline" className="text-[10px] font-medium border border-border/50 gap-1 px-2 py-0.5">
+                        <PlatformLogo platform={p} size="sm" />
+                      </Badge>
+                    ))}
                   </div>
                   <div className="flex items-center gap-3 mt-1 text-xs text-muted-foreground">
-                    <span className="font-mono bg-muted/50 px-1.5 py-0.5 rounded text-[10px]">
-                      {product.externalId}
-                    </span>
-                    <span>Ticket {fmt(product.ticket)}</span>
-                    {product.idealCpa > 0 && <span>CPA Ideal {fmt(product.idealCpa)}</span>}
+                    <span>{product.checkouts.length} checkouts</span>
                   </div>
                 </div>
               </div>
               <div className="hidden sm:flex items-center gap-8 text-right">
                 <KpiPill label="Vendas" value={String(totalSales)} />
-                <KpiPill label="AOV" value={fmt(aov)} />
                 <KpiPill label="Total" value={fmt(grandTotal)} accent />
               </div>
             </div>
           </AccordionTrigger>
           <AccordionContent className="px-5 pb-5">
-            <div className="space-y-5 pt-2">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                  Itens do Produto
-                </span>
-                <div className="flex gap-2">
-                  <Button
-                    variant="outline" size="sm" className="gap-1.5 text-xs"
-                    onClick={(e) => { e.stopPropagation(); onAddItem(product.id); }}
-                  >
-                    <RiAddLine className="size-3.5" />
-                    Adicionar
-                  </Button>
-                  <Button
-                    variant="outline" size="sm"
-                    className="gap-1.5 text-xs text-destructive hover:bg-destructive/10"
-                    onClick={(e) => { e.stopPropagation(); onDeleteProduct(product.id); }}
-                  >
-                    <RiDeleteBinLine className="size-3.5" />
-                    Excluir
-                  </Button>
-                </div>
-              </div>
-
-              <ProductTable
-                title="Checkouts"
-                columns={["URL", "Preço", "Vendas", "Faturamento", "Abandonos", "Conversão"]}
-                rows={product.checkouts.map((c) => [
-                  <UrlCell key={c.id} url={c.url} />,
-                  fmt(c.price), String(c.sales), fmt(c.revenue),
-                  String(c.abandons), `${c.conversionRate.toFixed(1)}%`,
-                ])}
-              />
-              {product.orderBumps.length > 0 && (
-                <ProductTable
-                  title="Order Bumps"
-                  columns={["Nome", "Preço", "Vendas", "Faturamento", "Conversão"]}
-                  rows={product.orderBumps.map((o) => [
-                    o.name, fmt(o.price), String(o.sales), fmt(o.revenue),
-                    <ConversionCell key={o.id} rate={o.conversionRate} />,
-                  ])}
-                />
-              )}
-              {product.upsells.length > 0 && (
-                <ProductTable
-                  title="Upsells"
-                  columns={["Nome", "Preço", "Vendas", "Faturamento", "Conversão"]}
-                  rows={product.upsells.map((u) => [
-                    u.name, fmt(u.price), String(u.sales), fmt(u.revenue),
-                    <ConversionCell key={u.id} rate={u.conversionRate} />,
-                  ])}
-                />
-              )}
-            </div>
+            <ProductAccordionContent product={product} onAddItem={onAddItem} onDeleteProduct={onDeleteProduct} />
           </AccordionContent>
         </AccordionItem>
       </Accordion>
     </Card>
   );
 }
+
+// ── Accordion internal content ──────────────────────────────
+
+function ProductAccordionContent({
+  product, onAddItem, onDeleteProduct,
+}: { product: ProductView; onAddItem: (id: number) => void; onDeleteProduct: (id: number) => void }) {
+  return (
+    <div className="space-y-5 pt-2">
+      <div className="flex items-center justify-between">
+        <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+          Itens do Produto
+        </span>
+        <div className="flex gap-2">
+          <Button variant="outline" size="sm" className="gap-1.5 text-xs"
+            onClick={(e) => { e.stopPropagation(); onAddItem(product.id); }}
+          >
+            <RiAddLine className="size-3.5" /> Adicionar
+          </Button>
+          <Button variant="outline" size="sm"
+            className="gap-1.5 text-xs text-destructive hover:bg-destructive/10"
+            onClick={(e) => { e.stopPropagation(); onDeleteProduct(product.id); }}
+          >
+            <RiDeleteBinLine className="size-3.5" /> Excluir
+          </Button>
+        </div>
+      </div>
+
+      <ProductTable
+        title="Checkouts"
+        columns={["URL", "Plataforma", "Preço", "Vendas", "Faturamento", "Abandonos", "Conversão"]}
+        rows={product.checkouts.map((c) => [
+          <UrlCell key={c.id} url={c.url} />,
+          <PlatformCell key={`p-${c.id}`} platform={c.platform} />,
+          fmt(c.price), String(c.sales), fmt(c.revenue),
+          String(c.abandons), `${c.conversionRate.toFixed(1)}%`,
+        ])}
+      />
+      {product.orderBumps.length > 0 && (
+        <ProductTable
+          title="Order Bumps"
+          columns={["Nome", "Preço", "Vendas", "Faturamento", "Conversão"]}
+          rows={product.orderBumps.map((o) => [
+            o.name, fmt(o.price), String(o.sales), fmt(o.revenue),
+            <ConversionCell key={o.id} rate={o.conversionRate} />,
+          ])}
+        />
+      )}
+      {product.upsells.length > 0 && (
+        <ProductTable
+          title="Upsells"
+          columns={["Nome", "Preço", "Vendas", "Faturamento", "Conversão"]}
+          rows={product.upsells.map((u) => [
+            u.name, fmt(u.price), String(u.sales), fmt(u.revenue),
+            <ConversionCell key={u.id} rate={u.conversionRate} />,
+          ])}
+        />
+      )}
+    </div>
+  );
+}
+
+// ── Sub-components ──────────────────────────────────────────
 
 function KpiPill({ label, value, accent }: { label: string; value: string; accent?: boolean }) {
   return (
@@ -141,6 +149,15 @@ function UrlCell({ url }: { url: string }) {
       <RiExternalLinkLine className="size-3.5 shrink-0 text-muted-foreground" />
       <span className="font-mono text-xs truncate">{url}</span>
     </div>
+  );
+}
+
+function PlatformCell({ platform }: { platform: "kiwify" | "payt" }) {
+  return (
+    <Badge variant="outline" className="text-[10px] gap-1 py-0.5">
+      <PlatformLogo platform={platform} size="sm" showLabel={false} />
+      {platform === "payt" ? "PayT" : "Kiwify"}
+    </Badge>
   );
 }
 

@@ -15,6 +15,7 @@ interface NewItemData {
   externalId: string;
   name: string;
   price: number;
+  platform?: string;
 }
 
 export function useProducts() {
@@ -28,16 +29,8 @@ export function useProducts() {
     await reload();
   }, [reload]);
 
-  const addProduct = async (productData: {
-    name: string; externalId: string; ticket: number; idealCpa: number; platform: "kiwify" | "payt";
-  }) => {
-    await apiCreateProduct({
-      name: productData.name,
-      external_id: productData.externalId,
-      ticket: productData.ticket,
-      ideal_cpa: productData.idealCpa,
-      platform: productData.platform,
-    });
+  const addProduct = async (productData: { name: string }) => {
+    await apiCreateProduct({ name: productData.name });
     await invalidateAndReload();
   };
 
@@ -48,7 +41,11 @@ export function useProducts() {
 
   const addItem = async (productId: number, itemData: NewItemData) => {
     if (itemData.type === "checkout") {
-      await createCheckout(productId, { url: itemData.externalId, price: itemData.price });
+      await createCheckout(productId, {
+        url: itemData.externalId,
+        price: itemData.price,
+        platform: itemData.platform ?? "kiwify",
+      });
     } else if (itemData.type === "orderBump") {
       await createOrderBump(productId, {
         external_id: itemData.externalId,

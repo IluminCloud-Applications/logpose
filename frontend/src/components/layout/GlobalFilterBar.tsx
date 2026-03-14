@@ -69,7 +69,7 @@ export function GlobalFilterBar({
     <>
       <div ref={sentinelRef} className="h-0 w-full" />
       <div
-        className={`flex flex-wrap items-center gap-2.5 p-3 rounded-xl border transition-all duration-300 ${isSticky ? "sticky top-0 z-30 bg-card/95 backdrop-blur-md shadow-lg border-border/60" : "bg-card/50 border-border/30"}`}
+        className={`flex flex-wrap items-center gap-2.5 p-3 rounded-xl border transition-all duration-300 mobile-filter-scroll ${isSticky ? "sticky top-0 z-30 bg-card/95 backdrop-blur-md shadow-lg border-border/60" : "bg-card/50 border-border/30"}`}
       >
         <div className="flex items-center gap-1.5 text-muted-foreground mr-1">
           <RiFilterLine className="size-4" />

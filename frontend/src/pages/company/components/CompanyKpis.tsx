@@ -93,7 +93,7 @@ export function CompanyKpis({ data, settings, totalSalesCount, uniqueCustomersCo
   ];
 
   return (
-    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+    <div className="grid gap-3 grid-cols-2 lg:grid-cols-4">
       {kpis.map((kpi) => (
         <KpiCard key={kpi.title} {...kpi} />
       ))}

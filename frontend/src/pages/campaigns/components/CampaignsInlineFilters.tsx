@@ -18,7 +18,6 @@ export interface CampaignFilterState {
   objective: string;
   account: string;
   product: string;
-  platform: string;
   video: string;
   checkout: string;
   tag: string;
@@ -43,18 +42,16 @@ interface CampaignsInlineFiltersProps {
   onClose: () => void;
   availableTags?: string[];
   availableProducts?: { id: number; name: string }[];
-  availablePlatforms?: { value: string; label: string }[];
 }
 
 export function CampaignsInlineFilters({
   filters, onFiltersChange, onClose,
-  availableTags = [], availableProducts = [], availablePlatforms = [],
+  availableTags = [], availableProducts = [],
 }: CampaignsInlineFiltersProps) {
   const activeCount = [
     filters.status !== "all",
     filters.objective !== "all",
     filters.product !== "all",
-    filters.platform !== "all",
     filters.tag !== "all",
     filters.dateRange.preset !== "today",
     ...filters.valueFilters.map((vf) => vf.value !== ""),
@@ -142,18 +139,6 @@ export function CampaignsInlineFilters({
           </Select>
         </div>
         <div className="space-y-1.5">
-          <Label className="text-xs">Plataforma</Label>
-          <Select value={filters.platform} onValueChange={(v) => onFiltersChange({ ...filters, platform: v })}>
-            <SelectTrigger className="h-9 w-full"><SelectValue /></SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Todas</SelectItem>
-              {availablePlatforms.map((p) => (
-                <SelectItem key={p.value} value={p.value}>{p.label}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-        <div className="space-y-1.5">
           <Label className="text-xs">Tag</Label>
           <Select value={filters.tag} onValueChange={(v) => onFiltersChange({ ...filters, tag: v })}>
             <SelectTrigger className="h-9 w-full"><SelectValue /></SelectTrigger>
@@ -184,7 +169,6 @@ export const defaultCampaignFilters: CampaignFilterState = {
   objective: "sales",
   account: "all",
   product: "all",
-  platform: "all",
   video: "all",
   checkout: "all",
   tag: "all",

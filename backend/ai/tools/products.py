@@ -46,8 +46,6 @@ def query_products(days_back: int = 30) -> str:
 
             lines.append(
                 f"📦 {product.name}\n"
-                f"   Ticket configurado: R$ {product.ticket:,.2f} | "
-                f"CPA Ideal: R$ {product.ideal_cpa or 0:,.2f}\n"
                 f"   Vendas: {sales} | Revenue: R$ {revenue:,.2f} | "
                 f"Ticket Real: R$ {avg_ticket:,.2f}"
             )

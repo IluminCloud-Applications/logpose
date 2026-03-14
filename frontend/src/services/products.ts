@@ -11,7 +11,7 @@ export async function fetchProducts(): Promise<ProductAPI[]> {
 }
 
 export async function createProduct(data: {
-  name: string; external_id: string; ticket: number; ideal_cpa: number | null; platform: string;
+  name: string;
 }): Promise<ProductAPI> {
   return apiRequest<ProductAPI>("/products", { method: "POST", body: data });
 }
@@ -22,7 +22,10 @@ export async function deleteProduct(id: number): Promise<void> {
 
 // ── Items CRUD ──────────────────────────────────────────────
 
-export async function createCheckout(productId: number, data: { url: string; price: number }): Promise<CheckoutAPI> {
+export async function createCheckout(
+  productId: number,
+  data: { url: string; price: number; platform: string },
+): Promise<CheckoutAPI> {
   return apiRequest(`/products/${productId}/checkouts`, { method: "POST", body: data });
 }
 
@@ -88,7 +91,7 @@ export async function fetchProductsWithStats(): Promise<ProductView[]> {
     const checkouts: CheckoutView[] = checkoutsRaw.map((c) => {
       const stat = productStat?.checkouts.find((s) => s.id === c.id);
       return {
-        id: c.id, url: c.url, price: c.price,
+        id: c.id, url: c.url, price: c.price, platform: c.platform,
         sales: stat?.sales ?? 0, revenue: stat?.revenue ?? 0,
         abandons: stat?.abandons ?? 0, conversionRate: stat?.conversion_rate ?? 0,
       };
@@ -114,11 +117,7 @@ export async function fetchProductsWithStats(): Promise<ProductView[]> {
 
     views.push({
       id: product.id,
-      externalId: product.external_id,
       name: product.name,
-      ticket: product.ticket,
-      idealCpa: product.ideal_cpa ?? 0,
-      platform: product.platform,
       checkouts,
       orderBumps,
       upsells,

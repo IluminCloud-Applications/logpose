@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 
 from integrations.csv_import.schemas import ImportRow, ProductConfig, ImportResultResponse
 from integrations.csv_import.transaction_handler import process_transactions
-from database.models.product import Product, ProductPlatform
+from database.models.product import Product
 from database.models.product_items import Upsell, OrderBump
 from database.models.transaction import PaymentPlatform
 
@@ -18,7 +18,6 @@ def process_import(
 ) -> ImportResultResponse:
     """Processa a importação: cria Products, Customers, Transactions."""
     platform_enum = PaymentPlatform(platform)
-    product_platform = ProductPlatform(platform)
     config_map = {pc.name: pc for pc in products_config}
 
     result = ImportResultResponse(
@@ -28,7 +27,7 @@ def process_import(
 
     # Fase 1: Criar produtos (só frontends primeiro)
     product_db = _create_frontend_products(
-        db, rows, config_map, product_platform, result
+        db, rows, config_map, result
     )
 
     # Fase 2: Criar upsells e order bumps
@@ -47,7 +46,7 @@ def process_import(
 
 def _create_frontend_products(
     db: Session, rows: list[ImportRow], config_map: dict,
-    product_platform: ProductPlatform, result: ImportResultResponse,
+    result: ImportResultResponse,
 ) -> dict[str, Product]:
     """Cria ou encontra Products para cada produto marcado como frontend."""
     product_db: dict[str, Product] = {}
@@ -63,21 +62,25 @@ def _create_frontend_products(
         if not config or config.type != "frontend":
             continue
 
+        # Se o user selecionou um produto existente (product_id), usar esse
+        if config.product_id:
+            existing = db.query(Product).filter(
+                Product.id == config.product_id
+            ).first()
+            if existing:
+                product_db[name] = existing
+                continue
+
+        # Buscar pelo nome exato
         existing = db.query(Product).filter(
-            Product.external_id == row.product_external_id
+            Product.name == name
         ).first()
 
         if existing:
             product_db[name] = existing
             continue
 
-        product = Product(
-            external_id=row.product_external_id,
-            name=name,
-            ticket=row.product_ticket,
-            ideal_cpa=config.ideal_cpa,
-            platform=product_platform,
-        )
+        product = Product(name=name)
         db.add(product)
         db.flush()
         product_db[name] = product

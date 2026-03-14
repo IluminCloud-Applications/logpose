@@ -12,9 +12,7 @@ export default function ProductsPage() {
     open: false, productId: 0,
   });
 
-  const handleAdd = async (data: {
-    name: string; externalId: string; ticket: number; idealCpa: number; platform: "kiwify" | "payt";
-  }) => {
+  const handleAdd = async (data: { name: string }) => {
     await addProduct(data);
     setModalOpen(false);
   };

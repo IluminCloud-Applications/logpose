@@ -4,7 +4,7 @@ from pydantic import BaseModel
 from datetime import datetime
 
 from database.core.connection import get_db
-from database.models.product import Product, ProductPlatform
+from database.models.product import Product
 from api.auth.deps import get_current_user
 
 router = APIRouter(prefix="/products", tags=["products"])
@@ -12,25 +12,15 @@ router = APIRouter(prefix="/products", tags=["products"])
 
 class ProductCreate(BaseModel):
     name: str
-    external_id: str
-    ticket: float
-    ideal_cpa: float | None = None
-    platform: str  # "kiwify" | "payt"
 
 
 class ProductUpdate(BaseModel):
     name: str | None = None
-    ticket: float | None = None
-    ideal_cpa: float | None = None
 
 
 class ProductResponse(BaseModel):
     id: int
-    external_id: str
     name: str
-    ticket: float
-    ideal_cpa: float | None
-    platform: str
     created_at: datetime | None = None
 
     class Config:
@@ -52,23 +42,13 @@ def create_product(
     db: Session = Depends(get_db),
     _=Depends(get_current_user),
 ):
-    platform_val = payload.platform.lower()
-    if platform_val not in [p.value for p in ProductPlatform]:
-        raise HTTPException(status_code=400, detail="Plataforma inválida")
-
     existing = db.query(Product).filter(
-        Product.external_id == payload.external_id
+        Product.name == payload.name
     ).first()
     if existing:
-        raise HTTPException(status_code=400, detail="Produto com esse ID já existe")
+        raise HTTPException(status_code=400, detail="Produto com esse nome já existe")
 
-    product = Product(
-        name=payload.name,
-        external_id=payload.external_id,
-        ticket=payload.ticket,
-        ideal_cpa=payload.ideal_cpa,
-        platform=ProductPlatform(platform_val),
-    )
+    product = Product(name=payload.name)
     db.add(product)
     db.commit()
     db.refresh(product)
@@ -88,10 +68,6 @@ def update_product(
 
     if payload.name is not None:
         product.name = payload.name
-    if payload.ticket is not None:
-        product.ticket = payload.ticket
-    if payload.ideal_cpa is not None:
-        product.ideal_cpa = payload.ideal_cpa
 
     db.commit()
     db.refresh(product)
@@ -114,10 +90,6 @@ def delete_product(
 def _to_response(p: Product) -> ProductResponse:
     return ProductResponse(
         id=p.id,
-        external_id=p.external_id,
         name=p.name,
-        ticket=p.ticket,
-        ideal_cpa=p.ideal_cpa,
-        platform=p.platform.value,
         created_at=p.created_at,
     )

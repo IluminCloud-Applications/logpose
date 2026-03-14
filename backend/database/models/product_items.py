@@ -1,15 +1,21 @@
 from sqlalchemy import (
     Column, Integer, String, Float, DateTime,
-    ForeignKey,
+    ForeignKey, Enum,
 )
 from database.core.connection import Base
 from database.core.timezone import CREATED_AT_DEFAULT
+import enum
+
+
+class CheckoutPlatform(str, enum.Enum):
+    KIWIFY = "kiwify"
+    PAYT = "payt"
 
 
 class Checkout(Base):
     """
     URL de checkout vinculada a um produto.
-    Cada produto pode ter vários checkouts ativos.
+    Cada checkout pertence a uma plataforma (Kiwify, PayT).
     """
     __tablename__ = "checkouts"
 
@@ -19,6 +25,7 @@ class Checkout(Base):
     )
     url = Column(String(500), nullable=False)
     price = Column(Float, nullable=False, default=0.0)
+    platform = Column(Enum(CheckoutPlatform), nullable=False)
     created_at = Column(DateTime, server_default=CREATED_AT_DEFAULT)
 
 

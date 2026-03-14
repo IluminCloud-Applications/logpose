@@ -2,8 +2,8 @@ from database.models.admin import Admin
 from database.models.company import CompanySettings
 from database.models.customer import Customer
 from database.models.transaction import Transaction, TransactionStatus, PaymentPlatform
-from database.models.product import Product, ProductPlatform
-from database.models.product_items import Checkout, OrderBump, Upsell
+from database.models.product import Product
+from database.models.product_items import Checkout, OrderBump, Upsell, CheckoutPlatform
 from database.models.recovery import Recovery, RecoveryType, RecoveryChannel
 from database.models.facebook_account import FacebookAccount
 from database.models.vturb_account import VturbAccount
@@ -25,7 +25,7 @@ __all__ = [
     "TransactionStatus",
     "PaymentPlatform",
     "Product",
-    "ProductPlatform",
+    "CheckoutPlatform",
     "Checkout",
     "OrderBump",
     "Upsell",

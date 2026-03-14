@@ -4,7 +4,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
-  RiVideoLine, RiShoppingBag2Line, RiBox3Line, RiStoreLine,
+  RiVideoLine, RiShoppingBag2Line, RiBox3Line,
   RiExternalLinkLine, RiAlertLine, RiPriceTag3Line,
 } from "@remixicon/react";
 import type { CampaignMarkerAPI } from "@/services/campaigns";
@@ -17,7 +17,6 @@ interface CampaignInfoModalProps {
   videoMarker?: CampaignMarkerAPI;
   checkoutMarker?: CampaignMarkerAPI;
   productMarker?: CampaignMarkerAPI;
-  platformMarker?: CampaignMarkerAPI;
 }
 
 function buildVturbUrl(videoId: string): string {
@@ -26,14 +25,13 @@ function buildVturbUrl(videoId: string): string {
 
 export function CampaignInfoModal({
   open, onOpenChange, campaignName, tags = [],
-  videoMarker, checkoutMarker, productMarker, platformMarker,
+  videoMarker, checkoutMarker, productMarker,
 }: CampaignInfoModalProps) {
   const hasVideo = !!videoMarker;
   const hasCheckout = !!checkoutMarker;
   const hasProduct = !!productMarker;
-  const hasPlatform = !!platformMarker;
   const hasTags = tags.length > 0;
-  const hasAny = hasVideo || hasCheckout || hasProduct || hasPlatform || hasTags;
+  const hasAny = hasVideo || hasCheckout || hasProduct || hasTags;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -93,20 +91,6 @@ export function CampaignInfoModal({
           </InfoSection>
 
           <InfoSection
-            icon={<RiStoreLine className="size-4" />}
-            label="Plataforma"
-            hasData={hasPlatform}
-            emptyText="Nenhuma plataforma definida"
-          >
-            {hasPlatform && platformMarker && (
-              <InfoCard
-                title={platformMarker.reference_label}
-                subtitle={platformMarker.reference_id}
-              />
-            )}
-          </InfoSection>
-
-          <InfoSection
             icon={<RiPriceTag3Line className="size-4" />}
             label="Tags"
             hasData={hasTags}
@@ -134,7 +118,7 @@ export function CampaignInfoModal({
                 Nenhuma informação definida para esta campanha.
               </p>
               <p className="text-xs">
-                Use o botão direito na campanha para definir vídeo, checkout, produto e plataforma.
+                Use o botão direito na campanha para definir vídeo, checkout e produto.
               </p>
             </div>
           )}

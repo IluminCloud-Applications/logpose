@@ -9,13 +9,13 @@ interface CompanyHeaderProps {
 
 export function CompanyHeader({ onOpenSettings, onRefresh }: CompanyHeaderProps) {
   return (
-    <div className="flex items-center justify-between">
+    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
       <div className="flex items-center gap-3">
         <div className="rounded-lg bg-primary/10 p-2.5">
           <RiBuildingLine className="size-5 text-primary" />
         </div>
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Empresa</h1>
+          <h1 className="text-xl sm:text-2xl font-bold tracking-tight">Empresa</h1>
           <p className="text-sm text-muted-foreground">
             Saúde financeira e projeções da sua operação
           </p>
@@ -29,7 +29,7 @@ export function CompanyHeader({ onOpenSettings, onRefresh }: CompanyHeaderProps)
           onClick={onOpenSettings}
         >
           <RiSettings3Line className="size-4" />
-          Configurações
+          <span className="hidden sm:inline">Configurações</span>
         </Button>
       </div>
     </div>

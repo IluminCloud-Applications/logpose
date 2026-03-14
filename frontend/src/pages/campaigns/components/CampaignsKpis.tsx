@@ -36,18 +36,18 @@ export function CampaignsKpis({ data }: CampaignsKpisProps) {
   ];
 
   return (
-    <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-6">
+    <div className="grid gap-3 grid-cols-2 sm:grid-cols-3 lg:grid-cols-6">
       {metrics.map((m) => (
         <Card key={m.label} className="border-border/40 hover:border-border/70 transition-colors">
-          <CardContent className="p-4 flex items-center gap-3">
-            <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-muted/60">
+          <CardContent className="p-3 sm:p-4 flex items-center gap-2 sm:gap-3">
+            <div className="flex size-7 sm:size-9 shrink-0 items-center justify-center rounded-lg bg-muted/60">
               <m.icon className={cn("size-4", m.color)} />
             </div>
             <div>
               <p className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
                 {m.label}
               </p>
-              <p className="text-base font-bold tabular-nums leading-tight">{m.value}</p>
+              <p className="text-sm sm:text-base font-bold tabular-nums leading-tight truncate">{m.value}</p>
             </div>
           </CardContent>
         </Card>

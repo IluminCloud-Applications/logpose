@@ -45,8 +45,6 @@ export interface CampaignFormState {
   checkoutLabel: string;
   productId: string;
   productLabel: string;
-  platformId: string;
-  platformLabel: string;
   // Step 1 — Campanha
   campaignName: string;
   dailyBudget: number;
@@ -78,8 +76,6 @@ const INITIAL_STATE: CampaignFormState = {
   checkoutLabel: "",
   productId: "",
   productLabel: "",
-  platformId: "",
-  platformLabel: "",
   campaignName: "",
   dailyBudget: 0,
   bidStrategy: "VOLUME",

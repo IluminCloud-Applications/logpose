@@ -7,14 +7,12 @@ import type { CampaignFormState } from "../hooks/useCampaignForm";
 import { DefineVideoModal } from "@/pages/campaigns/components/DefineVideoModal";
 import { DefineCheckoutModal } from "@/pages/campaigns/components/DefineCheckoutModal";
 import { DefineProductModal } from "@/pages/campaigns/components/DefineProductModal";
-import { DefinePlatformModal } from "@/pages/campaigns/components/DefinePlatformModal";
 import { SelectableField } from "./SelectableField";
 import {
   RiCheckLine,
   RiVideoLine,
   RiShoppingCart2Line,
   RiBox3Line,
-  RiSettings3Line,
 } from "@remixicon/react";
 
 interface AccountStepProps {
@@ -32,7 +30,6 @@ export function AccountStep({
   const [videoModalOpen, setVideoModalOpen] = useState(false);
   const [checkoutModalOpen, setCheckoutModalOpen] = useState(false);
   const [productModalOpen, setProductModalOpen] = useState(false);
-  const [platformModalOpen, setPlatformModalOpen] = useState(false);
 
   if (isLoading) {
     return (
@@ -108,8 +105,8 @@ export function AccountStep({
             />
           </div>
 
-          {/* Produto + Plataforma */}
-          <div className="grid grid-cols-2 gap-4">
+          {/* Produto */}
+          <div className="grid grid-cols-1 gap-4">
             <SelectableField
               label="Produto (Opcional)"
               hint="Definido automaticamente ao selecionar checkout."
@@ -119,16 +116,6 @@ export function AccountStep({
               placeholder="Selecionar produto"
               onOpen={() => setProductModalOpen(true)}
               onClear={() => { onUpdate("productId", ""); onUpdate("productLabel", ""); }}
-            />
-            <SelectableField
-              label="Plataforma (Opcional)"
-              hint="Kiwify, PayT ou outra plataforma de pagamento."
-              icon={<RiSettings3Line className="size-4" />}
-              selectedId={form.platformId}
-              selectedLabel={form.platformLabel}
-              placeholder="Selecionar plataforma"
-              onOpen={() => setPlatformModalOpen(true)}
-              onClear={() => { onUpdate("platformId", ""); onUpdate("platformLabel", ""); }}
             />
           </div>
 
@@ -163,10 +150,6 @@ export function AccountStep({
           onUpdate("productId", productId);
           onUpdate("productLabel", productName);
         }}
-        onPlatformResolved={(platformId, platformLabel) => {
-          onUpdate("platformId", platformId);
-          onUpdate("platformLabel", platformLabel);
-        }}
       />
       <DefineProductModal
         open={productModalOpen}
@@ -174,13 +157,6 @@ export function AccountStep({
         campaignName="Nova Campanha"
         currentProductId={form.productId}
         onSave={async (id, label) => { onUpdate("productId", id); onUpdate("productLabel", label); }}
-      />
-      <DefinePlatformModal
-        open={platformModalOpen}
-        onOpenChange={setPlatformModalOpen}
-        campaignName="Nova Campanha"
-        currentPlatformId={form.platformId}
-        onSave={async (id, label) => { onUpdate("platformId", id); onUpdate("platformLabel", label); }}
       />
     </>
   );

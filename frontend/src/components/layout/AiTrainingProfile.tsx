@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { RiBrain3Line } from "@remixicon/react";
+import { RiMessageAi3Line } from "@remixicon/react";
 import { fetchAiTrainingLevel, type AiTrainingLevel } from "@/services/integrations";
 import {
   Tooltip,
@@ -39,7 +39,7 @@ export function AiTrainingProfile() {
             {/* Header */}
             <div className="flex items-center gap-2 mb-2.5">
               <div className={`rounded-lg p-1.5 bg-gradient-to-br ${config.color} shadow-md ${config.glow}`}>
-                <RiBrain3Line className="size-3.5 text-white" />
+                <RiMessageAi3Line className="size-3.5 text-white" />
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-[11px] font-semibold text-sidebar-foreground leading-tight">

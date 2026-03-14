@@ -94,8 +94,6 @@ function buildExportPayload(
     checkout_label: markers?.checkout?.reference_label ?? "",
     product_id: markers?.product?.reference_id ?? "",
     product_label: markers?.product?.reference_label ?? "",
-    platform_id: markers?.platform?.reference_id ?? "",
-    platform_label: markers?.platform?.reference_label ?? "",
     ads,
     batch_mode: true,
   };

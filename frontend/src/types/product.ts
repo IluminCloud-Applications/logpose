@@ -2,11 +2,7 @@
 
 export interface ProductAPI {
   id: number;
-  external_id: string;
   name: string;
-  ticket: number;
-  ideal_cpa: number | null;
-  platform: "kiwify" | "payt";
   created_at: string | null;
 }
 
@@ -15,6 +11,7 @@ export interface CheckoutAPI {
   product_id: number;
   url: string;
   price: number;
+  platform: "kiwify" | "payt";
   created_at: string | null;
 }
 
@@ -79,11 +76,7 @@ export interface ProductStats {
 
 export interface ProductView {
   id: number;
-  externalId: string;
   name: string;
-  ticket: number;
-  idealCpa: number;
-  platform: "kiwify" | "payt";
   checkouts: CheckoutView[];
   orderBumps: OrderBumpView[];
   upsells: UpsellView[];
@@ -93,6 +86,7 @@ export interface CheckoutView {
   id: number;
   url: string;
   price: number;
+  platform: "kiwify" | "payt";
   sales: number;
   revenue: number;
   abandons: number;

@@ -39,7 +39,7 @@ class ProductConfig(BaseModel):
     name: str
     type: str  # frontend | upsell | order_bump
     parent_product_name: str | None = None
-    ideal_cpa: float | None = None
+    product_id: int | None = None  # ID de produto existente para vincular
 
 
 class ImportPreviewResponse(BaseModel):

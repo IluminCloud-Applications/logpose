@@ -1,4 +1,4 @@
-import { RiBrain3Line } from "@remixicon/react";
+import { RiMessageAi3Line } from "@remixicon/react";
 import Markdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
@@ -31,7 +31,7 @@ export function ChatMessages({ messages, isLoading, messagesEndRef, onExecuteAct
     return (
       <div className="flex-1 overflow-y-auto px-4 py-6 flex flex-col items-center justify-center gap-4 text-center">
         <div className="rounded-full bg-blue-500/10 p-4">
-          <RiBrain3Line className="size-8 text-blue-500" />
+          <RiMessageAi3Line className="size-8 text-blue-500" />
         </div>
         <div>
           <h4 className="font-semibold text-sm">Olá, CEO! 👋</h4>
