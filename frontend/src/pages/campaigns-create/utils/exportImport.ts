@@ -48,6 +48,92 @@ export function handleExportCampaign(form: CampaignFormState) {
 }
 
 /**
+ * Aplica dados de uma campanha (JSON parsed) ao formulário.
+ * Reutilizável para import de arquivo e duplicação via navigation state.
+ */
+export function applyDataToForm(
+  data: Record<string, unknown>,
+  updateField: <K extends keyof CampaignFormState>(key: K, value: CampaignFormState[K]) => void,
+) {
+  updateField("campaignName", (data.campaign_name as string) ?? "");
+  updateField("dailyBudget", (data.daily_budget as number) ?? 0);
+  updateField("bidStrategy", (data.bid_strategy as string) ?? "VOLUME");
+  updateField("bidAmount", (data.bid_amount as number | null) ?? null);
+  updateField("roasFloor", (data.roas_floor as number | null) ?? null);
+  updateField("adsetName", (data.adset_name as string) ?? "");
+  updateField("adsetCount", (data.adset_count as number) ?? 1);
+  updateField("pixelId", (data.pixel_id as string) ?? "");
+  updateField("startTime", (data.start_time as string) ?? "");
+  updateField("videoId", (data.video_id as string) ?? "");
+  updateField("videoLabel", (data.video_label as string) ?? "");
+  updateField("checkoutId", (data.checkout_id as string) ?? "");
+  updateField("checkoutLabel", (data.checkout_label as string) ?? "");
+  updateField("productId", (data.product_id as string) ?? "");
+  updateField("productLabel", (data.product_label as string) ?? "");
+
+  const targeting = data.targeting as Record<string, unknown> | undefined;
+  if (targeting) {
+    updateField("ageMin", (targeting.age_min as number) ?? 18);
+    updateField("ageMax", (targeting.age_max as number) ?? 65);
+    updateField("gender", (targeting.genders as number) ?? 0);
+    updateField("interests", (targeting.interests as CampaignFormState["interests"]) ?? []);
+  }
+
+  updateField("pageId", (data.page_id as string) ?? "");
+  updateField("instagramActorId", (data.instagram_actor_id as string) ?? "");
+
+  // Import ads (sem file — precisam ser adicionados manualmente)
+  if (Array.isArray(data.ads) && data.ads.length > 0) {
+    const importedAds: AdFormData[] = data.ads.map((a: Record<string, unknown>) => ({
+      name: (a.name as string) ?? "",
+      primary_text: (a.primary_text as string) ?? "",
+      headline: (a.headline as string) ?? "",
+      description: (a.description as string) ?? "",
+      link: (a.link as string) ?? "",
+      utm_params: (a.utm_params as string) ?? "",
+      extra_params: (a.extra_params as string) ?? "",
+      cta_type: (a.cta_type as string) ?? "LEARN_MORE",
+      media_type: ((a.media_type as string) ?? "image") as "image" | "video",
+      file: null,
+      preview_url: "",
+    }));
+    updateField("ads", importedAds);
+  }
+
+  if (data.batch_mode !== undefined) {
+    updateField("batchMode", Boolean(data.batch_mode));
+  }
+
+  // Import bulkData
+  if (data.bulk_data) {
+    const bulk = data.bulk_data as Record<string, string>;
+    updateField("bulkData", {
+      primary_text: bulk.primary_text ?? "",
+      headline: bulk.headline ?? "",
+      description: bulk.description ?? "",
+      link: bulk.link ?? "",
+      extra_params: bulk.extra_params ?? "",
+      cta_type: bulk.cta_type ?? "LEARN_MORE",
+    });
+  } else if (Array.isArray(data.ads) && data.ads.length > 0) {
+    const firstAd = data.ads[0] as Record<string, string>;
+    updateField("bulkData", {
+      primary_text: firstAd.primary_text ?? "",
+      headline: firstAd.headline ?? "",
+      description: firstAd.description ?? "",
+      link: firstAd.link ?? "",
+      extra_params: firstAd.extra_params ?? "",
+      cta_type: firstAd.cta_type ?? "LEARN_MORE",
+    });
+  }
+
+  // Selecionar conta de anúncio se disponível
+  if (data.account_id) {
+    updateField("accountId", data.account_id as number);
+  }
+}
+
+/**
  * Importa campanha de arquivo JSON e aplica ao formulário.
  */
 export function handleImportCampaign(
@@ -62,75 +148,7 @@ export function handleImportCampaign(
     try {
       const text = await file.text();
       const data = JSON.parse(text);
-      updateField("campaignName", data.campaign_name ?? "");
-      updateField("dailyBudget", data.daily_budget ?? 0);
-      updateField("bidStrategy", data.bid_strategy ?? "VOLUME");
-      updateField("bidAmount", data.bid_amount ?? null);
-      updateField("roasFloor", data.roas_floor ?? null);
-      updateField("adsetName", data.adset_name ?? "");
-      updateField("adsetCount", data.adset_count ?? 1);
-      updateField("pixelId", data.pixel_id ?? "");
-      updateField("startTime", data.start_time ?? "");
-      updateField("videoId", data.video_id ?? "");
-      updateField("videoLabel", data.video_label ?? "");
-      updateField("checkoutId", data.checkout_id ?? "");
-      updateField("checkoutLabel", data.checkout_label ?? "");
-      updateField("productId", data.product_id ?? "");
-      updateField("productLabel", data.product_label ?? "");
-      if (data.targeting) {
-        updateField("ageMin", data.targeting.age_min ?? 18);
-        updateField("ageMax", data.targeting.age_max ?? 65);
-        updateField("gender", data.targeting.genders ?? 0);
-        updateField("interests", data.targeting.interests ?? []);
-      }
-      updateField("pageId", data.page_id ?? "");
-      updateField("instagramActorId", data.instagram_actor_id ?? "");
-
-      // Import ads (sem file — precisam ser adicionados manualmente)
-      if (Array.isArray(data.ads) && data.ads.length > 0) {
-        const importedAds: AdFormData[] = data.ads.map((a: Record<string, unknown>) => ({
-          name: (a.name as string) ?? "",
-          primary_text: (a.primary_text as string) ?? "",
-          headline: (a.headline as string) ?? "",
-          description: (a.description as string) ?? "",
-          link: (a.link as string) ?? "",
-          utm_params: (a.utm_params as string) ?? "",
-          extra_params: (a.extra_params as string) ?? "",
-          cta_type: (a.cta_type as string) ?? "LEARN_MORE",
-          media_type: ((a.media_type as string) ?? "image") as "image" | "video",
-          file: null,
-          preview_url: "",
-        }));
-        updateField("ads", importedAds);
-      }
-
-      if (data.batch_mode !== undefined) {
-        updateField("batchMode", Boolean(data.batch_mode));
-      }
-
-      // Import bulkData
-      if (data.bulk_data) {
-        updateField("bulkData", {
-          primary_text: data.bulk_data.primary_text ?? "",
-          headline: data.bulk_data.headline ?? "",
-          description: data.bulk_data.description ?? "",
-          link: data.bulk_data.link ?? "",
-          extra_params: data.bulk_data.extra_params ?? "",
-          cta_type: data.bulk_data.cta_type ?? "LEARN_MORE",
-        });
-      } else if (Array.isArray(data.ads) && data.ads.length > 0) {
-        // Backwards compat: derive bulkData from first ad
-        const firstAd = data.ads[0];
-        updateField("bulkData", {
-          primary_text: (firstAd.primary_text as string) ?? "",
-          headline: (firstAd.headline as string) ?? "",
-          description: (firstAd.description as string) ?? "",
-          link: (firstAd.link as string) ?? "",
-          extra_params: (firstAd.extra_params as string) ?? "",
-          cta_type: (firstAd.cta_type as string) ?? "LEARN_MORE",
-        });
-      }
-
+      applyDataToForm(data, updateField);
       toast.success("Campanha importada! Revise os dados e adicione as mídias.");
     } catch {
       toast.error("Arquivo JSON inválido");

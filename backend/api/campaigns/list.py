@@ -111,10 +111,6 @@ def _apply_vturb_stats(
     stats_map: dict[str, dict[str, int]],
 ) -> None:
     """Atribui views e plays do VTurb a cada campanha por ID e nome (soma ambos)."""
-    import logging
-    lg = logging.getLogger(__name__)
-    lg.warning(f"[VTURB-APPLY] stats_map recebido: {stats_map}")
-    
     for camp in campaigns:
         views = 0
         plays = 0
@@ -138,9 +134,6 @@ def _apply_vturb_stats(
         camp["play_rate"] = (
             round((plays / views) * 100, 1) if views > 0 and plays > 0 else 0
         )
-        
-        if views > 0 or plays > 0:
-            lg.warning(f"[VTURB-APPLY] camp={camp['name'][:40]} views={views} plays={plays}")
 
 
 def _build_unidentified(db: Session, date_start: str, date_end: str) -> dict:

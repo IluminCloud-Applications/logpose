@@ -50,7 +50,6 @@ function buildFiltersDescription(
     parts.push(`Objetivo: ${objectiveLabels[filters.objective] || filters.objective}`);
   }
   if (filters.product !== "all") parts.push(`Produto: ${filters.product}`);
-  if (filters.platform !== "all") parts.push(`Plataforma: ${filters.platform}`);
   if (filters.tag !== "all") parts.push(`Tag: ${filters.tag}`);
 
   return parts.join(" | ");

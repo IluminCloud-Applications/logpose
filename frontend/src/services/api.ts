@@ -2,6 +2,9 @@ import { getCookie, removeCookie } from "@/lib/cookies";
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || "/api";
 
+/** Evita múltiplos redirects simultâneos de 401 */
+let isRedirecting = false;
+
 interface RequestOptions {
   method?: string;
   body?: unknown;
@@ -37,7 +40,16 @@ export async function apiRequest<T>(
     if (response.status === 401) {
       removeCookie("access_token");
       localStorage.removeItem("user");
-      window.location.href = "/login";
+
+      // Evitar loop infinito — só redireciona se não estiver já redirecionando
+      // e se não estiver em /login ou /setup
+      const currentPath = window.location.pathname;
+      if (!isRedirecting && currentPath !== "/login" && currentPath !== "/setup") {
+        isRedirecting = true;
+        window.location.replace("/login");
+      }
+
+      throw new Error("Sessão expirada");
     }
 
     const error = await response.json().catch(() => ({ detail: "Request failed" }));
@@ -50,3 +62,4 @@ export async function apiRequest<T>(
 
   return response.json();
 }
+

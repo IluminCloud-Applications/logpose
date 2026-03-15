@@ -1,5 +1,5 @@
-import { useState, useCallback, useEffect, useMemo } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useCallback, useEffect, useMemo, useRef } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { RiArrowLeftLine, RiArrowRightLine, RiRocketLine, RiDownloadLine, RiUploadLine } from "@remixicon/react";
@@ -14,10 +14,12 @@ import { AdSetStep } from "./components/AdSetStep";
 import { AdsStep } from "./components/AdsStep";
 import { ReviewStep } from "./components/ReviewStep";
 import { generateAdName } from "./utils/naming";
-import { handleExportCampaign, handleImportCampaign, buildExportPayload } from "./utils/exportImport";
+import { handleExportCampaign, handleImportCampaign, buildExportPayload, applyDataToForm } from "./utils/exportImport";
 
 export default function CampaignsCreatePage() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const duplicateApplied = useRef(false);
   const [isPublishing, setIsPublishing] = useState(false);
   const { accounts, isLoading: accountsLoading } = useFacebookAccounts();
   const { form, currentStep, updateField, addAd, updateAd, removeAd, updateBulkData, resetForm, nextStep, prevStep, goToStep } = useCampaignForm();
@@ -31,6 +33,18 @@ export default function CampaignsCreatePage() {
       loadPages(form.accountId);
     }
   }, [form.accountId, loadPixels, loadPages]);
+
+  // Aplicar dados duplicados recebidos via navigation state
+  useEffect(() => {
+    const state = location.state as { duplicateData?: Record<string, unknown> } | null;
+    if (state?.duplicateData && !duplicateApplied.current) {
+      duplicateApplied.current = true;
+      applyDataToForm(state.duplicateData, updateField);
+      toast.success("Campanha duplicada! Revise os dados e adicione as mídias.");
+      // Limpar o state para evitar re-aplicação ao navegar
+      window.history.replaceState({}, "");
+    }
+  }, [location.state, updateField]);
 
   // Validação por step — define se o step está preenchido
   const isStepValid = useCallback((step: number): boolean => {

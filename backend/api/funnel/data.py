@@ -132,19 +132,12 @@ def _get_upsell_stages(
     stages = []
     for i, up in enumerate(upsells, 1):
         if not up.external_id:
-            stages.append({"name": f"Upsell {i}", "value": 0})
-            continue
-
-        upsell_product = db.query(Product).filter(
-            Product.external_id == up.external_id,
-        ).first()
-
-        if not upsell_product:
             stages.append({"name": up.name or f"Upsell {i}", "value": 0})
             continue
 
+        # Contar transações aprovadas cujo product_name bate com o nome do upsell
         q = db.query(Transaction).filter(
-            Transaction.product_id == upsell_product.id,
+            Transaction.product_name == up.name,
             Transaction.status == TransactionStatus.APPROVED,
         )
         if dt_start:

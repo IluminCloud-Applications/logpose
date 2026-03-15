@@ -4,7 +4,7 @@ import {
 import {
   RiPlayCircleLine, RiPauseCircleLine, RiPriceTag3Line,
   RiMoneyDollarCircleLine, RiVideoLine, RiShoppingBag2Line,
-  RiInformationLine, RiBox3Line, RiFileDownloadLine,
+  RiInformationLine, RiBox3Line, RiFileDownloadLine, RiFileCopyLine,
 } from "@remixicon/react";
 
 interface CampaignContextMenuProps {
@@ -17,13 +17,14 @@ interface CampaignContextMenuProps {
   onDefineCheckout: () => void;
   onDefineProduct: () => void;
   onExportCampaign: () => void;
+  onDuplicateCampaign: () => void;
   onViewInfo: () => void;
 }
 
 export function CampaignContextMenu({
   children, isActive, onToggle, onEditBudget, onEditTags,
   onDefineVideo, onDefineCheckout, onDefineProduct,
-  onExportCampaign, onViewInfo,
+  onExportCampaign, onDuplicateCampaign, onViewInfo,
 }: CampaignContextMenuProps) {
   return (
     <ContextMenu>
@@ -69,6 +70,10 @@ export function CampaignContextMenu({
         <ContextMenuItem onClick={onExportCampaign} className="gap-2">
           <RiFileDownloadLine className="size-4 text-muted-foreground" />
           Exportar Campanha
+        </ContextMenuItem>
+        <ContextMenuItem onClick={onDuplicateCampaign} className="gap-2">
+          <RiFileCopyLine className="size-4 text-muted-foreground" />
+          Duplicar Campanha
         </ContextMenuItem>
         <ContextMenuItem onClick={onViewInfo} className="gap-2">
           <RiInformationLine className="size-4 text-muted-foreground" />

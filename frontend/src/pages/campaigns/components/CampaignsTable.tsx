@@ -1,4 +1,5 @@
 import { useState, useCallback, Fragment } from "react";
+import { useNavigate } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow, TableFooter,
@@ -18,6 +19,7 @@ import { campaignToMetricRow } from "./mappers";
 import type { MarkerMap } from "@/hooks/useCampaignMarkers";
 import { useKpiColorsContext } from "./KpiColorsContext";
 import { handleExportCampaignFromTable } from "./exportCampaign";
+import { handleDuplicateCampaign } from "./duplicateCampaign";
 
 interface CampaignsTableProps {
   data: CampaignData[];
@@ -54,6 +56,7 @@ export function CampaignsTable({
   onToggle, onBudgetChange, onSaveTags, onSaveMarker,
   accountId,
 }: CampaignsTableProps) {
+  const navigate = useNavigate();
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const ms: CampaignModalState = { open: false, campaign: null };
   const [budgetModal, setBudgetModal] = useState<CampaignModalState>(ms);
@@ -164,6 +167,7 @@ export function CampaignsTable({
                           onDefineCheckout={() => setCheckoutModal({ open: true, campaign: c })}
                           onDefineProduct={() => setProductModal({ open: true, campaign: c })}
                           onExportCampaign={() => handleExportCampaignFromTable({ campaign: c, markersMap, accountId })}
+                          onDuplicateCampaign={() => handleDuplicateCampaign({ campaign: c, markersMap, accountId, navigate })}
                           onViewInfo={() => setInfoModal({ open: true, campaign: c })}
                         >{rowContent}</CampaignContextMenu>
                       )}
