@@ -6,7 +6,7 @@ Dashboard estratégico de performance para Direct Response.
 
 ```bash
 git add -A
-git commit -m "initial commit"
+git commit -m "v1.2.0"
 git branch -M main
 git push -u origin main
 ```
