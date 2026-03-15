@@ -1,5 +1,5 @@
 import {
-  Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
+  Table, TableBody, TableCell, TableHeader, TableRow,
 } from "@/components/ui/table";
 import { Switch } from "@/components/ui/switch";
 import type { CampaignAdData } from "@/services/campaigns";
@@ -7,6 +7,7 @@ import { allColumns } from "./columnPresets";
 import { getCellValue } from "./campaignCellHelpers";
 import { adToMetricRow } from "./mappers";
 import { useKpiColorsContext } from "./KpiColorsContext";
+import { TooltipTableHead } from "./TooltipTableHead";
 
 interface AdsSubTableProps {
   ads: CampaignAdData[];
@@ -31,11 +32,9 @@ export function AdsSubTable({ ads, columns, onToggle }: AdsSubTableProps) {
       <Table>
         <TableHeader>
           <TableRow className="text-[10px]">
-            <TableHead className="pl-20 min-w-[180px]">Anúncio</TableHead>
+            <TooltipTableHead colKey="name" label="Anúncio" className="pl-20 min-w-[180px]" />
             {visibleCols.map((col) => (
-              <TableHead key={col} className="text-right">
-                {allColumns[col] || col}
-              </TableHead>
+              <TooltipTableHead key={col} colKey={col} label={allColumns[col] || col} className="text-right" />
             ))}
           </TableRow>
         </TableHeader>

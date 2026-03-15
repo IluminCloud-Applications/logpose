@@ -19,6 +19,7 @@ import CompanyPage from "@/pages/company";
 import RefundsPage from "@/pages/refunds";
 import GeminiPage from "@/pages/gemini";
 import CampaignsCreatePage from "@/pages/campaigns-create";
+import UsersPage from "@/pages/users";
 import { AIChatProvider } from "@/components/ai-chat/AIChatProvider";
 import { Toaster } from "@/components/ui/sonner";
 import { PageDataProvider } from "@/contexts/PageDataContext";
@@ -49,6 +50,7 @@ export default function App() {
               <Route path="/company" element={<CompanyPage />} />
               <Route path="/profile" element={<ProfilePage />} />
               <Route path="/gemini" element={<GeminiPage />} />
+              <Route path="/users" element={<UsersPage />} />
             </Route>
 
             <Route path="/" element={<Navigate to="/dashboard" replace />} />

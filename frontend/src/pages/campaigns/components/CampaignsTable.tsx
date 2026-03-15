@@ -2,7 +2,7 @@ import { useState, useCallback, Fragment } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import {
-  Table, TableBody, TableCell, TableHead, TableHeader, TableRow, TableFooter,
+  Table, TableBody, TableCell, TableHeader, TableRow, TableFooter,
 } from "@/components/ui/table";
 import type { CampaignData } from "@/services/campaigns";
 import { allColumns } from "./columnPresets";
@@ -16,6 +16,8 @@ import { cn } from "@/lib/utils";
 import type { BlurState } from "./BlurToggle";
 import { getCellValue, getFooterValue } from "./campaignCellHelpers";
 import { campaignToMetricRow } from "./mappers";
+import { SortableTableHead } from "./SortableTableHead";
+import { useCampaignSort } from "./useCampaignSort";
 import type { MarkerMap } from "@/hooks/useCampaignMarkers";
 import { useKpiColorsContext } from "./KpiColorsContext";
 import { handleExportCampaignFromTable } from "./exportCampaign";
@@ -71,6 +73,7 @@ export function CampaignsTable({
   const visibleCols = columns.filter((c) => c !== "name");
   const blurClass = "blur-sm select-none";
   const kpiColors = useKpiColorsContext();
+  const { sorted: sortedData, sortKey, toggleSort } = useCampaignSort(data);
 
   /** Intercepts toggle: if deactivating, shows confirmation modal first. */
   const handleToggle = useCallback(
@@ -110,7 +113,7 @@ export function CampaignsTable({
     finally { setDeactivateLoading(false); setDeactivateModal(emptyDeactivate); }
   };
 
-  const metricsForFooter = data.map(campaignToMetricRow);
+  const metricsForFooter = sortedData.map(campaignToMetricRow);
 
   return (
     <>
@@ -120,14 +123,27 @@ export function CampaignsTable({
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="min-w-[320px]">{allColumns.name}</TableHead>
+                  <SortableTableHead
+                    colKey="name"
+                    label={allColumns.name}
+                    sortKey={sortKey}
+                    onSort={toggleSort}
+                    className="min-w-[320px]"
+                  />
                   {visibleCols.map((col) => (
-                    <TableHead key={col} className="text-right">{allColumns[col] || col}</TableHead>
+                    <SortableTableHead
+                      key={col}
+                      colKey={col}
+                      label={allColumns[col] || col}
+                      sortKey={sortKey}
+                      onSort={toggleSort}
+                      className="text-right"
+                    />
                   ))}
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {data.map((c) => {
+                {sortedData.map((c) => {
                   const isUnidentified = c.status === "unidentified";
                   const isExpanded = expandedId === c.id;
                   const row = campaignToMetricRow(c);

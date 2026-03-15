@@ -67,7 +67,7 @@ export function SidebarUser() {
                   {user?.name || "Admin"}
                 </span>
                 <span className="truncate text-[11px] text-sidebar-foreground/60">
-                  Versão: 1.0.0
+                  {user?.role === "owner" ? "Owner" : user?.role === "admin" ? "Administrador" : user?.role === "viewer" ? "Visualizador" : ""}
                 </span>
               </div>
               <RiExpandUpDownLine className="ml-auto size-4" />

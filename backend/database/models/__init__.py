@@ -1,4 +1,4 @@
-from database.models.admin import Admin
+from database.models.admin import Admin, UserRole
 from database.models.company import CompanySettings
 from database.models.customer import Customer
 from database.models.transaction import Transaction, TransactionStatus, PaymentPlatform
@@ -19,6 +19,7 @@ from database.models.campaign_action import CampaignAction, ActionType
 
 __all__ = [
     "Admin",
+    "UserRole",
     "CompanySettings",
     "Customer",
     "Transaction",

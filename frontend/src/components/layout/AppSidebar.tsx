@@ -12,6 +12,7 @@ import {
   RiBuildingLine,
   RiRefundLine,
   RiGeminiLine,
+  RiTeamLine,
 } from "@remixicon/react";
 import { useLocation, useNavigate } from "react-router-dom";
 import {
@@ -23,8 +24,24 @@ import {
 import { SidebarNavGroup } from "./SidebarNavGroup";
 import { SidebarUser } from "./SidebarUser";
 import { AiTrainingProfile } from "./AiTrainingProfile";
+import { getStoredUser } from "@/services/auth";
+import type { RemixiconComponentType } from "@remixicon/react";
 
-const navGroups = [
+type UserRole = "owner" | "admin" | "viewer";
+
+interface NavItem {
+  title: string;
+  icon: RemixiconComponentType;
+  url: string;
+  roles?: UserRole[]; // if omitted, visible to all
+}
+
+interface NavGroup {
+  label: string;
+  items: NavItem[];
+}
+
+const navGroups: NavGroup[] = [
   {
     label: "Análise",
     items: [
@@ -45,24 +62,43 @@ const navGroups = [
   {
     label: "Produtos",
     items: [
-      { title: "Produtos", icon: RiBox1Line, url: "/products" },
+      { title: "Produtos", icon: RiBox1Line, url: "/products", roles: ["owner", "admin"] },
       { title: "Funil", icon: RiFlowChart, url: "/funnel" },
     ],
   },
   {
     label: "Integrações",
     items: [
-      { title: "Plataformas", icon: RiWalletLine, url: "/platforms" },
-      { title: "Facebook Ads", icon: RiMetaLine, url: "/facebook-ads" },
-      { title: "VTurb", icon: RiPlayCircleLine, url: "/vturb" },
-      { title: "Gemini API", icon: RiGeminiLine, url: "/gemini" },
+      { title: "Plataformas", icon: RiWalletLine, url: "/platforms", roles: ["owner", "admin"] },
+      { title: "Facebook Ads", icon: RiMetaLine, url: "/facebook-ads", roles: ["owner", "admin"] },
+      { title: "VTurb", icon: RiPlayCircleLine, url: "/vturb", roles: ["owner", "admin"] },
+      { title: "Gemini API", icon: RiGeminiLine, url: "/gemini", roles: ["owner", "admin"] },
+    ],
+  },
+  {
+    label: "Gestão",
+    items: [
+      { title: "Usuários", icon: RiTeamLine, url: "/users", roles: ["owner", "admin"] },
     ],
   },
 ];
 
+function filterNavGroups(groups: NavGroup[], role: UserRole): NavGroup[] {
+  return groups
+    .map((group) => ({
+      ...group,
+      items: group.items.filter((item) => !item.roles || item.roles.includes(role)),
+    }))
+    .filter((group) => group.items.length > 0);
+}
+
 export function AppSidebar() {
   const location = useLocation();
   const navigate = useNavigate();
+  const user = getStoredUser();
+  const role: UserRole = user?.role ?? "owner";
+
+  const visibleGroups = filterNavGroups(navGroups, role);
 
   return (
     <Sidebar
@@ -78,7 +114,7 @@ export function AppSidebar() {
         />
       </SidebarHeader>
       <SidebarContent className="px-2 gap-0">
-        {navGroups.map((group) => (
+        {visibleGroups.map((group) => (
           <SidebarNavGroup
             key={group.label}
             label={group.label}

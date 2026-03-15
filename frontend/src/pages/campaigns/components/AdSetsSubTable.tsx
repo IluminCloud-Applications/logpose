@@ -1,6 +1,6 @@
 import { useState } from "react";
 import {
-  Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
+  Table, TableBody, TableCell, TableHeader, TableRow,
 } from "@/components/ui/table";
 import { Switch } from "@/components/ui/switch";
 import { RiArrowDownSFill } from "@remixicon/react";
@@ -11,6 +11,7 @@ import { getCellValue } from "./campaignCellHelpers";
 import { AdsSubTable } from "./AdsSubTable";
 import { adsetToMetricRow } from "./mappers";
 import { useKpiColorsContext } from "./KpiColorsContext";
+import { TooltipTableHead } from "./TooltipTableHead";
 
 interface AdSetsSubTableProps {
   adSets: CampaignAdSetData[];
@@ -41,11 +42,9 @@ export function AdSetsSubTable({ adSets, columns, onToggle, onBudgetChange: _onB
       <Table>
         <TableHeader>
           <TableRow className="text-xs">
-            <TableHead className="pl-10 min-w-[180px]">Conjunto</TableHead>
+            <TooltipTableHead colKey="name" label="Conjunto" className="pl-10 min-w-[180px]" />
             {visibleCols.map((col) => (
-              <TableHead key={col} className="text-right">
-                {allColumns[col] || col}
-              </TableHead>
+              <TooltipTableHead key={col} colKey={col} label={allColumns[col] || col} className="text-right" />
             ))}
           </TableRow>
         </TableHeader>

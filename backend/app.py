@@ -49,6 +49,9 @@ from api.ai.training_level import router as ai_training_router
 from api.campaigns_create.fetch_data import router as campaign_create_fetch_router
 from api.campaigns_create.create import router as campaign_create_router
 from api.campaigns_create.export_import import router as campaign_create_export_router
+from api.users.list import router as users_list_router
+from api.users.invite import router as users_invite_router
+from api.users.manage import router as users_manage_router
 
 # Extend the markertype enum with new values (PostgreSQL doesn't auto-expand enums)
 from sqlalchemy import text as _text
@@ -59,6 +62,34 @@ with engine.connect() as _conn:
             _conn.commit()
         except Exception:
             _conn.rollback()
+
+# Add userrole enum and role/invite_token columns to admins table
+with engine.connect() as _conn:
+    try:
+        _conn.execute(_text(
+            "DO $$ BEGIN "
+            "CREATE TYPE userrole AS ENUM ('owner', 'admin', 'viewer'); "
+            "EXCEPTION WHEN duplicate_object THEN NULL; END $$;"
+        ))
+        _conn.execute(_text(
+            "ALTER TABLE admins ADD COLUMN IF NOT EXISTS role userrole NOT NULL DEFAULT 'admin'"
+        ))
+        _conn.execute(_text(
+            "ALTER TABLE admins ADD COLUMN IF NOT EXISTS invite_token VARCHAR(255) UNIQUE"
+        ))
+        _conn.execute(_text(
+            "ALTER TABLE admins ALTER COLUMN email DROP NOT NULL"
+        ))
+        _conn.execute(_text(
+            "ALTER TABLE admins ALTER COLUMN password_hash DROP NOT NULL"
+        ))
+        # Set the first admin as owner
+        _conn.execute(_text(
+            "UPDATE admins SET role = 'owner' WHERE id = (SELECT MIN(id) FROM admins) AND role = 'admin'"
+        ))
+        _conn.commit()
+    except Exception:
+        _conn.rollback()
 
 # Add kpi_colors and ai_instructions columns to company_settings if missing
 with engine.connect() as _conn:
@@ -147,6 +178,9 @@ app.include_router(ai_training_router, prefix="/api")
 app.include_router(campaign_create_fetch_router, prefix="/api")
 app.include_router(campaign_create_router, prefix="/api")
 app.include_router(campaign_create_export_router, prefix="/api")
+app.include_router(users_list_router, prefix="/api")
+app.include_router(users_invite_router, prefix="/api")
+app.include_router(users_manage_router, prefix="/api")
 
 # SPA Middleware (serves frontend in production)
 _frontend_dir = os.path.join(os.path.dirname(__file__), "frontend_dist")

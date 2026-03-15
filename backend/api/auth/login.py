@@ -9,7 +9,6 @@ from api.auth.token import create_access_token
 router = APIRouter()
 
 
-
 class LoginRequest(BaseModel):
     email: EmailStr
     password: str
@@ -25,16 +24,20 @@ class LoginResponse(BaseModel):
 def login(data: LoginRequest, db: Session = Depends(get_db)):
     admin = db.query(Admin).filter(Admin.email == data.email).first()
 
-    if not admin:
+    if not admin or not admin.password_hash:
         raise HTTPException(status_code=401, detail="Invalid credentials")
-    
+
     try:
         if not bcrypt.checkpw(data.password.encode("utf-8"), admin.password_hash.encode("utf-8")):
             raise HTTPException(status_code=401, detail="Invalid credentials")
     except ValueError:
         raise HTTPException(status_code=401, detail="Invalid credentials")
 
-    token = create_access_token({"sub": str(admin.id), "email": admin.email})
+    token = create_access_token({
+        "sub": str(admin.id),
+        "email": admin.email,
+        "role": admin.role.value,
+    })
 
     return {
         "access_token": token,
@@ -43,5 +46,6 @@ def login(data: LoginRequest, db: Session = Depends(get_db)):
             "id": admin.id,
             "name": admin.name,
             "email": admin.email,
+            "role": admin.role.value,
         },
     }

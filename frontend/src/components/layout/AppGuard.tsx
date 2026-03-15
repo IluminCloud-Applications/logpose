@@ -17,6 +17,8 @@ export function AppGuard({ children }: AppGuardProps) {
     async function check() {
       try {
         const { is_configured } = await checkSetupStatus();
+        const searchParams = new URLSearchParams(location.search);
+        const hasInvite = searchParams.has("invite");
 
         if (!is_configured) {
           if (location.pathname !== "/setup") {
@@ -26,13 +28,14 @@ export function AppGuard({ children }: AppGuardProps) {
           return;
         }
 
-        if (location.pathname === "/setup") {
+        // Allow /setup?invite=xxx even when configured
+        if (location.pathname === "/setup" && !hasInvite) {
           navigate("/login", { replace: true });
           setStatus("ready");
           return;
         }
 
-        const publicPaths = ["/login"];
+        const publicPaths = ["/login", "/setup"];
         if (!publicPaths.includes(location.pathname) && !isAuthenticated()) {
           logout();
           navigate("/login", { replace: true });
@@ -47,7 +50,7 @@ export function AppGuard({ children }: AppGuardProps) {
     }
 
     check();
-  }, [location.pathname, navigate]);
+  }, [location.pathname, location.search, navigate]);
 
   if (status === "loading") {
     return (
