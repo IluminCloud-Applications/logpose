@@ -120,6 +120,29 @@ with engine.connect() as _conn:
     except Exception:
         _conn.rollback()
 
+# Add ON DELETE CASCADE to FKs referencing products
+# (checkouts, order_bumps, upsells, customer_products → CASCADE; transactions → SET NULL)
+with engine.connect() as _conn:
+    try:
+        _cascade_fks = [
+            ("checkouts",         "checkouts_product_id_fkey",         "CASCADE"),
+            ("order_bumps",       "order_bumps_product_id_fkey",       "CASCADE"),
+            ("upsells",           "upsells_product_id_fkey",           "CASCADE"),
+            ("customer_products", "customer_products_product_id_fkey", "CASCADE"),
+            ("transactions",      "transactions_product_id_fkey",      "SET NULL"),
+        ]
+        for table, constraint, action in _cascade_fks:
+            _conn.execute(_text(
+                f"ALTER TABLE {table} DROP CONSTRAINT IF EXISTS {constraint}"
+            ))
+            _conn.execute(_text(
+                f"ALTER TABLE {table} ADD CONSTRAINT {constraint} "
+                f"FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE {action}"
+            ))
+        _conn.commit()
+    except Exception:
+        _conn.rollback()
+
 # Create tables
 Base.metadata.create_all(bind=engine)
 

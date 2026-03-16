@@ -132,7 +132,6 @@ def process_webhook_event(db: Session, event: StandardizedWebhookEvent):
             new_cp = CustomerProduct(
                 customer_id=customer.id,
                 product_id=product.id,
-                has_access=True
             )
             db.add(new_cp)
 
