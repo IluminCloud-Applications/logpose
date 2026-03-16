@@ -120,6 +120,26 @@ with engine.connect() as _conn:
     except Exception:
         _conn.rollback()
 
+# Remove NOT NULL from legacy columns on products table
+# (external_id and platform were on the old model, now they're not, but DB still has them)
+with engine.connect() as _conn:
+    try:
+        _conn.execute(_text(
+            "ALTER TABLE products ALTER COLUMN external_id DROP NOT NULL"
+        ))
+        _conn.commit()
+    except Exception:
+        _conn.rollback()
+
+with engine.connect() as _conn:
+    try:
+        _conn.execute(_text(
+            "ALTER TABLE products DROP COLUMN IF EXISTS platform"
+        ))
+        _conn.commit()
+    except Exception:
+        _conn.rollback()
+
 # Add ON DELETE CASCADE to FKs referencing products
 # (checkouts, order_bumps, upsells, customer_products → CASCADE; transactions → SET NULL)
 with engine.connect() as _conn:
