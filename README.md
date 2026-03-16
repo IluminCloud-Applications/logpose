@@ -5,8 +5,8 @@ Dashboard estratégico de performance para Direct Response.
 ## Push (após o inicial)
 
 ```bash
-git add -A
-git commit -m "v1.1 finalizada"
+git add .
+git commit -m "v1.21 - fix processor"
 git push
 ```
 

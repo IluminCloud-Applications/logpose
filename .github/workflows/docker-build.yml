@@ -28,6 +28,57 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Delete old package versions (keep only latest)
+        if: github.ref == 'refs/heads/main'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PACKAGE_NAME: logpose
+          ORG_NAME: ilumincloud-applications
+        run: |
+          echo "Fetching all package versions..."
+          VERSIONS=$(gh api \
+            -H "Accept: application/vnd.github+json" \
+            "/orgs/$ORG_NAME/packages/container/$PACKAGE_NAME/versions" \
+            --paginate \
+            -q '.[].id' 2>/dev/null || echo "")
+
+          if [ -z "$VERSIONS" ]; then
+            echo "No versions found or package does not exist yet. Skipping cleanup."
+            exit 0
+          fi
+
+          # Count total versions
+          TOTAL=$(echo "$VERSIONS" | wc -l)
+          echo "Found $TOTAL version(s) total."
+
+          if [ "$TOTAL" -le 1 ]; then
+            echo "Only 1 version exists. Nothing to delete."
+            exit 0
+          fi
+
+          # Keep the most recent (first in list), delete all others
+          # This ensures that before the push, only the current "latest" exists
+          # After the push, we will have 2: the new one and the one we just kept.
+          VERSIONS_TO_DELETE=$(echo "$VERSIONS" | tail -n +2)
+          COUNT=$(echo "$VERSIONS_TO_DELETE" | wc -l)
+          echo "Deleting $COUNT old version(s)..."
+
+          echo "$VERSIONS_TO_DELETE" | while read -r VERSION_ID; do
+            echo "  Deleting version ID: $VERSION_ID"
+            gh api \
+              --method DELETE \
+              -H "Accept: application/vnd.github+json" \
+              "/orgs/$ORG_NAME/packages/container/$PACKAGE_NAME/versions/$VERSION_ID" \
+              && echo "  ✓ Deleted $VERSION_ID" \
+              || echo "  ✗ Failed to delete $VERSION_ID (may already be gone)"
+          done
+
+          echo "Cleanup complete. New image will be pushed, keeping the previous one as backup."
+
+      - name: Generate timestamp tag
+        id: timestamp
+        run: echo "tag=$(date +'%Y%m%d%H%M%S')" >> $GITHUB_OUTPUT
+
       - name: Extract metadata (tags, labels)
         id: meta
         uses: docker/metadata-action@v5
@@ -35,9 +86,8 @@ jobs:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           tags: |
             type=raw,value=latest,enable={{is_default_branch}}
-            type=semver,pattern={{version}}
-            type=semver,pattern={{major}}.{{minor}}
-            type=sha,prefix=
+            type=raw,value=${{ steps.timestamp.outputs.tag }},enable={{is_default_branch}}
+            type=sha,prefix=,enable={{is_default_branch}}
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -51,38 +101,3 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
-
-      - name: Delete old package versions (keep last 2)
-        uses: actions/github-script@v7
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          script: |
-            const packageName = 'logpose';
-            const org = 'ilumincloud-applications';
-
-            const { data: versions } = await github.rest.packages.getAllPackageVersionsForPackageOwnedByOrg({
-              package_type: 'container',
-              package_name: packageName,
-              org: org,
-              per_page: 100,
-            });
-
-            // Sort by created_at descending (newest first)
-            const sorted = versions.sort(
-              (a, b) => new Date(b.created_at) - new Date(a.created_at)
-            );
-
-            // Keep the 2 most recent, delete the rest
-            const toDelete = sorted.slice(2);
-
-            for (const version of toDelete) {
-              console.log(`Deleting version ${version.id} (${version.name}) created at ${version.created_at}`);
-              await github.rest.packages.deletePackageVersionForOrg({
-                package_type: 'container',
-                package_name: packageName,
-                org: org,
-                package_version_id: version.id,
-              });
-            }
-
-            console.log(`Kept ${Math.min(sorted.length, 2)} version(s), deleted ${toDelete.length} old version(s).`);
