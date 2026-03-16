@@ -21,7 +21,7 @@ class Checkout(Base):
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     product_id = Column(
-        Integer, ForeignKey("products.id"), nullable=False, index=True
+        Integer, ForeignKey("products.id", ondelete="CASCADE"), nullable=False, index=True
     )
     url = Column(String(500), nullable=False)
     price = Column(Float, nullable=False, default=0.0)
@@ -37,7 +37,7 @@ class OrderBump(Base):
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     product_id = Column(
-        Integer, ForeignKey("products.id"), nullable=False, index=True
+        Integer, ForeignKey("products.id", ondelete="CASCADE"), nullable=False, index=True
     )
     external_id = Column(String(255), nullable=True)
     name = Column(String(255), nullable=False)
@@ -53,7 +53,7 @@ class Upsell(Base):
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     product_id = Column(
-        Integer, ForeignKey("products.id"), nullable=False, index=True
+        Integer, ForeignKey("products.id", ondelete="CASCADE"), nullable=False, index=True
     )
     external_id = Column(String(255), nullable=True)
     name = Column(String(255), nullable=False)

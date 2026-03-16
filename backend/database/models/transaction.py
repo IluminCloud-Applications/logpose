@@ -40,7 +40,7 @@ class Transaction(Base):
         Integer, ForeignKey("customers.id"), nullable=True, index=True
     )
     product_id = Column(
-        Integer, ForeignKey("products.id"), nullable=True, index=True
+        Integer, ForeignKey("products.id", ondelete="SET NULL"), nullable=True, index=True
     )
     product_name = Column(String(255), nullable=True)
     customer_email = Column(String(255), nullable=True, index=True)

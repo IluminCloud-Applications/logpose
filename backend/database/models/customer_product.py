@@ -18,7 +18,7 @@ class CustomerProduct(Base):
         Integer, ForeignKey("customers.id"), nullable=False, index=True
     )
     product_id = Column(
-        Integer, ForeignKey("products.id"), nullable=False, index=True
+        Integer, ForeignKey("products.id", ondelete="CASCADE"), nullable=False, index=True
     )
     created_at = Column(DateTime, server_default=CREATED_AT_DEFAULT)
 
