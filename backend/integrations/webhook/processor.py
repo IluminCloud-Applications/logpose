@@ -96,7 +96,7 @@ def process_webhook_event(db: Session, event: StandardizedWebhookEvent):
         if not customer.first_purchase_at:
             customer.first_purchase_at = customer.last_purchase_at
 
-    product = db.query(Product).filter(Product.external_id == event.product_external_id).first()
+    product = db.query(Product).filter(Product.name == event.product_name).first()
     product_id_to_save = product.id if product else None
     
     new_tx = Transaction(
