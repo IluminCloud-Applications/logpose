@@ -2,65 +2,37 @@ import { Card, CardContent } from "@/components/ui/card";
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow, TableFooter,
 } from "@/components/ui/table";
-import { Button } from "@/components/ui/button";
-import { RiCircleFill, RiEyeLine, RiEyeOffLine } from "@remixicon/react";
+import { RiCircleFill } from "@remixicon/react";
 import type { CampaignData } from "@/services/campaigns";
 import { cn } from "@/lib/utils";
-import { useState } from "react";
+import { useState, useMemo } from "react";
+import { BottleneckToolbar, type RateMode } from "./BottleneckToolbar";
+import { allFunnelStages, type FunnelStage } from "./funnelStages";
 
 interface BottleneckTableProps {
   data: CampaignData[];
   hasVturb: boolean;
 }
 
-interface FunnelStage {
-  label: string;
-  getValue: (c: CampaignData) => number;
-  getRate: (c: CampaignData) => number;
-  rateLabel: string;
-  requiresVturb?: boolean;
-}
-
-const allFunnelStages: FunnelStage[] = [
-  {
-    label: "Cliques",
-    getValue: (c) => c.clicks,
-    getRate: (c) => c.ctr,
-    rateLabel: "CTR",
-  },
-  {
-    label: "LPV",
-    getValue: (c) => c.landing_page_views,
-    getRate: (c) => c.clicks > 0 ? (c.landing_page_views / c.clicks) * 100 : 0,
-    rateLabel: "Connect",
-  },
-  {
-    label: "Plays VSL",
-    getValue: (c) => c.plays_vsl ?? 0,
-    getRate: (c) => {
-      const plays = c.plays_vsl ?? 0;
-      return c.clicks > 0 ? (plays / c.clicks) * 100 : 0;
-    },
-    rateLabel: "Play",
-    requiresVturb: true,
-  },
-  {
-    label: "Checkout",
-    getValue: (c) => c.initiate_checkout,
-    getRate: (c) => c.landing_page_views > 0 ? (c.initiate_checkout / c.landing_page_views) * 100 : 0,
-    rateLabel: "Conv.",
-  },
-  {
-    label: "Vendas",
-    getValue: (c) => c.sales,
-    getRate: (c) => c.initiate_checkout > 0 ? (c.sales / c.initiate_checkout) * 100 : 0,
-    rateLabel: "Conv.",
-  },
-];
-
 export function BottleneckTable({ data, hasVturb }: BottleneckTableProps) {
   const [showLosses, setShowLosses] = useState(false);
-  const funnelStages = allFunnelStages.filter((s) => !s.requiresVturb || hasVturb);
+  const [rateMode, setRateMode] = useState<RateMode>("previous");
+  const [hiddenStages, setHiddenStages] = useState<string[]>([]);
+
+  const availableStages = useMemo(
+    () => allFunnelStages.filter((s) => !s.requiresVturb || hasVturb),
+    [hasVturb],
+  );
+
+  const stageLabels = useMemo(
+    () => availableStages.map((s) => s.label),
+    [availableStages],
+  );
+
+  const funnelStages = useMemo(
+    () => availableStages.filter((s) => !hiddenStages.includes(s.label)),
+    [availableStages, hiddenStages],
+  );
 
   return (
     <Card className="border-border/40 premium-table">
@@ -69,15 +41,15 @@ export function BottleneckTable({ data, hasVturb }: BottleneckTableProps) {
           <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
             Funil de Conversão
           </span>
-          <Button
-            variant={showLosses ? "default" : "outline"}
-            size="xs"
-            onClick={() => setShowLosses(!showLosses)}
-            className="gap-1.5"
-          >
-            {showLosses ? <RiEyeOffLine className="size-3" /> : <RiEyeLine className="size-3" />}
-            {showLosses ? "Ocultar Perdas" : "Mostrar Perdas"}
-          </Button>
+          <BottleneckToolbar
+            showLosses={showLosses}
+            onShowLossesChange={setShowLosses}
+            rateMode={rateMode}
+            onRateModeChange={setRateMode}
+            stageLabels={stageLabels}
+            hiddenStages={hiddenStages}
+            onHiddenStagesChange={setHiddenStages}
+          />
         </div>
         <div className="overflow-x-auto">
           <Table>
@@ -93,7 +65,13 @@ export function BottleneckTable({ data, hasVturb }: BottleneckTableProps) {
             </TableHeader>
             <TableBody>
               {data.map((c) => (
-                <BottleneckRow key={c.id} campaign={c} showLosses={showLosses} funnelStages={funnelStages} />
+                <BottleneckRow
+                  key={c.id}
+                  campaign={c}
+                  showLosses={showLosses}
+                  funnelStages={funnelStages}
+                  rateMode={rateMode}
+                />
               ))}
             </TableBody>
             <BottleneckFooter data={data} funnelStages={funnelStages} />
@@ -104,7 +82,12 @@ export function BottleneckTable({ data, hasVturb }: BottleneckTableProps) {
   );
 }
 
-function BottleneckRow({ campaign, showLosses, funnelStages }: { campaign: CampaignData; showLosses: boolean; funnelStages: FunnelStage[] }) {
+function BottleneckRow({
+  campaign, showLosses, funnelStages, rateMode,
+}: {
+  campaign: CampaignData; showLosses: boolean;
+  funnelStages: FunnelStage[]; rateMode: RateMode;
+}) {
   return (
     <TableRow>
       <TableCell className="max-w-[200px]">
@@ -118,7 +101,11 @@ function BottleneckRow({ campaign, showLosses, funnelStages }: { campaign: Campa
       </TableCell>
       {funnelStages.map((stage, i) => {
         const value = stage.getValue(campaign);
-        const rate = stage.getRate(campaign);
+        const rate = rateMode === "clicks"
+          ? stage.getRateFromClicks(campaign)
+          : stage.getRate(campaign);
+        const label = rateMode === "clicks" ? stage.rateLabelClicks : stage.rateLabel;
+
         const prevValue = i > 0 ? funnelStages[i - 1].getValue(campaign) : 0;
         const lost = i > 0 ? prevValue - value : 0;
         const lostPct = i > 0 && prevValue > 0 ? (lost / prevValue) * 100 : 0;
@@ -126,7 +113,7 @@ function BottleneckRow({ campaign, showLosses, funnelStages }: { campaign: Campa
         return (
           <TableCell key={stage.label} className="text-right tabular-nums">
             <FunnelCell
-              value={value} rate={rate} rateLabel={stage.rateLabel}
+              value={value} rate={rate} rateLabel={label}
               lost={lost} lostPct={lostPct} showLoss={showLosses && i > 0}
             />
           </TableCell>
