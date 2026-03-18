@@ -55,3 +55,10 @@ export const objectiveLabels: Record<string, string> = {
   awareness: "Reconhecimento",
   app_promotion: "App",
 };
+
+export const bidStrategyLabels: Record<string, string> = {
+  volume: "Volume",
+  bid_cap: "Bid Cap",
+  cost_cap: "Cost Cap",
+  roas: "ROAS",
+};

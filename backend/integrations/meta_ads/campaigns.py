@@ -14,15 +14,15 @@ CAMPAIGN_FIELDS = ",".join([
     "campaign_id",
     "campaign_name",
     "spend",
-    "clicks",
     "impressions",
-    "cpc",
-    "ctr",
+    "inline_link_clicks",
+    "inline_link_click_ctr",
+    "cost_per_unique_inline_link_click",
     "actions",
 ])
 
 # Campos de estrutura da campanha
-CAMPAIGN_STRUCTURE_FIELDS = "id,name,status,daily_budget,lifetime_budget,objective"
+CAMPAIGN_STRUCTURE_FIELDS = "id,name,status,daily_budget,lifetime_budget,objective,bid_strategy"
 
 
 async def fetch_campaigns(
@@ -68,8 +68,12 @@ async def fetch_campaigns(
         initiate = safe_int(extract_action_value(
             actions, "omni_initiated_checkout"
         ))
-        clicks = safe_int(insight.get("clicks", 0))
+        # Cliques no link (não "clicks all")
+        clicks = safe_int(insight.get("inline_link_clicks", 0))
         spend = safe_float(insight.get("spend", 0))
+        # CTR e CPC baseados em cliques no link
+        ctr = safe_float(insight.get("inline_link_click_ctr", 0))
+        cpc = safe_float(insight.get("cost_per_unique_inline_link_click", 0))
 
         budget = safe_float(
             camp.get("daily_budget", 0)
@@ -81,12 +85,13 @@ async def fetch_campaigns(
             name=camp.get("name", ""),
             status=_normalize_status(camp.get("status", "")),
             objective=_normalize_objective(camp.get("objective", "")),
+            bid_strategy=_normalize_bid_strategy(camp.get("bid_strategy", "")),
             budget=budget,
             spend=spend,
             clicks=clicks,
             impressions=safe_int(insight.get("impressions", 0)),
-            cpc=safe_float(insight.get("cpc", 0)),
-            ctr=safe_float(insight.get("ctr", 0)),
+            cpc=cpc,
+            ctr=ctr,
             cpa=0.0,  # Calculado depois com dados de transação
             landing_page_views=lpv,
             initiate_checkout=initiate,
@@ -129,3 +134,14 @@ def _normalize_objective(raw_objective: str) -> str:
         "STORE_VISITS": "traffic",
     }
     return mapping.get(raw_objective, raw_objective.lower() if raw_objective else "other")
+
+
+def _normalize_bid_strategy(raw_strategy: str) -> str:
+    """Normaliza a estratégia de lance da Meta para label amigável."""
+    mapping = {
+        "LOWEST_COST_WITHOUT_CAP": "volume",
+        "LOWEST_COST_WITH_BID_CAP": "bid_cap",
+        "COST_CAP": "cost_cap",
+        "LOWEST_COST_WITH_MIN_ROAS": "roas",
+    }
+    return mapping.get(raw_strategy, raw_strategy.lower() if raw_strategy else "volume")

@@ -16,6 +16,7 @@ import { defaultDateRange } from "@/components/DateRangeFilter";
 export interface CampaignFilterState {
   status: string;
   objective: string;
+  bidStrategy: string;
   account: string;
   product: string;
   video: string;
@@ -167,6 +168,7 @@ export function CampaignsInlineFilters({
 export const defaultCampaignFilters: CampaignFilterState = {
   status: "active",
   objective: "sales",
+  bidStrategy: "all",
   account: "all",
   product: "all",
   video: "all",

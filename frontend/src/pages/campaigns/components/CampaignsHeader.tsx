@@ -7,6 +7,7 @@ import type { ColumnPreset } from "./columnPresets";
 import { BlurToggle, type BlurState } from "./BlurToggle";
 import { UtmParamsGuide } from "./UtmParamsGuide";
 import { RefreshButton } from "@/components/RefreshButton";
+import type { UnidentifiedProduct } from "@/services/campaigns";
 
 interface CampaignsHeaderProps {
   search: string;
@@ -17,6 +18,7 @@ interface CampaignsHeaderProps {
   onCreatePreset: () => void;
   blur: BlurState;
   onBlurChange: (blur: BlurState) => void;
+  unidentifiedProducts?: UnidentifiedProduct[];
   onRefresh: () => Promise<void>;
   onOpenSettings: () => void;
 }
@@ -24,7 +26,7 @@ interface CampaignsHeaderProps {
 export function CampaignsHeader({
   search, onSearchChange,
   presets, activePresetId, onPresetChange, onCreatePreset,
-  blur, onBlurChange, onRefresh, onOpenSettings,
+  blur, onBlurChange, unidentifiedProducts, onRefresh, onOpenSettings,
 }: CampaignsHeaderProps) {
   const navigate = useNavigate();
 
@@ -63,7 +65,11 @@ export function CampaignsHeader({
               <RiAddLine className="size-4" />
               Nova Campanha
             </Button>
-            <BlurToggle blur={blur} onBlurChange={onBlurChange} />
+            <BlurToggle
+              blur={blur}
+              onBlurChange={onBlurChange}
+              unidentifiedProducts={unidentifiedProducts}
+            />
             <UtmParamsGuide />
             <Button
               variant="outline"

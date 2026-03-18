@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { CampaignsHeader } from "./components/CampaignsHeader";
 import { CampaignsTable } from "./components/CampaignsTable";
 import { BottleneckTabs } from "./components/BottleneckTabs";
@@ -18,21 +18,27 @@ import { useCampaigns, useCampaignPresets } from "@/hooks/useCampaigns";
 import { useCampaignTags } from "@/hooks/useCampaignTags";
 import { useCampaignMarkers } from "@/hooks/useCampaignMarkers";
 import { useVturbAccounts } from "@/hooks/useVturbAccounts";
+import { useCampaignPrefetch } from "@/hooks/useCampaignPrefetch";
+import { useStaleDataToast } from "@/hooks/useStaleDataToast";
 import { campaignToMetricRow } from "./components/mappers";
 import type { CampaignData } from "@/services/campaigns";
 import { CampaignsLoading } from "./components/CampaignsLoading";
+import { filterCampaigns } from "./components/filterCampaigns";
 import { getDefaultDateRange, computeDateRange } from "./components/dateHelpers";
 import { useQuickFilters } from "./components/useQuickFilters";
 import type { ValueFilter } from "@/components/ValueFiltersSection";
 import { useCampaignPageData } from "@/hooks/useCampaignPageData";
 import { useKpiColors } from "@/hooks/useKpiColors";
+import { invalidateCacheByPrefix } from "@/lib/queryCache";
 
 export default function CampaignsPage() {
   const [search, setSearch] = useState("");
   const [filters, setFilters] = useState<CampaignFilterState>(defaultCampaignFilters);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
-  const [blur, setBlur] = useState<BlurState>({ name: false, values: false, hideUnidentified: false });
+  const [blur, setBlur] = useState<BlurState>({
+    name: false, values: false, hideUnidentified: false, hiddenProducts: [],
+  });
 
   const { tagsMap, allUniqueTags, updateTags } = useCampaignTags();
   const { markersMap, saveMarker } = useCampaignMarkers();
@@ -58,52 +64,50 @@ export default function CampaignsPage() {
     toggle, changeBudget, reload,
   } = useCampaigns(dateStart, dateEnd);
 
+  // Background prefetch other date ranges
+  useCampaignPrefetch(activeAccountId);
+
+  // Stale data toast after 5 min of inactivity
+  const handleRefresh = useCallback(async () => {
+    invalidateCacheByPrefix("campaigns");
+    await reload();
+  }, [reload]);
+  useStaleDataToast(handleRefresh);
+
+  // Products from unidentified sales (for BlurToggle)
+  const unidentifiedProducts = unidentified?.products ?? [];
+
   const allRows = useMemo(() => {
     const rows: CampaignData[] = [...campaigns];
-    if (unidentified && unidentified.sales > 0 && !blur.hideUnidentified) {
+    if (!unidentified || unidentified.sales <= 0) return rows;
+
+    // Filter unidentified by hidden products
+    if (blur.hideUnidentified) return rows;
+
+    if (blur.hiddenProducts.length > 0 && unidentifiedProducts.length > 0) {
+      // Calculate remaining sales/revenue after hiding
+      const visibleProducts = unidentifiedProducts.filter(
+        (p) => !blur.hiddenProducts.includes(p.name),
+      );
+      if (visibleProducts.length === 0) return rows;
+      const filteredSales = visibleProducts.reduce((s, p) => s + p.sales, 0);
+      const filteredRevenue = visibleProducts.reduce((s, p) => s + p.revenue, 0);
+      rows.push({
+        ...unidentified,
+        sales: filteredSales,
+        revenue: filteredRevenue,
+        profit: filteredRevenue,
+      });
+    } else {
       rows.push(unidentified);
     }
     return rows;
-  }, [campaigns, unidentified, blur.hideUnidentified]);
+  }, [campaigns, unidentified, blur.hideUnidentified, blur.hiddenProducts, unidentifiedProducts]);
 
-  const filtered = useMemo(() => {
-    return allRows.filter((c) => {
-      const isUnidentified = c.status === "unidentified";
-      if (!c.name.toLowerCase().includes(search.toLowerCase())) return false;
-      if (!isUnidentified) {
-        if (filters.status !== "all" && c.status !== filters.status) return false;
-        if (filters.objective !== "all" && c.objective !== filters.objective) return false;
-        if (filters.tag !== "all") {
-          const cTags = tagsMap[c.id] || [];
-          if (!cTags.includes(filters.tag)) return false;
-        }
-        // Marker-based filters
-        const cMarkers = markersMap[c.id];
-        if (filters.product !== "all") {
-          if (!cMarkers?.product || cMarkers.product.reference_id !== filters.product) return false;
-        }
-        if (filters.video !== "all") {
-          if (!cMarkers?.video || cMarkers.video.reference_id !== filters.video) return false;
-        }
-        if (filters.checkout !== "all") {
-          if (!cMarkers?.checkout || cMarkers.checkout.reference_id !== filters.checkout) return false;
-        }
-      }
-      for (const vf of filters.valueFilters) {
-        const num = parseFloat(vf.value);
-        if (isNaN(num)) continue;
-        const row = campaignToMetricRow(c);
-        const fieldMap: Record<string, number> = {
-          spend: row.spend, revenue: row.revenue, profit: row.profit,
-          roas: row.roas, cpa: row.cpa, sales: row.sales,
-        };
-        const fieldVal = fieldMap[vf.metric];
-        if (fieldVal === undefined) continue;
-        if (vf.operator === "gte" ? fieldVal < num : fieldVal > num) return false;
-      }
-      return true;
-    });
-  }, [allRows, search, filters, tagsMap, markersMap]);
+  const filtered = useMemo(
+    () => filterCampaigns(allRows, search, filters, tagsMap, markersMap),
+    [allRows, search, filters, tagsMap, markersMap],
+  );
 
   const quickFilters = useQuickFilters({
     filters,
@@ -131,6 +135,7 @@ export default function CampaignsPage() {
       setFilters((p) => ({ ...p, account: value }));
       setSelectedAccountId(value === "all" ? undefined : Number(value));
     }
+    else if (key === "bidStrategy") setFilters((p) => ({ ...p, bidStrategy: value }));
     else if (key === "product") setFilters((p) => ({ ...p, product: value }));
     else if (key === "video") setFilters((p) => ({ ...p, video: value }));
     else if (key === "checkout") setFilters((p) => ({ ...p, checkout: value }));
@@ -161,7 +166,8 @@ export default function CampaignsPage() {
         onCreatePreset={() => setDrawerOpen(true)}
         blur={blur}
         onBlurChange={setBlur}
-        onRefresh={reload}
+        unidentifiedProducts={unidentifiedProducts}
+        onRefresh={handleRefresh}
         onOpenSettings={() => setSettingsOpen(true)}
       />
       <CampaignsKpis data={metricsForKpi} />

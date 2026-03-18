@@ -8,7 +8,8 @@ import { useIsMobile } from "@/hooks/use-mobile";
 
 export function DashboardLayout() {
   const isMobile = useIsMobile();
-  const [aiOpen, setAiOpen] = useState(false);
+  // On mobile, auto-open AI chat on first load
+  const [aiOpen, setAiOpen] = useState(isMobile);
 
   if (isMobile) {
     return (

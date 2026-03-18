@@ -7,6 +7,7 @@ import {
 import { ChatMessages } from "../ai-chat/ChatMessages";
 import { ChatInput } from "../ai-chat/ChatInput";
 import { PageDataToggle } from "../ai-chat/PageDataToggle";
+import { ReportIntervalSettings } from "../ai-chat/ReportIntervalSettings";
 import { geminiChat, executeAiAction, type AiAction } from "@/services/integrations";
 import { usePageDataValue } from "@/contexts/PageDataContext";
 
@@ -175,13 +176,16 @@ function MobileAIChatHeader({
           </div>
         </div>
       </div>
-      <button
-        onClick={onClear}
-        className="p-1.5 rounded-md hover:bg-muted transition-colors text-muted-foreground hover:text-foreground"
-        title="Limpar conversa"
-      >
-        <RiDeleteBinLine className="size-4" />
-      </button>
+      <div className="flex items-center gap-1">
+        <ReportIntervalSettings />
+        <button
+          onClick={onClear}
+          className="p-1.5 rounded-md hover:bg-muted transition-colors text-muted-foreground hover:text-foreground"
+          title="Limpar conversa"
+        >
+          <RiDeleteBinLine className="size-4" />
+        </button>
+      </div>
     </div>
   );
 }

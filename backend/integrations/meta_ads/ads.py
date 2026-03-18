@@ -14,10 +14,10 @@ AD_FIELDS = ",".join([
     "ad_name",
     "adset_id",
     "spend",
-    "clicks",
     "impressions",
-    "cpc",
-    "ctr",
+    "inline_link_clicks",
+    "inline_link_click_ctr",
+    "cost_per_unique_inline_link_click",
     "actions",
 ])
 
@@ -65,7 +65,10 @@ async def fetch_ads(
         initiate = safe_int(extract_action_value(
             actions, "omni_initiated_checkout",
         ))
-        clicks = safe_int(insight.get("clicks", 0))
+        # Cliques no link (não "clicks all")
+        clicks = safe_int(insight.get("inline_link_clicks", 0))
+        ctr = safe_float(insight.get("inline_link_click_ctr", 0))
+        cpc = safe_float(insight.get("cost_per_unique_inline_link_click", 0))
 
         results.append(AdInsights(
             id=ad_id,
@@ -76,8 +79,8 @@ async def fetch_ads(
             spend=safe_float(insight.get("spend", 0)),
             clicks=clicks,
             impressions=safe_int(insight.get("impressions", 0)),
-            cpc=safe_float(insight.get("cpc", 0)),
-            ctr=safe_float(insight.get("ctr", 0)),
+            cpc=cpc,
+            ctr=ctr,
             cpa=0.0,
             landing_page_views=lpv,
             initiate_checkout=initiate,

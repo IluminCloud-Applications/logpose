@@ -10,10 +10,10 @@ from integrations.meta_ads.helpers import (
 
 ACCOUNT_FIELDS = ",".join([
     "spend",
-    "clicks",
     "impressions",
-    "cpc",
-    "ctr",
+    "inline_link_clicks",
+    "inline_link_click_ctr",
+    "cost_per_unique_inline_link_click",
     "actions",
 ])
 
@@ -44,10 +44,10 @@ async def fetch_account_insights(
 
     return AccountInsightsSummary(
         spend=safe_float(row.get("spend", 0)),
-        clicks=safe_int(row.get("clicks", 0)),
+        clicks=safe_int(row.get("inline_link_clicks", 0)),
         impressions=safe_int(row.get("impressions", 0)),
-        cpc=safe_float(row.get("cpc", 0)),
-        ctr=safe_float(row.get("ctr", 0)),
+        cpc=safe_float(row.get("cost_per_unique_inline_link_click", 0)),
+        ctr=safe_float(row.get("inline_link_click_ctr", 0)),
         landing_page_views=safe_int(
             extract_action_value(actions, "landing_page_view")
         ),

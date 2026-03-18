@@ -10,6 +10,7 @@ class CampaignInsights(BaseModel):
     name: str
     status: str
     objective: str = ""
+    bid_strategy: str = ""
     budget: float = 0.0
     spend: float = 0.0
     clicks: int = 0

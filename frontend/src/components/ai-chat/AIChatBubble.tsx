@@ -3,6 +3,7 @@ import { RiMessageAi3Line, RiCloseLine, RiDeleteBinLine } from "@remixicon/react
 import { ChatMessages } from "./ChatMessages";
 import { ChatInput } from "./ChatInput";
 import { PageDataToggle } from "./PageDataToggle";
+import { ReportIntervalSettings } from "./ReportIntervalSettings";
 import { geminiChat, executeAiAction, type AiAction } from "@/services/integrations";
 import { usePageDataValue } from "@/contexts/PageDataContext";
 
@@ -131,6 +132,7 @@ export function AIChatBubble({
               </div>
             </div>
             <div className="flex items-center gap-1">
+              <ReportIntervalSettings />
               <button
                 onClick={handleClear}
                 className="p-1.5 rounded-md hover:bg-muted transition-colors text-muted-foreground hover:text-foreground"

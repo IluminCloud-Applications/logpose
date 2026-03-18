@@ -146,6 +146,16 @@ def _build_unidentified(db: Session, date_start: str, date_end: str) -> dict:
     ).all()
 
     revenue = sum(t.amount for t in unid)
+
+    # Agrupar por produto para permitir filtro no frontend
+    products_map: dict[str, dict] = {}
+    for t in unid:
+        pname = t.product_name or "Sem produto"
+        if pname not in products_map:
+            products_map[pname] = {"name": pname, "sales": 0, "revenue": 0.0}
+        products_map[pname]["sales"] += 1
+        products_map[pname]["revenue"] += t.amount
+
     return {
         "id": "unidentified",
         "name": "Não identificado",
@@ -159,4 +169,5 @@ def _build_unidentified(db: Session, date_start: str, date_end: str) -> dict:
         "landing_page_views": 0, "initiate_checkout": 0,
         "connect_rate": 0, "no_id_sales": 0,
         "views_vsl": 0, "plays_vsl": 0, "play_rate": 0,
+        "products": list(products_map.values()),
     }

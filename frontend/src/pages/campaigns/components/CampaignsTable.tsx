@@ -53,7 +53,7 @@ const emptyDeactivate: DeactivateState = {
 
 export function CampaignsTable({
   data, columns,
-  blur = { name: false, values: false, hideUnidentified: false },
+  blur = { name: false, values: false, hideUnidentified: false, hiddenProducts: [] },
   tagsMap = {}, markersMap = {},
   onToggle, onBudgetChange, onSaveTags, onSaveMarker,
   accountId,

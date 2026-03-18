@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import type { QuickFilter } from "@/components/QuickFiltersBadges";
-import { objectiveLabels } from "./dateHelpers";
+import { objectiveLabels, bidStrategyLabels } from "./dateHelpers";
 import type { CampaignFilterState } from "./CampaignsInlineFilters";
 import type { MarkerMap } from "@/hooks/useCampaignMarkers";
 
@@ -78,6 +78,17 @@ export function useQuickFilters({ filters, accounts, markersMap, tags }: QuickFi
         options: [
           { value: "all", label: "Todos" },
           ...Object.entries(objectiveLabels).map(([v, l]) => ({ value: v, label: l })),
+        ],
+      },
+      {
+        key: "bidStrategy",
+        label: "Lance",
+        value: filters.bidStrategy,
+        isActive: filters.bidStrategy !== "all",
+        defaultValue: "all",
+        options: [
+          { value: "all", label: "Todos" },
+          ...Object.entries(bidStrategyLabels).map(([v, l]) => ({ value: v, label: l })),
         ],
       },
       {

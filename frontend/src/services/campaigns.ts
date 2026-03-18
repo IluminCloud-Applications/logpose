@@ -51,11 +51,18 @@ export interface CampaignAdSetData {
   ads: CampaignAdData[];
 }
 
+export interface UnidentifiedProduct {
+  name: string;
+  sales: number;
+  revenue: number;
+}
+
 export interface CampaignData {
   id: string;
   name: string;
   status: string;
   objective: string;
+  bid_strategy?: string;
   budget: number;
   spend: number;
   clicks: number;
@@ -74,6 +81,7 @@ export interface CampaignData {
   plays_vsl: number;
   play_rate: number;
   adsets: CampaignAdSetData[];
+  products?: UnidentifiedProduct[];
 }
 
 export interface CampaignsResponse {
