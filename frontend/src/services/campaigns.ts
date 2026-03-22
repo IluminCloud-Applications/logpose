@@ -266,6 +266,8 @@ export interface CampaignConversionData {
   refunded_revenue: number;
   chargeback_count: number;
   chargeback_revenue: number;
+  trial_count: number;
+  trial_revenue: number;
   approval_rate: number;
   recovery_rate: number;
   loss_rate: number;

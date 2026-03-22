@@ -11,6 +11,7 @@ class RecoveryType(str, enum.Enum):
     ABANDONED_CART = "abandoned_cart"
     DECLINED_CARD = "declined_card"
     UNPAID_PIX = "unpaid_pix"
+    TRIAL = "trial"
 
 
 class RecoveryChannel(str, enum.Enum):

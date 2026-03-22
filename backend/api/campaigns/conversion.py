@@ -43,12 +43,14 @@ def campaign_conversion_data(
         pending = [t for t in txs if t.status == TransactionStatus.PENDING]
         refunded = [t for t in txs if t.status == TransactionStatus.REFUNDED]
         chargeback = [t for t in txs if t.status == TransactionStatus.CHARGEBACK]
+        trial = [t for t in txs if t.status == TransactionStatus.TRIAL]
 
         total = len(txs)
         approved_revenue = sum(t.amount for t in approved)
         pending_revenue = sum(t.amount for t in pending)
         refunded_revenue = sum(t.amount for t in refunded)
         chargeback_revenue = sum(t.amount for t in chargeback)
+        trial_revenue = sum(t.amount for t in trial)
         lost_total = len(pending) + len(refunded) + len(chargeback)
 
         results.append({
@@ -62,6 +64,8 @@ def campaign_conversion_data(
             "refunded_revenue": refunded_revenue,
             "chargeback_count": len(chargeback),
             "chargeback_revenue": chargeback_revenue,
+            "trial_count": len(trial),
+            "trial_revenue": trial_revenue,
             "approval_rate": round((len(approved) / total) * 100, 1) if total > 0 else 0,
             "recovery_rate": round((len(pending) / total) * 100, 1) if total > 0 else 0,
             "loss_rate": round((lost_total / total) * 100, 1) if total > 0 else 0,

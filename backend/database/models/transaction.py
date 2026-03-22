@@ -12,6 +12,7 @@ class TransactionStatus(str, enum.Enum):
     REFUNDED = "refunded"
     CHARGEBACK = "chargeback"
     PENDING = "pending"
+    TRIAL = "trial"
 
 
 class PaymentPlatform(str, enum.Enum):

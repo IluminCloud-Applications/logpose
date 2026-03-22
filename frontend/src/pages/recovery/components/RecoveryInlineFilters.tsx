@@ -69,6 +69,7 @@ export function RecoveryInlineFilters({
               <TabsTrigger value="abandoned_cart" className="text-xs flex-1">Carrinho</TabsTrigger>
               <TabsTrigger value="declined_card" className="text-xs flex-1">Cartão</TabsTrigger>
               <TabsTrigger value="unpaid_pix" className="text-xs flex-1">PIX</TabsTrigger>
+              <TabsTrigger value="trial" className="text-xs flex-1">Trial</TabsTrigger>
             </TabsList>
           </Tabs>
         </div>

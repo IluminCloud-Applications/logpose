@@ -13,6 +13,8 @@ import {
   RiRefundLine,
   RiGeminiLine,
   RiTeamLine,
+  RiRepeatLine,
+  RiBankCardLine,
 } from "@remixicon/react";
 import { useLocation, useNavigate } from "react-router-dom";
 import {
@@ -48,6 +50,7 @@ const navGroups: NavGroup[] = [
       { title: "Dashboard", icon: RiDashboardLine, url: "/dashboard" },
       { title: "Campanhas", icon: RiMegaphoneLine, url: "/campaigns" },
       { title: "Empresa", icon: RiBuildingLine, url: "/company" },
+      { title: "Assinatura", icon: RiRepeatLine, url: "/subscriptions" },
     ],
   },
   {
@@ -72,6 +75,7 @@ const navGroups: NavGroup[] = [
       { title: "Plataformas", icon: RiWalletLine, url: "/platforms", roles: ["owner", "admin"] },
       { title: "Facebook Ads", icon: RiMetaLine, url: "/facebook-ads", roles: ["owner", "admin"] },
       { title: "VTurb", icon: RiPlayCircleLine, url: "/vturb", roles: ["owner", "admin"] },
+      { title: "Stripe", icon: RiBankCardLine, url: "/stripe", roles: ["owner", "admin"] },
       { title: "Gemini API", icon: RiGeminiLine, url: "/gemini", roles: ["owner", "admin"] },
     ],
   },

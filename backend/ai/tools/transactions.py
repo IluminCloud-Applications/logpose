@@ -20,7 +20,7 @@ def query_transactions(
 
     Args:
         days_back: Quantidade de dias para trás (default 30)
-        status: Filtrar por status: approved, refunded, chargeback, pending (vazio = todos)
+        status: Filtrar por status: approved, refunded, chargeback, pending, trial (vazio = todos)
         utm_campaign: Filtrar por campanha específica (vazio = todas)
     """
     db = SessionLocal()
@@ -45,6 +45,7 @@ def query_transactions(
         pending = [t for t in rows if t.status == TransactionStatus.PENDING]
         refunded = [t for t in rows if t.status == TransactionStatus.REFUNDED]
         chargebacks = [t for t in rows if t.status == TransactionStatus.CHARGEBACK]
+        trials = [t for t in rows if t.status == TransactionStatus.TRIAL]
 
         total_revenue = sum(t.amount for t in approved)
         avg_ticket = total_revenue / len(approved) if approved else 0
@@ -56,6 +57,7 @@ def query_transactions(
             f"Pendentes: {len(pending)} (R$ {sum(t.amount for t in pending):,.2f})\n"
             f"Reembolsadas: {len(refunded)} (R$ {sum(t.amount for t in refunded):,.2f})\n"
             f"Chargebacks: {len(chargebacks)} (R$ {sum(t.amount for t in chargebacks):,.2f})\n"
+            f"Trials: {len(trials)} (R$ {sum(t.amount for t in trials):,.2f})\n"
             f"Ticket médio: R$ {avg_ticket:,.2f}\n"
             f"Taxa de aprovação: {(len(approved)/len(rows)*100):.1f}%\n"
             if rows else "Nenhuma transação encontrada no período."

@@ -124,6 +124,7 @@ def sales_summary(
     refunded = query.filter(Transaction.status == TransactionStatus.REFUNDED).count()
     chargebacks = query.filter(Transaction.status == TransactionStatus.CHARGEBACK).count()
     pending = query.filter(Transaction.status == TransactionStatus.PENDING).count()
+    trial = query.filter(Transaction.status == TransactionStatus.TRIAL).count()
 
     revenue = db.query(func.coalesce(func.sum(Transaction.amount), 0)).filter(
         Transaction.id.in_([t.id for t in query.filter(Transaction.status == TransactionStatus.APPROVED).all()])
@@ -134,7 +135,8 @@ def sales_summary(
     return {
         "total": total, "approved": approved,
         "refunded": refunded, "chargebacks": chargebacks,
-        "pending": pending, "revenue": float(revenue),
+        "pending": pending, "trial": trial,
+        "revenue": float(revenue),
         "avg_ticket": round(avg_ticket, 2),
     }
 

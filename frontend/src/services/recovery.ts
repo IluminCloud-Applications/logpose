@@ -7,7 +7,7 @@ export interface RecoveryRow {
   customerName: string;
   customerEmail: string;
   product: string;
-  type: "abandoned_cart" | "declined_card" | "unpaid_pix";
+  type: "abandoned_cart" | "declined_card" | "unpaid_pix" | "trial";
   amount: number;
   recovered: boolean;
   channel: string;

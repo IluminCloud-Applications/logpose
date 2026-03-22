@@ -59,6 +59,8 @@ from api.campaigns_create.export_import import router as campaign_create_export_
 from api.users.list import router as users_list_router
 from api.users.invite import router as users_invite_router
 from api.users.manage import router as users_manage_router
+from api.stripe.accounts import router as stripe_accounts_router
+from api.subscriptions.metrics import router as subscriptions_metrics_router
 
 # Migrate ENUM columns → VARCHAR (idempotent, runs on every boot)
 run_enum_migrations(engine)
@@ -124,6 +126,8 @@ app.include_router(campaign_create_export_router, prefix="/api")
 app.include_router(users_list_router, prefix="/api")
 app.include_router(users_invite_router, prefix="/api")
 app.include_router(users_manage_router, prefix="/api")
+app.include_router(stripe_accounts_router, prefix="/api")
+app.include_router(subscriptions_metrics_router, prefix="/api")
 
 # SPA Middleware (serves frontend in production)
 _frontend_dir = os.path.join(os.path.dirname(__file__), "frontend_dist")

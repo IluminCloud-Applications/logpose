@@ -4,7 +4,7 @@ export interface SaleAPI {
   id: number;
   external_id: string;
   platform: "kiwify" | "payt";
-  status: "approved" | "refunded" | "chargeback" | "pending";
+  status: "approved" | "refunded" | "chargeback" | "pending" | "trial";
   amount: number;
   customer_email: string | null;
   product_name: string | null;
@@ -32,6 +32,7 @@ export interface SalesSummary {
   refunded: number;
   chargebacks: number;
   pending: number;
+  trial: number;
   revenue: number;
   avg_ticket: number;
 }

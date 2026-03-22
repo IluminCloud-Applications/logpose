@@ -19,6 +19,8 @@ def _map_status(status: str, payment_status: str) -> TransactionStatus:
         return TransactionStatus.REFUNDED
     elif st in ["chargeback", "dispute"]:
         return TransactionStatus.CHARGEBACK
+    elif st == "trial":
+        return TransactionStatus.TRIAL
     
     # cartões recusados, pix gerados sem pagar, abandonos
     return TransactionStatus.PENDING

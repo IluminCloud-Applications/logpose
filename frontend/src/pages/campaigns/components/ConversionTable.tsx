@@ -27,9 +27,10 @@ export function ConversionTable({ campaigns, conversionData }: ConversionTablePr
       pending: acc.pending + conv.pending_count,
       refunded: acc.refunded + conv.refunded_count,
       chargeback: acc.chargeback + conv.chargeback_count,
+      trial: acc.trial + conv.trial_count,
       lostRev: acc.lostRev + conv.pending_revenue + conv.refunded_revenue + conv.chargeback_revenue,
     }),
-    { total: 0, approved: 0, pending: 0, refunded: 0, chargeback: 0, lostRev: 0 },
+    { total: 0, approved: 0, pending: 0, refunded: 0, chargeback: 0, trial: 0, lostRev: 0 },
   );
   const ttlApproval = totals.total > 0 ? (totals.approved / totals.total) * 100 : 0;
   const ttlLost = totals.pending + totals.refunded + totals.chargeback;
@@ -53,6 +54,7 @@ export function ConversionTable({ campaigns, conversionData }: ConversionTablePr
                 <TableHead className="text-right">Pendentes</TableHead>
                 <TableHead className="text-right">Reembolsos</TableHead>
                 <TableHead className="text-right">Chargebacks</TableHead>
+                <TableHead className="text-right">Trials</TableHead>
                 <TableHead className="text-right">Aprovação</TableHead>
                 <TableHead className="text-right">Perda</TableHead>
                 <TableHead className="text-right">Perdido R$</TableHead>
@@ -61,7 +63,7 @@ export function ConversionTable({ campaigns, conversionData }: ConversionTablePr
             <TableBody>
               {rows.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={9} className="text-center py-12 text-muted-foreground">
+                  <TableCell colSpan={10} className="text-center py-12 text-muted-foreground">
                     Nenhuma transação encontrada no período
                   </TableCell>
                 </TableRow>
@@ -80,6 +82,7 @@ export function ConversionTable({ campaigns, conversionData }: ConversionTablePr
                   <TableCell className="text-right tabular-nums">{fmt(totals.pending)}</TableCell>
                   <TableCell className="text-right tabular-nums">{fmt(totals.refunded)}</TableCell>
                   <TableCell className="text-right tabular-nums">{fmt(totals.chargeback)}</TableCell>
+                  <TableCell className="text-right tabular-nums">{fmt(totals.trial)}</TableCell>
                   <TableCell className="text-right"><RateBadge rate={ttlApproval} good={ttlApproval >= 70} /></TableCell>
                   <TableCell className="text-right"><RateBadge rate={ttlLossRate} good={ttlLossRate < 15} /></TableCell>
                   <TableCell className="text-right tabular-nums text-destructive">
@@ -116,6 +119,7 @@ function ConversionRow({ campaign, conv }: { campaign: CampaignData; conv: Campa
       <CountCell count={conv.pending_count} revenue={conv.pending_revenue} color="text-amber-500" />
       <CountCell count={conv.refunded_count} revenue={conv.refunded_revenue} color="text-destructive" />
       <CountCell count={conv.chargeback_count} revenue={conv.chargeback_revenue} color="text-destructive" />
+      <CountCell count={conv.trial_count} revenue={conv.trial_revenue} color="text-chart-3" />
       <TableCell className="text-right"><RateBadge rate={conv.approval_rate} good={conv.approval_rate >= 70} /></TableCell>
       <TableCell className="text-right"><RateBadge rate={lossRate} good={lossRate < 15} /></TableCell>
       <TableCell className="text-right tabular-nums">

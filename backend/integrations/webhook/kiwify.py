@@ -16,6 +16,7 @@ def _map_status(webhook_status: str) -> TransactionStatus:
         "abandoned": TransactionStatus.PENDING,
         "refused": TransactionStatus.PENDING,
         "canceled": TransactionStatus.PENDING,
+        "trial": TransactionStatus.TRIAL,
     }
     return status_map.get(webhook_status.lower(), TransactionStatus.PENDING)
 

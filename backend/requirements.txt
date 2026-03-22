@@ -12,3 +12,4 @@ openpyxl
 python-multipart
 langchain
 langchain-google-genai
+stripe

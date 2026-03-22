@@ -14,6 +14,8 @@ logger = logging.getLogger(__name__)
 _NEW_ENUM_VALUES = [
     ("webhookplatform", "API"),
     ("paymentplatform", "API"),
+    ("transactionstatus", "TRIAL"),
+    ("recoverytype", "TRIAL"),
 ]
 
 # Mapeamento value→name para normalizar dados da era VARCHAR
@@ -21,6 +23,7 @@ _DATA_FIXES: dict[tuple[str, str], dict[str, str]] = {
     ("transactions", "status"): {
         "approved": "APPROVED", "refunded": "REFUNDED",
         "chargeback": "CHARGEBACK", "pending": "PENDING",
+        "trial": "TRIAL",
     },
     ("transactions", "platform"): {
         "kiwify": "KIWIFY", "payt": "PAYT", "api": "API",
@@ -32,6 +35,7 @@ _DATA_FIXES: dict[tuple[str, str], dict[str, str]] = {
         "abandoned_cart": "ABANDONED_CART",
         "declined_card": "DECLINED_CART",
         "unpaid_pix": "UNPAID_PIX",
+        "trial": "TRIAL",
     },
     ("recoveries", "channel"): {
         "whatsapp": "WHATSAPP", "email": "EMAIL", "sms": "SMS",

@@ -6,6 +6,7 @@ import {
   RiPriceTag3Line,
   RiRefundLine,
   RiErrorWarningLine,
+  RiTestTubeLine,
 } from "@remixicon/react";
 import type { SalesSummary } from "@/types/sale";
 import { cn } from "@/lib/utils";
@@ -28,10 +29,11 @@ export function SalesKpis({ summary, loading }: SalesKpisProps) {
     { label: "Ticket Médio", value: fmt(summary?.avg_ticket ?? 0), icon: RiPriceTag3Line, color: "text-primary" },
     { label: "Reembolsos", value: String(summary?.refunded ?? 0), icon: RiRefundLine, color: "text-[var(--color-warning)]" },
     { label: "Chargebacks", value: String(summary?.chargebacks ?? 0), icon: RiErrorWarningLine, color: "text-destructive" },
+    { label: "Trials", value: String(summary?.trial ?? 0), icon: RiTestTubeLine, color: "text-chart-3" },
   ];
 
   return (
-    <div className="grid gap-3 grid-cols-2 sm:grid-cols-3 lg:grid-cols-6">
+    <div className="grid gap-3 grid-cols-2 sm:grid-cols-4 lg:grid-cols-7">
       {metrics.map((m) => (
         <Card key={m.label} className="border-border/40 hover:border-border/70 transition-colors">
           <CardContent className="p-3 sm:p-4 flex items-center gap-2 sm:gap-3">

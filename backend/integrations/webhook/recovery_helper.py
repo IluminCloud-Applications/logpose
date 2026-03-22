@@ -28,6 +28,8 @@ def classify_recovery_channel(
 
 def classify_recovery_type(event: StandardizedWebhookEvent) -> RecoveryType:
     """Classifica o tipo de recuperação baseado nos dados do evento."""
+    if event.status == TransactionStatus.TRIAL:
+        return RecoveryType.TRIAL
     if event.amount == 0:
         return RecoveryType.ABANDONED_CART
     return RecoveryType.ABANDONED_CART
@@ -38,8 +40,8 @@ def create_recovery_if_pending(
     event: StandardizedWebhookEvent,
     customer: Customer,
 ):
-    """Cria um registro de recuperação se a transação é pendente."""
-    if event.status != TransactionStatus.PENDING:
+    """Cria um registro de recuperação se a transação é pendente ou trial."""
+    if event.status not in (TransactionStatus.PENDING, TransactionStatus.TRIAL):
         return
 
     existing = db.query(Recovery).filter(

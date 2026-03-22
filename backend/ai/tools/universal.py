@@ -131,6 +131,7 @@ def _handle_transactions(db, date_start, date_end, **kwargs):
     pending = [t for t in rows if t.status == TransactionStatus.PENDING]
     refunded = [t for t in rows if t.status == TransactionStatus.REFUNDED]
     cbs = [t for t in rows if t.status == TransactionStatus.CHARGEBACK]
+    trials = [t for t in rows if t.status == TransactionStatus.TRIAL]
 
     revenue = sum(t.amount for t in approved)
     avg = revenue / len(approved) if approved else 0
@@ -140,6 +141,7 @@ def _handle_transactions(db, date_start, date_end, **kwargs):
         f"Total: {len(rows)} | Aprovadas: {len(approved)} "
         f"(R$ {revenue:,.2f}) | Pendentes: {len(pending)} | "
         f"Reembolsos: {len(refunded)} | Chargebacks: {len(cbs)} | "
+        f"Trials: {len(trials)} | "
         f"Ticket: R$ {avg:,.2f} | Aprovação: {rate:.1f}%"
     )
 

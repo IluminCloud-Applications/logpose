@@ -5,7 +5,7 @@ export interface SaleRow {
   date: string;
   product: string;
   platform: "kiwify" | "payt";
-  status: "approved" | "refunded" | "chargeback" | "pending";
+  status: "approved" | "refunded" | "chargeback" | "pending" | "trial";
   amount: number;
   customerEmail: string;
   utmCampaign: string;

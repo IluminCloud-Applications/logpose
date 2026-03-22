@@ -10,6 +10,7 @@ const typeLabels: Record<string, string> = {
   abandoned_cart: "Carrinho Abandonado",
   declined_card: "Cartão Recusado",
   unpaid_pix: "PIX Não Pago",
+  trial: "Trial",
 };
 
 const channelLabels: Record<string, string> = {
