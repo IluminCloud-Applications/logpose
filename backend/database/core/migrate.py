@@ -1,9 +1,7 @@
 """
-Script de migração automática executado no boot da aplicação.
-Converte colunas ENUM nativas do PostgreSQL para VARCHAR,
-permitindo que o create_all funcione sem migrations manuais.
-
-Cada alteração é idempotente: verifica o tipo atual antes de agir.
+Migração automática no boot: adiciona novos valores aos ENUM types
+e repara colunas que foram convertidas para VARCHAR por engano.
+Idempotente — roda em todo boot sem efeito colateral.
 """
 import logging
 from sqlalchemy import text
@@ -11,56 +9,67 @@ from sqlalchemy.engine import Engine
 
 logger = logging.getLogger(__name__)
 
-# Lista de (tabela, coluna) que precisam ser VARCHAR
-_ENUM_TO_VARCHAR: list[tuple[str, str]] = [
-    ("transactions", "status"),
-    ("transactions", "platform"),
-    ("webhook_endpoints", "platform"),
-    ("recoveries", "type"),
-    ("recoveries", "channel"),
-    ("admins", "role"),
-    ("checkouts", "platform"),
-    ("campaign_markers", "marker_type"),
-    ("campaign_actions", "action_type"),
+# Novos valores a adicionar (pg_type_name, value)
+_NEW_ENUM_VALUES = [
+    ("webhookplatform", "api"),
+    ("paymentplatform", "api"),
 ]
 
-_CHECK_SQL = text("""
-    SELECT data_type
-    FROM information_schema.columns
-    WHERE table_name = :table AND column_name = :column
-""")
-
-_ALTER_SQL = (
-    "ALTER TABLE {table} ALTER COLUMN {column} "
-    "TYPE VARCHAR(50) USING {column}::text"
-)
+# Colunas que devem ser ENUM (tabela, coluna, pg_type_name)
+_ENUM_COLUMNS = [
+    ("transactions", "status", "transactionstatus"),
+    ("transactions", "platform", "paymentplatform"),
+    ("webhook_endpoints", "platform", "webhookplatform"),
+    ("recoveries", "type", "recoverytype"),
+    ("recoveries", "channel", "recoverychannel"),
+    ("admins", "role", "userrole"),
+    ("checkouts", "platform", "checkoutplatform"),
+    ("campaign_markers", "marker_type", "markertype"),
+    ("campaign_actions", "action_type", "actiontype"),
+]
 
 
 def run_enum_migrations(engine: Engine) -> None:
-    """
-    Para cada (tabela, coluna) cadastrado, verifica se o tipo é 'USER-DEFINED'
-    (ENUM nativo do PostgreSQL). Se for, converte para VARCHAR(50).
-    """
-    with engine.connect() as conn:
-        for table, column in _ENUM_TO_VARCHAR:
+    """Adiciona 'api' aos ENUMs e repara colunas VARCHAR→ENUM."""
+
+    # 1. Adicionar valores novos (precisa de AUTOCOMMIT)
+    with engine.connect().execution_options(
+        isolation_level="AUTOCOMMIT"
+    ) as conn:
+        for type_name, value in _NEW_ENUM_VALUES:
             try:
-                row = conn.execute(
-                    _CHECK_SQL, {"table": table, "column": column}
+                exists = conn.execute(
+                    text("SELECT 1 FROM pg_type WHERE typname = :n"),
+                    {"n": type_name},
                 ).fetchone()
+                if exists:
+                    conn.execute(text(
+                        f"ALTER TYPE {type_name} ADD VALUE IF NOT EXISTS '{value}'"
+                    ))
+                    logger.info(f"✅ '{value}' em {type_name}")
+            except Exception as e:
+                logger.error(f"Erro ao adicionar {value} a {type_name}: {e}")
+
+    # 2. Reparar colunas VARCHAR → ENUM (se necessário)
+    with engine.connect() as conn:
+        for table, column, enum_type in _ENUM_COLUMNS:
+            try:
+                row = conn.execute(text(
+                    "SELECT data_type FROM information_schema.columns "
+                    "WHERE table_name = :t AND column_name = :c"
+                ), {"t": table, "c": column}).fetchone()
 
                 if row is None:
-                    # Tabela/coluna ainda não existe — create_all vai criar como VARCHAR
                     continue
 
-                data_type = row[0]
-                if data_type == "USER-DEFINED":
-                    logger.info(f"Convertendo ENUM → VARCHAR: {table}.{column}")
-                    conn.execute(text(_ALTER_SQL.format(table=table, column=column)))
+                if row[0] == "character varying":
+                    logger.info(f"Reparando {table}.{column}: VARCHAR → {enum_type}")
+                    conn.execute(text(
+                        f"ALTER TABLE {table} ALTER COLUMN {column} "
+                        f"TYPE {enum_type} USING {column}::{enum_type}"
+                    ))
                     conn.commit()
-                    logger.info(f"✅ {table}.{column} convertido com sucesso")
-
+                    logger.info(f"✅ {table}.{column} restaurado")
             except Exception as e:
-                logger.error(
-                    f"Erro ao migrar {table}.{column}: {e}", exc_info=True
-                )
+                logger.error(f"Erro {table}.{column}: {e}", exc_info=True)
                 conn.rollback()

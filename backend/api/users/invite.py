@@ -52,6 +52,6 @@ def create_invite(
     return {
         "id": user.id,
         "name": user.name,
-        "role": user.role,
+        "role": user.role.value,
         "invite_token": token,
     }

@@ -1,6 +1,6 @@
 from sqlalchemy import (
     Column, Integer, String, Float, DateTime,
-    Boolean, ForeignKey,
+    Enum, Boolean, ForeignKey,
 )
 from database.core.connection import Base
 from database.core.timezone import CREATED_AT_DEFAULT, UPDATED_AT_DEFAULT
@@ -35,10 +35,10 @@ class Recovery(Base):
     customer_name = Column(String(255), nullable=True)
     customer_email = Column(String(255), nullable=True, index=True)
     product_name = Column(String(255), nullable=True)
-    type = Column(String(50), nullable=False)
+    type = Column(Enum(RecoveryType), nullable=False)
     amount = Column(Float, nullable=False)
     recovered = Column(Boolean, default=False)
-    channel = Column(String(50), nullable=True)
+    channel = Column(Enum(RecoveryChannel), nullable=True)
     src = Column(String(255), nullable=True)
     recovered_at = Column(DateTime, nullable=True)
     created_at = Column(DateTime, server_default=CREATED_AT_DEFAULT)

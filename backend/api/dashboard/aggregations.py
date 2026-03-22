@@ -65,10 +65,10 @@ def _platform_dist(base, db):
     labels = {"kiwify": "Kiwify", "payt": "PayT", "api": "API"}
     return [
         {
-            "name": labels.get(r.platform, r.platform),
+            "name": labels.get(r.platform.value, r.platform.value),
             "value": float(r.value or 0),
             "sales": int(r.sales or 0),
-            "fill": colors.get(r.platform, "var(--color-chart-4)"),
+            "fill": colors.get(r.platform.value, "var(--color-chart-4)"),
         }
         for r in rows
     ]

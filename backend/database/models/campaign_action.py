@@ -3,7 +3,7 @@ Tabela de ações do usuário em campanhas — registra quando o CEO
 aumenta/diminui orçamento ou pausa campanhas, junto com as métricas
 do momento da ação. Usado como "memória" para a AI aprender padrões.
 """
-from sqlalchemy import Column, Integer, String, Float, DateTime
+from sqlalchemy import Column, Integer, String, Float, DateTime, Enum
 from database.core.connection import Base
 from database.core.timezone import now_sp
 import enum
@@ -25,7 +25,7 @@ class CampaignAction(Base):
     entity_id = Column(String, nullable=False, index=True)
     entity_type = Column(String, nullable=False)  # campaign | adset | ad
     entity_name = Column(String, nullable=False)
-    action_type = Column(String(50), nullable=False, index=True)
+    action_type = Column(Enum(ActionType), nullable=False, index=True)
 
     # Dados da ação de orçamento
     budget_before = Column(Float, nullable=True)

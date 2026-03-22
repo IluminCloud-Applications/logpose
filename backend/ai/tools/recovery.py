@@ -34,7 +34,7 @@ def query_recovery_data(days_back: int = 30) -> str:
 
         by_type = {}
         for rtype in RecoveryType:
-            items = [r for r in recoveries if r.type == rtype.value]
+            items = [r for r in recoveries if r.type == rtype]
             recovered = [r for r in items if r.recovered]
             total_lost = sum(r.amount for r in items)
             total_recovered = sum(r.amount for r in recovered)

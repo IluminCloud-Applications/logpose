@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, DateTime
+from sqlalchemy import Column, Integer, String, DateTime, Enum
 from database.core.connection import Base
 from database.core.timezone import CREATED_AT_DEFAULT
 import enum
@@ -20,7 +20,7 @@ class CampaignMarker(Base):
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     campaign_id = Column(String(100), nullable=False, index=True)
-    marker_type = Column(String(50), nullable=False)
+    marker_type = Column(Enum(MarkerType), nullable=False)
     # Para VIDEO: player_id do VTurb. Para CHECKOUT: id do checkout.
     reference_id = Column(String(255), nullable=False)
     # Nome legível para exibição rápida

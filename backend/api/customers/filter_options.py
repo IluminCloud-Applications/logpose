@@ -41,7 +41,7 @@ def customer_filter_options(
     return {
         "products": [{"id": p.id, "name": p.name} for p in products],
         "platforms": [
-            {"value": p[0], "label": platform_labels.get(p[0], p[0])}
+            {"value": p[0].value, "label": platform_labels.get(p[0].value, p[0].value)}
             for p in platforms
         ],
         "campaigns": [c[0] for c in campaigns],

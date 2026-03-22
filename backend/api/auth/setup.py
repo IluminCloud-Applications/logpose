@@ -42,7 +42,7 @@ def get_invite_info(token: str, db: Session = Depends(get_db)):
     invite = db.query(Admin).filter(Admin.invite_token == token).first()
     if not invite:
         raise HTTPException(status_code=404, detail="Convite inválido ou expirado")
-    return {"name": invite.name, "role": invite.role}
+    return {"name": invite.name, "role": invite.role.value}
 
 
 @router.post("/setup")
