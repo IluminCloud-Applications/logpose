@@ -6,7 +6,7 @@ Dashboard estratégico de performance para Direct Response.
 
 ```bash
 git add -A
-git commit -m "v1.28 - fix upgrade"
+git commit -m "v1.29 - fix upgrade"
 git push
 ```
 
