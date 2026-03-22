@@ -37,7 +37,7 @@ def list_webhooks(
         WebhookResponse(
             id=ep.id,
             slug=ep.slug,
-            platform=ep.platform.value,
+            platform=ep.platform,
             name=ep.name,
             created_at=ep.created_at,
         )
@@ -69,7 +69,7 @@ def create_webhook(
     return WebhookResponse(
         id=endpoint.id,
         slug=endpoint.slug,
-        platform=endpoint.platform.value,
+        platform=endpoint.platform,
         name=endpoint.name,
         created_at=endpoint.created_at,
     )

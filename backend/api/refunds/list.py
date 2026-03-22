@@ -128,8 +128,8 @@ def _serialize(t: Transaction, reason: RefundReason | None) -> dict:
     return {
         "id": t.id,
         "external_id": t.external_id,
-        "platform": t.platform.value,
-        "status": t.status.value,
+        "platform": t.platform,
+        "status": t.status,
         "amount": t.amount,
         "customer_email": t.customer_email,
         "product_name": t.product_name,

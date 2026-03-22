@@ -71,7 +71,7 @@ def _get_product(product_id: int, db: Session) -> Product:
 def _checkout_response(c: Checkout) -> CheckoutResponse:
     return CheckoutResponse(
         id=c.id, product_id=c.product_id, url=c.url,
-        price=c.price, platform=c.platform.value, created_at=c.created_at,
+        price=c.price, platform=c.platform, created_at=c.created_at,
     )
 
 

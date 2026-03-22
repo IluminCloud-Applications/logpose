@@ -36,7 +36,7 @@ def login(data: LoginRequest, db: Session = Depends(get_db)):
     token = create_access_token({
         "sub": str(admin.id),
         "email": admin.email,
-        "role": admin.role.value,
+        "role": admin.role,
     })
 
     return {
@@ -46,6 +46,6 @@ def login(data: LoginRequest, db: Session = Depends(get_db)):
             "id": admin.id,
             "name": admin.name,
             "email": admin.email,
-            "role": admin.role.value,
+            "role": admin.role,
         },
     }

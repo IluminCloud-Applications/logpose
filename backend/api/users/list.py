@@ -20,7 +20,7 @@ def list_users(
             "id": u.id,
             "name": u.name,
             "email": u.email,
-            "role": u.role.value,
+            "role": u.role,
             "status": "active" if u.email and u.password_hash else "pending",
             "invite_token": u.invite_token if u.invite_token else None,
             "created_at": u.created_at.isoformat() if u.created_at else None,

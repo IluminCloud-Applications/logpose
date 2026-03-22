@@ -159,13 +159,13 @@ def filter_options(
         .all()
     )
 
-    platform_labels = {"kiwify": "Kiwify", "payt": "PayT"}
+    platform_labels = {"kiwify": "Kiwify", "payt": "PayT", "api": "API"}
 
     return {
         "products": [{"id": p.id, "name": p.name} for p in products],
         "campaigns": [c[0] for c in campaigns],
         "platforms": [
-            {"value": p[0].value, "label": platform_labels.get(p[0].value, p[0].value)}
+            {"value": p[0], "label": platform_labels.get(p[0], p[0])}
             for p in platforms
         ],
     }
@@ -175,8 +175,8 @@ def _serialize(t: Transaction) -> dict:
     return {
         "id": t.id,
         "external_id": t.external_id,
-        "platform": t.platform.value,
-        "status": t.status.value,
+        "platform": t.platform,
+        "status": t.status,
         "amount": t.amount,
         "customer_email": t.customer_email,
         "product_name": t.product_name,

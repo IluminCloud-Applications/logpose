@@ -37,7 +37,7 @@ def list_markers(
         MarkerResponse(
             id=r.id,
             campaign_id=r.campaign_id,
-            marker_type=r.marker_type.value,
+            marker_type=r.marker_type,
             reference_id=r.reference_id,
             reference_label=r.reference_label,
         )
@@ -75,7 +75,7 @@ def upsert_marker(
     return MarkerResponse(
         id=row.id,
         campaign_id=row.campaign_id,
-        marker_type=row.marker_type.value,
+        marker_type=row.marker_type,
         reference_id=row.reference_id,
         reference_label=row.reference_label,
     )
