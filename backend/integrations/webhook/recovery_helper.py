@@ -10,27 +10,27 @@ from database.core.timezone import now_sp
 
 def classify_recovery_channel(
     src: str | None, db: Session,
-) -> RecoveryChannel:
+) -> str:
     """Classifica o canal de recuperação baseado no src e nas configs salvas."""
     if not src:
-        return RecoveryChannel.OTHER
+        return RecoveryChannel.OTHER.value
 
     configs = db.query(RecoveryChannelConfig).all()
     src_lower = src.lower()
     for cfg in configs:
         if cfg.keyword and cfg.keyword.lower() in src_lower:
             try:
-                return RecoveryChannel(cfg.channel)
+                return RecoveryChannel(cfg.channel).value
             except ValueError:
                 pass
-    return RecoveryChannel.OTHER
+    return RecoveryChannel.OTHER.value
 
 
-def classify_recovery_type(event: StandardizedWebhookEvent) -> RecoveryType:
+def classify_recovery_type(event: StandardizedWebhookEvent) -> str:
     """Classifica o tipo de recuperação baseado nos dados do evento."""
     if event.amount == 0:
-        return RecoveryType.ABANDONED_CART
-    return RecoveryType.ABANDONED_CART
+        return RecoveryType.ABANDONED_CART.value
+    return RecoveryType.ABANDONED_CART.value
 
 
 def create_recovery_if_pending(

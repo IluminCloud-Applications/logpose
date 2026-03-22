@@ -92,7 +92,7 @@ def _handle_recovery(db, date_start, date_end, **kwargs):
     lines = []
     total_lost = total_rec = 0
     for rtype in RecoveryType:
-        items = [r for r in recoveries if r.type == rtype]
+        items = [r for r in recoveries if r.type == rtype.value]
         if not items:
             continue
         rec = [r for r in items if r.recovered]

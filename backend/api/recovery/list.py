@@ -84,14 +84,14 @@ def list_recoveries(
 
 
 def _to_response(r: Recovery) -> dict:
-    channel = r.channel.value if r.channel else "other"
+    channel = r.channel if r.channel else "other"
     return {
         "id": r.id,
         "date": r.created_at.isoformat() if r.created_at else None,
         "customerName": r.customer_name or "—",
         "customerEmail": r.customer_email or "—",
         "product": r.product_name or "—",
-        "type": r.type.value if r.type else "abandoned_cart",
+        "type": r.type if r.type else "abandoned_cart",
         "amount": r.amount,
         "recovered": r.recovered,
         "channel": channel,
