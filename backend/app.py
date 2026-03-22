@@ -12,6 +12,7 @@ mimetypes.add_type("application/json", ".json")
 mimetypes.add_type("image/png", ".png")
 mimetypes.add_type("image/webp", ".webp")
 from database.core.connection import engine, Base
+from database.core.migrate import run_enum_migrations
 from api.auth.setup import router as setup_router
 from api.auth.login import router as login_router
 from api.auth.profile import router as profile_router
@@ -58,6 +59,9 @@ from api.campaigns_create.export_import import router as campaign_create_export_
 from api.users.list import router as users_list_router
 from api.users.invite import router as users_invite_router
 from api.users.manage import router as users_manage_router
+
+# Migrate ENUM columns → VARCHAR (idempotent, runs on every boot)
+run_enum_migrations(engine)
 
 # Create tables
 Base.metadata.create_all(bind=engine)
