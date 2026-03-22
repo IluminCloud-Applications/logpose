@@ -1,6 +1,6 @@
 from sqlalchemy import (
     Column, Integer, String, Float, DateTime,
-    Enum, ForeignKey, JSON
+    ForeignKey, JSON
 )
 from database.core.connection import Base
 from database.core.timezone import CREATED_AT_DEFAULT, UPDATED_AT_DEFAULT
@@ -17,6 +17,7 @@ class TransactionStatus(str, enum.Enum):
 class PaymentPlatform(str, enum.Enum):
     KIWIFY = "kiwify"
     PAYT = "payt"
+    API = "api"
 
 
 class Transaction(Base):
@@ -28,9 +29,9 @@ class Transaction(Base):
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     external_id = Column(String(255), unique=True, nullable=False)
-    platform = Column(Enum(PaymentPlatform), nullable=False)
+    platform = Column(String(50), nullable=False)
     status = Column(
-        Enum(TransactionStatus),
+        String(50),
         default=TransactionStatus.APPROVED,
     )
     amount = Column(Float, nullable=False)

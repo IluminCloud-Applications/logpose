@@ -61,7 +61,7 @@ export function PlatformsTable({ endpoints, isLoading, onDelete }: PlatformsTabl
   const platformBadge = (platform: string) => {
     return (
       <Badge variant="outline" className="text-[10px] font-medium border border-border/50 gap-1 px-2 py-0.5">
-        <PlatformLogo platform={platform as "kiwify" | "payt"} size="sm" />
+        <PlatformLogo platform={platform as "kiwify" | "payt" | "api"} size="sm" />
       </Badge>
     );
   };

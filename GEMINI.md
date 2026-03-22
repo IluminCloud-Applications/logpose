@@ -72,3 +72,4 @@ Esse é só um exemplo, nem toda página de login tem essas APIs, mas é só par
 - Não faça o deploy
 - Não inicie o app (docker compose up/npm run dev)
 - SEMPRE use shadcn, use a tool para baixar o elemento entender exemplos do design antes de criar o componente.
+- Para migrations estamos utilizando o alembic

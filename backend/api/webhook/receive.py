@@ -6,6 +6,7 @@ from database.core.connection import get_db
 from database.models.webhook_endpoint import WebhookEndpoint, WebhookPlatform
 from integrations.webhook.kiwify import parse_kiwify_webhook
 from integrations.webhook.payt import parse_payt_webhook
+from integrations.webhook.api_direct import parse_api_webhook
 from integrations.webhook.processor import process_webhook_event
 from integrations.webhook.test_emails import is_test_email
 
@@ -16,6 +17,7 @@ router = APIRouter(prefix="/webhook", tags=["webhook-receiver"])
 PARSERS = {
     WebhookPlatform.KIWIFY: parse_kiwify_webhook,
     WebhookPlatform.PAYT: parse_payt_webhook,
+    WebhookPlatform.API: parse_api_webhook,
 }
 
 
@@ -29,7 +31,7 @@ async def receive_webhook(
     """
     Endpoint público que recebe os POSTs das plataformas de pagamento.
     Não requer autenticação — as plataformas enviam direto.
-    URL: POST /api/webhook/kiwify/{slug} ou /api/webhook/payt/{slug}
+    URL: POST /api/webhook/kiwify/{slug} | /api/webhook/payt/{slug} | /api/webhook/api/{slug}
     """
     # Validar plataforma
     platform_lower = platform.lower()

@@ -6,7 +6,7 @@ Dashboard estratégico de performance para Direct Response.
 
 ```bash
 git add -A
-git commit -m "v1.22 - fix campanha e funcionalidade"
+git commit -m "v1.24 - add api de webhook"
 git push
 ```
 

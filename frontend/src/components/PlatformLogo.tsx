@@ -1,6 +1,9 @@
+import { RiCodeSSlashLine } from "@remixicon/react";
+
 const PLATFORM_CONFIG = {
-  kiwify: { label: "Kiwify", logo: "/platforms/kiwify.webp" },
-  payt: { label: "PayT", logo: "/platforms/payt.webp" },
+  kiwify: { label: "Kiwify", logo: "/platforms/kiwify.webp", type: "image" as const },
+  payt: { label: "PayT", logo: "/platforms/payt.webp", type: "image" as const },
+  api: { label: "API", logo: null, type: "badge" as const },
 } as const;
 
 type Platform = keyof typeof PLATFORM_CONFIG;
@@ -26,10 +29,23 @@ const textMap = {
 export function PlatformLogo({ platform, size = "md", showLabel = true }: PlatformLogoProps) {
   const config = PLATFORM_CONFIG[platform];
 
+  if (config.type === "badge") {
+    return (
+      <div className="flex items-center gap-1.5">
+        <span
+          className={`inline-flex items-center gap-0.5 font-bold tracking-widest uppercase ${textMap[size]} text-primary`}
+        >
+          <RiCodeSSlashLine className={sizeMap[size]} />
+          {config.label}
+        </span>
+      </div>
+    );
+  }
+
   return (
     <div className="flex items-center gap-1.5">
       <img
-        src={config.logo}
+        src={config.logo!}
         alt={config.label}
         className={`${sizeMap[size]} object-contain`}
       />

@@ -1,6 +1,6 @@
 from sqlalchemy import (
     Column, Integer, String, Float, DateTime,
-    ForeignKey, Enum,
+    ForeignKey,
 )
 from database.core.connection import Base
 from database.core.timezone import CREATED_AT_DEFAULT
@@ -25,7 +25,7 @@ class Checkout(Base):
     )
     url = Column(String(500), nullable=False)
     price = Column(Float, nullable=False, default=0.0)
-    platform = Column(Enum(CheckoutPlatform), nullable=False)
+    platform = Column(String(50), nullable=False)
     created_at = Column(DateTime, server_default=CREATED_AT_DEFAULT)
 
 

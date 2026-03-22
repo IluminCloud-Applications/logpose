@@ -5,6 +5,12 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.middleware.base import BaseHTTPMiddleware
+
+# Garante MIME types corretos para arquivos PWA
+mimetypes.add_type("application/javascript", ".js")
+mimetypes.add_type("application/json", ".json")
+mimetypes.add_type("image/png", ".png")
+mimetypes.add_type("image/webp", ".webp")
 from database.core.connection import engine, Base
 from api.auth.setup import router as setup_router
 from api.auth.login import router as login_router

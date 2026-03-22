@@ -1,0 +1,44 @@
+{
+  "_comment": "Exemplo de payload para integração via API direta (POST /api/webhook/api/{slug})",
+  "_docs": {
+    "external_id": "ID único da transação no seu sistema. Deve ser único por venda.",
+    "status": "Status da transação: 'approved' | 'pending' | 'refunded' | 'chargeback'",
+    "amount": "Valor recebido em reais (float). Ex: 197.00",
+    "product_external_id": "ID do produto no seu sistema.",
+    "product_name": "Nome do produto (deve bater com os cadastrados no Log Pose para vínculo).",
+    "customer_email": "E-mail do comprador (obrigatório).",
+    "customer_name": "Nome completo do comprador (opcional).",
+    "customer_cpf": "CPF do comprador, apenas números (opcional).",
+    "customer_phone": "Telefone com DDD (opcional).",
+    "utm_source": "Origem do tráfego. Ex: 'facebook' (opcional).",
+    "utm_medium": "Mídia. Ex: 'cpc' (opcional).",
+    "utm_campaign": "Nome da campanha (opcional).",
+    "utm_content": "Criativo/conteúdo do anúncio (opcional).",
+    "utm_term": "Termo de pesquisa (opcional).",
+    "src": "Source code / SRC personalizado (opcional).",
+    "checkout_url": "URL do checkout onde ocorreu a venda (opcional).",
+    "order_bumps": "Lista de order bumps incluídos na compra (opcional)."
+  },
+  "external_id": "ORD-20240322-001",
+  "status": "approved",
+  "amount": 197.00,
+  "product_external_id": "PROD-001",
+  "product_name": "Curso de Marketing Digital",
+  "customer_email": "joao@exemplo.com",
+  "customer_name": "João da Silva",
+  "customer_cpf": "12345678901",
+  "customer_phone": "11999999999",
+  "utm_source": "facebook",
+  "utm_medium": "cpc",
+  "utm_campaign": "camp-produto-principal",
+  "utm_content": "criativo-video-01",
+  "utm_term": null,
+  "src": "fb-maio-2024",
+  "checkout_url": "https://checkout.seusite.com/produto-001",
+  "order_bumps": [
+    {
+      "name": "E-book Bônus",
+      "amount": 27.00
+    }
+  ]
+}
