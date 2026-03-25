@@ -68,11 +68,12 @@ from database.core.migrate_sql import run_sql_migrations
 # Migrate ENUM columns → VARCHAR (idempotent, runs on every boot)
 run_enum_migrations(engine)
 
-# Run SQL migrations from database/migrations/
-run_sql_migrations()
-
-# Create tables
+# Create tables (must run before SQL migrations so tables exist)
 Base.metadata.create_all(bind=engine)
+
+# Run SQL migrations from database/migrations/
+# (ALTER TABLE / ADD COLUMN statements that depend on existing tables)
+run_sql_migrations()
 
 app = FastAPI(title="ConvergeAI API")
 
