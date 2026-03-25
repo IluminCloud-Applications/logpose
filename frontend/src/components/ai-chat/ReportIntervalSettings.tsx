@@ -59,7 +59,7 @@ export function ReportIntervalSettings({ onIntervalChange }: ReportIntervalSetti
           <RiSettings3Line className="size-3.5" />
         </button>
       </PopoverTrigger>
-      <PopoverContent align="end" className="w-[240px] p-4 space-y-3">
+      <PopoverContent align="end" className="w-[240px] p-4 space-y-3 z-[70]">
         <div>
           <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
             Relatório automático

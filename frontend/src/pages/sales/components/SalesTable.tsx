@@ -19,7 +19,6 @@ const statusConfig: Record<string, { label: string; className: string }> = {
   refunded: { label: "Reembolso", className: "" },
   chargeback: { label: "Chargeback", className: "bg-destructive/15 text-destructive border-transparent" },
   pending: { label: "Pendente", className: "" },
-  trial: { label: "Trial", className: "bg-chart-3/15 text-chart-3 border-transparent" },
 };
 
 const platformColors: Record<string, string> = {

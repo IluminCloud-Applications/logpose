@@ -5,7 +5,7 @@ import {
   RiGroupLine,
   RiShoppingCartLine,
   RiBox1Line,
-  RiFlowChart,
+  RiFilter2Line,
   RiWalletLine,
   RiMetaLine,
   RiPlayCircleLine,
@@ -68,7 +68,7 @@ const navGroups: NavGroup[] = [
     label: "Produtos",
     items: [
       { title: "Produtos", icon: RiBox1Line, url: "/products", roles: ["owner", "admin", "viewer"] },
-      { title: "Funil", icon: RiFlowChart, url: "/funnel" },
+      { title: "Funil", icon: RiFilter2Line, url: "/funnel" },
     ],
   },
   {

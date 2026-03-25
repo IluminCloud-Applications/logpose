@@ -64,7 +64,6 @@ export function SalesInlineFilters({
               <SelectItem value="refunded">Reembolso</SelectItem>
               <SelectItem value="chargeback">Chargeback</SelectItem>
               <SelectItem value="pending">Pendente</SelectItem>
-              <SelectItem value="trial">Trial</SelectItem>
             </SelectContent>
           </Select>
         </div>
