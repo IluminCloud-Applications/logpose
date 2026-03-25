@@ -1,5 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 import type { CampaignFormState } from "../hooks/useCampaignForm";
 import { BID_STRATEGY_OPTIONS, CTA_OPTIONS, bidFieldLabel } from "../utils/defaults";
 import { formatScheduleDisplay } from "../utils/schedule";
@@ -7,9 +9,10 @@ import { RiRocketLine, RiMegaphoneLine, RiFocus2Line, RiBrushLine } from "@remix
 
 interface ReviewStepProps {
   form: CampaignFormState;
+  onUpdate: <K extends keyof CampaignFormState>(key: K, value: CampaignFormState[K]) => void;
 }
 
-export function ReviewStep({ form }: ReviewStepProps) {
+export function ReviewStep({ form, onUpdate }: ReviewStepProps) {
   const strategyLabel =
     BID_STRATEGY_OPTIONS.find((o) => o.value === form.bidStrategy)?.label ?? form.bidStrategy;
   const genderLabel = form.gender === 1 ? "Masculino" : form.gender === 2 ? "Feminino" : "Todos";
@@ -24,15 +27,29 @@ export function ReviewStep({ form }: ReviewStepProps) {
       {/* Resumo */}
       <Card className="border-primary/20 bg-primary/5">
         <CardContent className="py-4">
-          <div className="flex items-center gap-3 text-sm">
-            <RiRocketLine className="size-5 text-primary" />
-            <div>
-              <p className="font-semibold">
-                Estrutura: 1-{form.adsetCount}-{form.ads.length} — 1 campanha, {form.adsetCount} conjunto{form.adsetCount > 1 ? "s" : ""}, {form.ads.length} anúncio{form.ads.length > 1 ? "s" : ""} cada
-              </p>
-              <p className="text-muted-foreground text-xs mt-0.5">
-                Tudo será criado como PAUSADO. Ative quando estiver pronto.
-              </p>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3 text-sm">
+              <RiRocketLine className="size-5 text-primary" />
+              <div>
+                <p className="font-semibold">
+                  Estrutura: 1-{form.adsetCount}-{form.ads.length} — 1 campanha, {form.adsetCount} conjunto{form.adsetCount > 1 ? "s" : ""}, {form.ads.length} anúncio{form.ads.length > 1 ? "s" : ""} cada
+                </p>
+                <p className="text-muted-foreground text-xs mt-0.5">
+                  {form.publishActive
+                    ? "Tudo será criado como ATIVO."
+                    : "Tudo será criado como PAUSADO. Ative quando estiver pronto."}
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <Label htmlFor="publish-active" className="text-xs text-muted-foreground cursor-pointer">
+                {form.publishActive ? "Ligado" : "Desativado"}
+              </Label>
+              <Switch
+                id="publish-active"
+                checked={form.publishActive}
+                onCheckedChange={(v) => onUpdate("publishActive", v)}
+              />
             </div>
           </div>
         </CardContent>
@@ -69,6 +86,16 @@ export function ReviewStep({ form }: ReviewStepProps) {
         <CardContent className="space-y-1.5 text-sm">
           <Row label="Nome" value={form.adsetName} />
           <Row label="Pixel" value={form.pixelId} />
+          <Row label="Página" value={
+            form.pageLabel
+              ? `${form.pageLabel} (${form.pageId})`
+              : form.pageId || "—"
+          } />
+          <Row label="Instagram" value={
+            form.instagramActorId
+              ? `${form.instagramLabel || "ID"}: ${form.instagramActorId}`
+              : "Sem Instagram (page-backed)"
+          } />
           <Row label="Programação" value={formatScheduleDisplay(form.startTime)} />
           <Row label="Idade" value={`${form.ageMin} — ${form.ageMax === 65 ? "65+" : form.ageMax}`} />
           <Row label="Gênero" value={genderLabel} />

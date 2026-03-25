@@ -3,7 +3,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import type { CampaignFormState } from "../hooks/useCampaignForm";
-import type { PixelData, PageData, InterestData } from "@/services/campaignCreator";
+import type { PixelData, PageData, InstagramAccount, InterestData } from "@/services/campaignCreator";
 import { generateAdSetName } from "../utils/naming";
 import { RiLightbulbLine } from "@remixicon/react";
 import { TargetingSection } from "./TargetingSection";
@@ -14,20 +14,18 @@ interface AdSetStepProps {
   onUpdate: <K extends keyof CampaignFormState>(key: K, value: CampaignFormState[K]) => void;
   pixels: PixelData[];
   pages: PageData[];
+  instagramAccounts: InstagramAccount[];
   interestResults: InterestData[];
   onSearchInterest: (query: string) => void;
 }
 
 export function AdSetStep({
-  form, onUpdate, pixels, pages, interestResults, onSearchInterest,
+  form, onUpdate, pixels, pages, instagramAccounts, interestResults, onSearchInterest,
 }: AdSetStepProps) {
   const suggestedName = generateAdSetName(
     form.campaignName.split(" | ")[1] || form.campaignName,
     form.ageMin, form.ageMax, form.gender, form.interests.length > 0
   );
-
-  const selectedPage = pages.find((p) => p.id === form.pageId);
-  const igAccounts = selectedPage?.instagram_accounts ?? [];
 
   return (
     <div className="space-y-4">
@@ -90,7 +88,11 @@ export function AdSetStep({
             </div>
             <div className="space-y-2">
               <Label>Página do Facebook</Label>
-              <Select value={form.pageId} onValueChange={(v) => onUpdate("pageId", v)}>
+              <Select value={form.pageId} onValueChange={(v) => {
+                onUpdate("pageId", v);
+                const page = pages.find((p) => p.id === v);
+                onUpdate("pageLabel", page?.name ?? "");
+              }}>
                 <SelectTrigger className="w-full">
                   <SelectValue placeholder="Selecione" />
                 </SelectTrigger>
@@ -105,15 +107,20 @@ export function AdSetStep({
               <Label>Instagram</Label>
               <Select
                 value={form.instagramActorId || "none"}
-                onValueChange={(v) => onUpdate("instagramActorId", v === "none" ? "" : v)}
+                onValueChange={(v) => {
+                  const id = v === "none" ? "" : v;
+                  onUpdate("instagramActorId", id);
+                  const ig = instagramAccounts.find((a) => a.id === v);
+                  onUpdate("instagramLabel", ig ? `@${ig.username}` : "");
+                }}
               >
                 <SelectTrigger className="w-full">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="none">Sem Instagram</SelectItem>
-                  {igAccounts.map((ig) => (
-                    <SelectItem key={ig.id} value={ig.id}>@{ig.username}</SelectItem>
+                  {instagramAccounts.map((ig) => (
+                    <SelectItem key={ig.id} value={ig.id}>@{ig.username} ({ig.id})</SelectItem>
                   ))}
                 </SelectContent>
               </Select>

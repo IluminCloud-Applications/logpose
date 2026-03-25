@@ -17,16 +17,18 @@ interface ChatMessagesProps {
   isLoading: boolean;
   messagesEndRef: React.RefObject<HTMLDivElement | null>;
   onExecuteAction?: (action: AiAction) => Promise<void>;
+  onSend?: (text: string) => void;
 }
 
-const SUGGESTED_QUESTIONS = [
-  "Como está a saúde do meu negócio?",
-  "Qual é o melhor criativo?",
-  "Onde estão meus gargalos?",
-  "Quanto estou perdendo em recuperação?",
+const QUICK_ACTIONS = [
+  { emoji: "💰", text: "Como está a saúde do meu negócio?" },
+  { emoji: "📊", text: "Faça um relatório diário da minha operação" },
+  { emoji: "🔍", text: "Identifique gargalos da operação" },
+  { emoji: "🏆", text: "Quais são meus melhores criativos?" },
+  { emoji: "📉", text: "Quanto estou perdendo em recuperação?" },
 ];
 
-export function ChatMessages({ messages, isLoading, messagesEndRef, onExecuteAction }: ChatMessagesProps) {
+export function ChatMessages({ messages, isLoading, messagesEndRef, onExecuteAction, onSend }: ChatMessagesProps) {
   if (messages.length === 0 && !isLoading) {
     return (
       <div className="flex-1 overflow-y-auto px-4 py-6 flex flex-col items-center justify-center gap-4 text-center">
@@ -40,10 +42,14 @@ export function ChatMessages({ messages, isLoading, messagesEndRef, onExecuteAct
           </p>
         </div>
         <div className="w-full space-y-1.5 mt-2">
-          {SUGGESTED_QUESTIONS.map((q) => (
-            <p key={q} className="text-[11px] text-muted-foreground/80 bg-muted/50 rounded-lg px-3 py-2 cursor-default">
-              💡 {q}
-            </p>
+          {QUICK_ACTIONS.map((q) => (
+            <button
+              key={q.text}
+              onClick={() => onSend?.(q.text)}
+              className="w-full text-left text-[11px] text-muted-foreground bg-muted/50 rounded-lg px-3 py-2.5 cursor-pointer hover:bg-primary/10 hover:text-foreground transition-all duration-150 border border-transparent hover:border-primary/20"
+            >
+              {q.emoji} {q.text}
+            </button>
           ))}
         </div>
       </div>

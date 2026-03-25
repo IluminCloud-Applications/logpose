@@ -3,6 +3,7 @@
 export interface ProductAPI {
   id: number;
   name: string;
+  logo_url: string | null;
   created_at: string | null;
 }
 
@@ -12,6 +13,8 @@ export interface CheckoutAPI {
   url: string;
   price: number;
   platform: "kiwify" | "payt";
+  checkout_code: string | null;
+  name: string | null;
   created_at: string | null;
 }
 
@@ -39,6 +42,7 @@ export interface CheckoutStats {
   id: number;
   url: string;
   price: number;
+  name: string | null;
   sales: number;
   revenue: number;
   abandons: number;
@@ -77,6 +81,7 @@ export interface ProductStats {
 export interface ProductView {
   id: number;
   name: string;
+  logoUrl: string | null;
   checkouts: CheckoutView[];
   orderBumps: OrderBumpView[];
   upsells: UpsellView[];
@@ -87,6 +92,8 @@ export interface CheckoutView {
   url: string;
   price: number;
   platform: "kiwify" | "payt";
+  checkoutCode: string | null;
+  name: string | null;
   sales: number;
   revenue: number;
   abandons: number;

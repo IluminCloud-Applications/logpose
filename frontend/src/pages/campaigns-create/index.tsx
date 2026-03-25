@@ -24,7 +24,7 @@ export default function CampaignsCreatePage() {
   const { accounts, isLoading: accountsLoading } = useFacebookAccounts();
   const { form, currentStep, updateField, addAd, updateAd, removeAd, updateBulkData, resetForm, nextStep, prevStep, goToStep } = useCampaignForm();
   const { pixels, load: loadPixels } = usePixels();
-  const { pages, load: loadPages } = usePages();
+  const { pages, instagramAccounts, load: loadPages } = usePages();
   const { results: interests, search: searchInterest } = useInterestSearch();
 
   useEffect(() => {
@@ -116,7 +116,7 @@ export default function CampaignsCreatePage() {
 
       <StepperNav currentStep={currentStep} maxReachedStep={maxReachedStep} onStepClick={safeGoToStep} />
 
-      <div className="min-h-[400px]">
+      <div className="min-h-[400px] overflow-auto">
         {currentStep === 0 && (
           <AccountStep accounts={accounts} selectedAccountId={form.accountId}
             onSelect={(id) => updateField("accountId", id)} onUpdate={updateField}
@@ -125,12 +125,13 @@ export default function CampaignsCreatePage() {
         {currentStep === 1 && <CampaignStep form={form} onUpdate={updateField} />}
         {currentStep === 2 && (
           <AdSetStep form={form} onUpdate={updateField} pixels={pixels} pages={pages}
+            instagramAccounts={instagramAccounts}
             interestResults={interests} onSearchInterest={(q) => form.accountId && searchInterest(form.accountId, q)} />
         )}
         {currentStep === 3 && (
           <AdsStep form={form} onUpdate={updateField} onAddAd={addAd} onUpdateAd={updateAd} onRemoveAd={removeAd} onUpdateBulk={updateBulkData} />
         )}
-        {currentStep === 4 && <ReviewStep form={form} />}
+        {currentStep === 4 && <ReviewStep form={form} onUpdate={updateField} />}
       </div>
 
       <div className="flex justify-between pt-2 border-t">

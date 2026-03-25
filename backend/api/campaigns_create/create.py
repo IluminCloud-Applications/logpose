@@ -53,6 +53,8 @@ async def publish_campaign(
     token = account.access_token
     act_id = account.account_id
     errors: list[str] = []
+    publish_active = data.get("publish_active", False)
+    status = "ACTIVE" if publish_active else "PAUSED"
 
     # 1. Criar campanha
     camp_result = await create_campaign(
@@ -61,6 +63,7 @@ async def publish_campaign(
         name=data["campaign_name"],
         daily_budget_reais=data["daily_budget"],
         bid_strategy=data.get("bid_strategy", "VOLUME"),
+        status=status,
     )
 
     if not camp_result["success"]:
@@ -72,6 +75,14 @@ async def publish_campaign(
     campaign_id = camp_result["campaign_id"]
 
     # 2. Criar Ad Set
+    targeting = data.get("targeting", {})
+    ig_actor_id = data.get("instagram_actor_id")
+    logger.info(f"Instagram actor ID recebido do frontend: '{ig_actor_id}' (type: {type(ig_actor_id).__name__})")
+
+    if not ig_actor_id or ig_actor_id == "none":
+        # Se não há Instagram, remove ele dos posicionamentos automáticos
+        targeting["publisher_platforms"] = ["facebook", "audience_network", "messenger"]
+
     adset_result = await create_adset(
         access_token=token,
         account_id=act_id,
@@ -82,7 +93,8 @@ async def publish_campaign(
         roas_floor=data.get("roas_floor"),
         pixel_id=data["pixel_id"],
         start_time=data["start_time"],
-        targeting=data.get("targeting", {}),
+        targeting=targeting,
+        status=status,
     )
 
     if not adset_result["success"]:
@@ -98,7 +110,8 @@ async def publish_campaign(
     ads_created = await _create_ads_batch(
         token, act_id, adset_id, ads, files,
         data.get("page_id", ""),
-        data.get("instagram_actor_id"),
+        ig_actor_id,
+        status,
         errors,
     )
 
@@ -119,6 +132,7 @@ async def _create_ads_batch(
     files: list[UploadFile],
     page_id: str,
     instagram_actor_id: str | None,
+    status: str,
     errors: list[str],
 ) -> int:
     """Cria múltiplos ads com upload de mídia."""
@@ -143,13 +157,17 @@ async def _create_ads_batch(
             errors.append(f"AD {i+1}: Upload falhou — {media_result['error']}")
             continue
 
-        # URL com UTM params
-        link = _build_link(ad_data.get("link", ""), ad_data.get("utm_params", {}))
+        # Link limpo (sem UTM) — UTM vai no url_tags para não aparecer no Ads Library
+        link = ad_data.get("link", "")
+        url_tags = _build_url_tags(
+            ad_data.get("utm_params", ""),
+            ad_data.get("extra_params", ""),
+        )
 
         # Creative
         creative_result = await create_ad_creative(
             access_token=token, account_id=act_id,
-            name=ad_data.get("name", f"Criativo {i+1}"),
+            name=ad_data.get("name", f"AD {str(i+1).zfill(2)}"),
             page_id=page_id, instagram_actor_id=instagram_actor_id,
             link=link, primary_text=ad_data.get("primary_text", ""),
             headline=ad_data.get("headline", ""),
@@ -157,6 +175,7 @@ async def _create_ads_batch(
             cta_type=ad_data.get("cta_type", "SHOP_NOW"),
             image_hash=media_result.get("image_hash"),
             video_id=media_result.get("video_id"),
+            url_tags=url_tags,
         )
 
         if not creative_result["success"]:
@@ -166,8 +185,9 @@ async def _create_ads_batch(
         # Ad
         ad_result = await create_ad(
             access_token=token, account_id=act_id,
-            name=ad_data.get("name", f"Ad {i+1}"),
+            name=ad_data.get("name", f"AD {str(i+1).zfill(2)}"),
             adset_id=adset_id, creative_id=creative_result["creative_id"],
+            status=status,
         )
 
         if ad_result["success"]:
@@ -184,9 +204,15 @@ async def _upload_media(token, act_id, file_bytes, filename, is_video) -> dict:
     return await upload_image(token, act_id, file_bytes, filename)
 
 
-def _build_link(base_url: str, utm_params: dict) -> str:
-    if not utm_params or not base_url:
-        return base_url
-    separator = "&" if "?" in base_url else "?"
-    params = "&".join(f"{k}={v}" for k, v in utm_params.items() if v)
-    return f"{base_url}{separator}{params}" if params else base_url
+def _build_url_tags(utm_params: str | dict = "", extra_params: str = "") -> str:
+    """Constrói url_tags string (UTM + extra params). Não inclui o link base."""
+    # Normaliza utm_params (string ou dict)
+    if isinstance(utm_params, dict):
+        utm_str = "&".join(f"{k}={v}" for k, v in utm_params.items() if v)
+    else:
+        utm_str = str(utm_params).strip() if utm_params else ""
+
+    # Combina UTM + extra params
+    parts = [p for p in [utm_str, extra_params.strip()] if p]
+    return "&".join(parts)
+

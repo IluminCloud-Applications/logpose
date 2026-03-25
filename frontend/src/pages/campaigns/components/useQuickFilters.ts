@@ -13,7 +13,7 @@ interface QuickFiltersOptions {
 
 const datePresetLabels: Record<string, string> = {
   today: "Hoje", yesterday: "Ontem", "3d": "3 dias", "7d": "7 dias",
-  "30d": "30 dias", "90d": "90 dias", all: "Máximo",
+  "30d": "30 dias", "90d": "90 dias", all: "1 Ano",
 };
 
 function formatCustomLabel(startDate: string, endDate: string): string {
@@ -89,6 +89,18 @@ export function useQuickFilters({ filters, accounts, markersMap, tags }: QuickFi
         options: [
           { value: "all", label: "Todos" },
           ...Object.entries(bidStrategyLabels).map(([v, l]) => ({ value: v, label: l })),
+        ],
+      },
+      {
+        key: "budgetType",
+        label: "Orçamento",
+        value: filters.budgetType,
+        isActive: filters.budgetType !== "all",
+        defaultValue: "all",
+        options: [
+          { value: "all", label: "Todos" },
+          { value: "CBO", label: "CBO" },
+          { value: "ABO", label: "ABO" },
         ],
       },
       {

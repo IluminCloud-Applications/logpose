@@ -5,6 +5,7 @@ import { Label } from "@/components/ui/label";
 import type { CampaignFormState, AdFormData, BulkEditData } from "../hooks/useCampaignForm";
 import { AdCard } from "./AdCard";
 import { BulkEditPanel } from "./BulkEditPanel";
+import { IndividualEditPanel } from "./IndividualEditPanel";
 import { RiUploadCloud2Line } from "@remixicon/react";
 
 interface AdsStepProps {
@@ -47,7 +48,10 @@ export function AdsStep({ form, onUpdate, onAddAd, onUpdateAd, onRemoveAd, onUpd
           <div>
             <Label className="font-medium">Modo em Massa</Label>
             <p className="text-xs text-muted-foreground mt-0.5">
-              Mesmo texto, título, link e UTM para todos os criativos
+              {form.batchMode
+                ? "Mesmo texto, título, link e UTM para todos os criativos"
+                : "Personalize cada criativo individualmente via tabs"
+              }
             </p>
           </div>
           <Switch
@@ -79,12 +83,16 @@ export function AdsStep({ form, onUpdate, onAddAd, onUpdateAd, onRemoveAd, onUpd
         />
       </div>
 
-      {/* Batch edit panel — always visible when batchMode is on */}
-      {form.batchMode && (
+      {/* Edit panel — bulk ou individual */}
+      {form.batchMode ? (
         <BulkEditPanel form={form} onUpdateBulk={onUpdateBulk} />
+      ) : (
+        form.ads.length > 0 && (
+          <IndividualEditPanel form={form} onUpdateAd={onUpdateAd} />
+        )
       )}
 
-      {/* Grid de criativos */}
+      {/* Grid de criativos — thumbnail-only */}
       {form.ads.length > 0 && (
         <Card>
           <CardHeader className="pb-3">
@@ -99,7 +107,6 @@ export function AdsStep({ form, onUpdate, onAddAd, onUpdateAd, onRemoveAd, onUpd
                   key={index}
                   ad={ad}
                   index={index}
-                  showFields={!form.batchMode}
                   onUpdate={(data) => onUpdateAd(index, data)}
                   onRemove={() => onRemoveAd(index)}
                 />

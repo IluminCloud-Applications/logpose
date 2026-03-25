@@ -115,12 +115,17 @@ def merge_campaigns(
         roas = safe_division(sales_data["revenue"], camp.spend)
         cpa = safe_division(camp.spend, sales_data["sales"]) if sales_data["sales"] > 0 else 0
 
+        # Determinar tipo de orçamento: CBO (campanha) ou ABO (conjuntos)
+        is_cbo = camp.budget > 0
+        budget_type = "CBO" if is_cbo else "ABO"
+
         results.append({
             "id": camp.id,
             "name": camp.name,
             "status": camp.status,
             "objective": camp.objective,
             "bid_strategy": camp.bid_strategy,
+            "budget_type": budget_type,
             "budget": camp.budget,
             "spend": camp.spend,
             "clicks": camp.clicks,

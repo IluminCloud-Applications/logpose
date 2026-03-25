@@ -7,6 +7,7 @@ import { fetchCampaignExportDetails } from "@/services/campaigns";
 import type { MarkerMap } from "@/hooks/useCampaignMarkers";
 import { toast } from "sonner";
 import type { NavigateFunction } from "react-router-dom";
+import { getNextMidnightSP } from "@/pages/campaigns-create/utils/schedule";
 
 interface DuplicateOptions {
   campaign: CampaignData;
@@ -45,7 +46,7 @@ export async function handleDuplicateCampaign(options: DuplicateOptions) {
       adset_name: firstAdsetName,
       adset_count: campaign.adsets.length || 1,
       pixel_id: details.pixel_id,
-      start_time: details.start_time,
+      start_time: getNextMidnightSP(),
       targeting: details.targeting,
       page_id: details.page_id,
       instagram_actor_id: details.instagram_actor_id,

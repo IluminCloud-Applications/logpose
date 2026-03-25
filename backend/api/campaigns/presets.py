@@ -70,6 +70,33 @@ def create_preset(
     )
 
 
+@router.put("/presets/{preset_id}", response_model=PresetResponse)
+def update_preset(
+    preset_id: int,
+    payload: PresetCreate,
+    db: Session = Depends(get_db),
+    _=Depends(get_current_user),
+):
+    preset = db.query(CampaignPreset).filter(CampaignPreset.id == preset_id).first()
+    if not preset:
+        raise HTTPException(status_code=404, detail="Predefinição não encontrada")
+
+    if not payload.name.strip() or len(payload.columns) < 2:
+        raise HTTPException(status_code=400, detail="Nome e pelo menos 2 colunas são obrigatórios")
+
+    preset.name = payload.name.strip()
+    preset.columns = payload.columns
+    db.commit()
+    db.refresh(preset)
+
+    return PresetResponse(
+        id=preset.id,
+        name=preset.name,
+        columns=preset.columns,
+        created_at=preset.created_at.isoformat() if preset.created_at else None,
+    )
+
+
 @router.delete("/presets/{preset_id}", status_code=204)
 def delete_preset(
     preset_id: int,

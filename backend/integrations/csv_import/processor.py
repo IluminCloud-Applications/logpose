@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 from integrations.csv_import.schemas import ImportRow, ProductConfig, ImportResultResponse
 from integrations.csv_import.transaction_handler import process_transactions
 from database.models.product import Product
-from database.models.product_items import Upsell, OrderBump
+from database.models.product_items import Upsell, OrderBump, Checkout, CheckoutPlatform
 from database.models.transaction import PaymentPlatform
 
 logger = logging.getLogger(__name__)
@@ -33,6 +33,10 @@ def process_import(
     # Fase 2: Criar upsells e order bumps
     _create_sub_products(db, rows, config_map, product_db, result)
 
+    # Fase 2.5: Auto-criar checkouts PayT (pelo checkout_code)
+    if platform == "payt":
+        _auto_create_payt_checkouts(db, rows, config_map, product_db)
+
     # Fase 3: Processar transações e clientes
     process_transactions(db, rows, config_map, product_db, platform_enum, result)
 
@@ -42,6 +46,7 @@ def process_import(
         f"{result.customers_created} clientes, {result.transactions_created} transações"
     )
     return result
+
 
 
 def _create_frontend_products(
@@ -125,4 +130,48 @@ def _create_sub_products(
             ))
             result.order_bumps_created += 1
 
+    db.flush()
+
+
+def _auto_create_payt_checkouts(
+    db: Session, rows: list[ImportRow], config_map: dict,
+    product_db: dict[str, Product],
+):
+    """
+    Auto-cria checkouts PayT a partir dos códigos encontrados no XLSX.
+    Se o checkout_code já existe no banco para o mesmo produto, ignora.
+    Cria com url vazio (o user preenche depois) e price=0.
+    """
+    # Coletar checkouts únicos por produto: {product_name: {code: name}}
+    product_checkouts: dict[str, dict[str, str]] = {}
+    for row in rows:
+        if not row.checkout_code:
+            continue
+        config = config_map.get(row.product_name)
+        if not config:
+            continue
+        # Resolve product name (frontend or parent)
+        prod_name = row.product_name if config.type == "frontend" else config.parent_product_name
+        if not prod_name or prod_name not in product_db:
+            continue
+        if prod_name not in product_checkouts:
+            product_checkouts[prod_name] = {}
+        product_checkouts[prod_name][row.checkout_code] = row.checkout_name or row.checkout_code
+
+    for prod_name, checkouts in product_checkouts.items():
+        product = product_db[prod_name]
+        for code, name in checkouts.items():
+            existing = db.query(Checkout).filter(
+                Checkout.product_id == product.id,
+                Checkout.checkout_code == code,
+            ).first()
+            if existing:
+                continue
+            db.add(Checkout(
+                product_id=product.id,
+                url="",  # User fills in later
+                price=0.0,
+                platform=CheckoutPlatform.PAYT,
+                checkout_code=code,
+            ))
     db.flush()

@@ -16,16 +16,19 @@ interface CampaignNameCellProps {
   blurName: boolean;
   noIdSales: number;
   tags?: string[];
+  budgetType?: "CBO" | "ABO";
   onEditBudget: (e: React.MouseEvent) => void;
   onToggle: (active: boolean) => Promise<void>;
 }
 
 export function CampaignNameCell({
-  campaign, isExpanded, blurName, noIdSales, tags = [], onEditBudget, onToggle,
+  campaign, isExpanded, blurName, noIdSales, tags = [],
+  budgetType = "CBO", onEditBudget, onToggle,
 }: CampaignNameCellProps) {
   const isUnidentified = campaign.status === "unidentified";
   const isActive = campaign.status === "active";
   const blurClass = "blur-sm select-none";
+  const isAbo = budgetType === "ABO";
 
   if (isUnidentified) {
     return (
@@ -91,15 +94,23 @@ export function CampaignNameCell({
           )}
         </div>
         <div className="group/budget flex items-center gap-1.5">
-          <span className="text-[11px] text-muted-foreground tabular-nums">
-            {fmt(campaign.budget)}/dia
-          </span>
-          <button
-            onClick={onEditBudget}
-            className="opacity-0 group-hover/budget:opacity-100 transition-opacity"
-          >
-            <RiPencilLine className="size-3 text-muted-foreground hover:text-foreground" />
-          </button>
+          {isAbo ? (
+            <span className="text-[11px] text-muted-foreground">
+              Orçamento ABO
+            </span>
+          ) : (
+            <>
+              <span className="text-[11px] text-muted-foreground tabular-nums">
+                {fmt(campaign.budget)}/dia
+              </span>
+              <button
+                onClick={onEditBudget}
+                className="opacity-0 group-hover/budget:opacity-100 transition-opacity"
+              >
+                <RiPencilLine className="size-3 text-muted-foreground hover:text-foreground" />
+              </button>
+            </>
+          )}
           {visibleTags.length > 0 && (
             <div className="flex items-center gap-1 ml-0.5">
               {visibleTags.map((tag) => (
@@ -123,3 +134,4 @@ export function CampaignNameCell({
     </div>
   );
 }
+

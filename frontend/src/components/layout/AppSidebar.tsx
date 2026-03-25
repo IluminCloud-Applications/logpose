@@ -27,6 +27,7 @@ import { SidebarNavGroup } from "./SidebarNavGroup";
 import { SidebarUser } from "./SidebarUser";
 import { AiTrainingProfile } from "./AiTrainingProfile";
 import { getStoredUser } from "@/services/auth";
+import { useAdvancedFeatures } from "@/contexts/AdvancedFeaturesContext";
 import type { RemixiconComponentType } from "@remixicon/react";
 
 type UserRole = "owner" | "admin" | "viewer";
@@ -36,6 +37,7 @@ interface NavItem {
   icon: RemixiconComponentType;
   url: string;
   roles?: UserRole[]; // if omitted, visible to all
+  featureKey?: "stripe_enabled"; // ties to advanced features
 }
 
 interface NavGroup {
@@ -50,7 +52,7 @@ const navGroups: NavGroup[] = [
       { title: "Dashboard", icon: RiDashboardLine, url: "/dashboard" },
       { title: "Campanhas", icon: RiMegaphoneLine, url: "/campaigns" },
       { title: "Empresa", icon: RiBuildingLine, url: "/company" },
-      { title: "Assinatura", icon: RiRepeatLine, url: "/subscriptions" },
+      { title: "Assinatura", icon: RiRepeatLine, url: "/subscriptions", featureKey: "stripe_enabled" },
     ],
   },
   {
@@ -65,7 +67,7 @@ const navGroups: NavGroup[] = [
   {
     label: "Produtos",
     items: [
-      { title: "Produtos", icon: RiBox1Line, url: "/products", roles: ["owner", "admin"] },
+      { title: "Produtos", icon: RiBox1Line, url: "/products", roles: ["owner", "admin", "viewer"] },
       { title: "Funil", icon: RiFlowChart, url: "/funnel" },
     ],
   },
@@ -75,7 +77,7 @@ const navGroups: NavGroup[] = [
       { title: "Plataformas", icon: RiWalletLine, url: "/platforms", roles: ["owner", "admin"] },
       { title: "Facebook Ads", icon: RiMetaLine, url: "/facebook-ads", roles: ["owner", "admin"] },
       { title: "VTurb", icon: RiPlayCircleLine, url: "/vturb", roles: ["owner", "admin"] },
-      { title: "Stripe", icon: RiBankCardLine, url: "/stripe", roles: ["owner", "admin"] },
+      { title: "Stripe", icon: RiBankCardLine, url: "/stripe", roles: ["owner", "admin"], featureKey: "stripe_enabled" },
       { title: "Gemini API", icon: RiGeminiLine, url: "/gemini", roles: ["owner", "admin"] },
     ],
   },
@@ -87,11 +89,19 @@ const navGroups: NavGroup[] = [
   },
 ];
 
-function filterNavGroups(groups: NavGroup[], role: UserRole): NavGroup[] {
+function filterNavGroups(
+  groups: NavGroup[],
+  role: UserRole,
+  features: Record<string, boolean>
+): NavGroup[] {
   return groups
     .map((group) => ({
       ...group,
-      items: group.items.filter((item) => !item.roles || item.roles.includes(role)),
+      items: group.items.filter((item) => {
+        if (item.roles && !item.roles.includes(role)) return false;
+        if (item.featureKey && !features[item.featureKey]) return false;
+        return true;
+      }),
     }))
     .filter((group) => group.items.length > 0);
 }
@@ -101,8 +111,9 @@ export function AppSidebar() {
   const navigate = useNavigate();
   const user = getStoredUser();
   const role: UserRole = user?.role ?? "owner";
+  const { features } = useAdvancedFeatures();
 
-  const visibleGroups = filterNavGroups(navGroups, role);
+  const visibleGroups = filterNavGroups(navGroups, role, { ...features });
 
   return (
     <Sidebar

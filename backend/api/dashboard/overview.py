@@ -24,6 +24,11 @@ def _parse_date_range(preset: str, start: Optional[str], end: Optional[str]):
     now = now_sp()
     if preset == "today":
         return now.replace(hour=0, minute=0, second=0, microsecond=0), now
+    elif preset == "yesterday":
+        yesterday = now - timedelta(days=1)
+        return yesterday.replace(hour=0, minute=0, second=0, microsecond=0), yesterday.replace(hour=23, minute=59, second=59, microsecond=999999)
+    elif preset == "3d":
+        return now - timedelta(days=3), now
     elif preset == "7d":
         return now - timedelta(days=7), now
     elif preset == "14d":

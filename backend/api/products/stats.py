@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
-from sqlalchemy import func
+from sqlalchemy import func, or_
 
 from database.core.connection import get_db
 from database.models.product import Product
@@ -45,25 +45,39 @@ def get_all_product_stats(
     return result
 
 
+def _build_checkout_match_filter(ck: Checkout):
+    """Build OR filter for matching transactions by URL or checkout_code."""
+    conditions = []
+    if ck.url:
+        conditions.append(Transaction.checkout_url == ck.url)
+    if ck.checkout_code:
+        conditions.append(Transaction.checkout_url == ck.checkout_code)
+    if not conditions:
+        return Transaction.checkout_url == ck.url  # fallback
+    return or_(*conditions)
+
+
 def _calc_checkout_stats(db: Session, product: Product, checkouts: list[Checkout]):
     """
     Para cada checkout, conta vendas approved e abandonos (pending)
-    pelo product_id da transaction e pelo checkout_url.
+    pelo product_id da transaction e pelo checkout_url (URL ou code).
     """
     stats = []
     for ck in checkouts:
+        match_filter = _build_checkout_match_filter(ck)
+
         # Approved sales that match this product and checkout
         sales_q = db.query(func.count(Transaction.id), func.coalesce(func.sum(Transaction.amount), 0)).filter(
             Transaction.product_id == product.id,
             Transaction.status == TransactionStatus.APPROVED,
-            Transaction.checkout_url == ck.url,
+            match_filter,
         ).first()
 
         # Pending/abandoned transactions for this checkout
         abandons_q = db.query(func.count(Transaction.id)).filter(
             Transaction.product_id == product.id,
             Transaction.status == TransactionStatus.PENDING,
-            Transaction.checkout_url == ck.url,
+            match_filter,
         ).scalar()
 
         sales_count = sales_q[0] if sales_q else 0

@@ -6,6 +6,7 @@ import {
   updateBudget,
   fetchPresets,
   createPreset,
+  updatePreset,
   deletePreset,
   fetchCampaignFilterOptions,
   type CampaignData,
@@ -162,13 +163,20 @@ export function useCampaignPresets() {
     return p;
   };
 
+  const editPreset = async (id: number, name: string, columns: string[]) => {
+    const p = await updatePreset(id, name, columns);
+    invalidateCacheByPrefix("campaign-presets");
+    await reload();
+    return p;
+  };
+
   const removePreset = async (id: number) => {
     await deletePreset(id);
     invalidateCacheByPrefix("campaign-presets");
     await reload();
   };
 
-  return { presets: data ?? [], isLoading, addPreset, removePreset, reload };
+  return { presets: data ?? [], isLoading, addPreset, editPreset, removePreset, reload };
 }
 
 const defaultFilterOptions: CampaignFilterOptionsAPI = { products: [], platforms: [] };

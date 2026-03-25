@@ -156,6 +156,7 @@ export function AIChatBubble({
             isLoading={isLoading || !!dailyReportLoading}
             messagesEndRef={messagesEndRef}
             onExecuteAction={handleExecuteAction}
+            onSend={handleSend}
           />
 
           {/* Page Data Toggle + Input */}
@@ -169,15 +170,17 @@ export function AIChatBubble({
       )}
 
       {/* Floating Bubble */}
-      {!isOpen && (
-        <button
-          onClick={() => setIsOpen(true)}
-          className="fixed bottom-6 right-6 z-50 rounded-full p-3.5 bg-primary text-primary-foreground shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105 active:scale-95 group"
-          title="Abrir assistente AI"
-        >
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="fixed bottom-6 right-6 z-50 rounded-full p-3.5 bg-primary text-primary-foreground shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105 active:scale-95 group"
+        title={isOpen ? "Fechar assistente" : "Abrir assistente AI"}
+      >
+        {isOpen ? (
+          <RiCloseLine className="size-6 transition-transform" />
+        ) : (
           <RiMessageAi3Line className="size-6 group-hover:rotate-12 transition-transform" />
-        </button>
-      )}
+        )}
+      </button>
     </div>
   );
 }

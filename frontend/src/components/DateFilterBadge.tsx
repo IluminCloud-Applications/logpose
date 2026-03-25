@@ -20,7 +20,7 @@ const datePresets = [
   { value: "7d", label: "7 dias" },
   { value: "30d", label: "30 dias" },
   { value: "90d", label: "90 dias" },
-  { value: "all", label: "Máximo" },
+  { value: "all", label: "1 Ano" },
 ];
 
 interface DateFilterBadgeProps {

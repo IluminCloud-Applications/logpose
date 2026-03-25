@@ -3,7 +3,7 @@ import {
   RiShoppingCartLine, RiCheckboxCircleLine, RiPercentLine,
   RiMoneyDollarBoxLine, RiCloseCircleLine,
   RiWhatsappLine, RiMailLine, RiMessage2Line,
-  RiArrowGoBackLine, RiMoreLine, RiTestTubeLine,
+  RiArrowGoBackLine, RiMoreLine,
 } from "@remixicon/react";
 import type { RecoveryRow } from "@/services/recovery";
 import { cn } from "@/lib/utils";
@@ -19,7 +19,7 @@ interface RecoveryKpisProps {
 export function RecoveryKpis({ data }: RecoveryKpisProps) {
   const total = data.length;
   const recovered = data.filter((r) => r.recovered);
-  const trials = data.filter((r) => r.type === "trial");
+  
   const recoveryRate = total > 0 ? ((recovered.length / total) * 100) : 0;
   const recoveredAmount = recovered.reduce((s, r) => s + r.amount, 0);
   const lostAmount = data.filter((r) => !r.recovered).reduce((s, r) => s + r.amount, 0);
@@ -37,7 +37,6 @@ export function RecoveryKpis({ data }: RecoveryKpisProps) {
     { label: "Taxa", value: `${recoveryRate.toFixed(1)}%`, icon: RiPercentLine, color: "text-primary" },
     { label: "Valor Recuperado", value: fmt(recoveredAmount), icon: RiMoneyDollarBoxLine, color: "text-[var(--color-success)]" },
     { label: "Valor Perdido", value: fmt(lostAmount), icon: RiCloseCircleLine, color: "text-destructive" },
-    { label: "Trials", value: String(trials.length), icon: RiTestTubeLine, color: "text-chart-3" },
     { label: "WhatsApp", value: String(byChannel.whatsapp), icon: RiWhatsappLine, color: "text-[var(--color-success)]" },
     { label: "Email", value: String(byChannel.email), icon: RiMailLine, color: "text-primary" },
     { label: "SMS", value: String(byChannel.sms), icon: RiMessage2Line, color: "text-chart-1" },
@@ -46,7 +45,7 @@ export function RecoveryKpis({ data }: RecoveryKpisProps) {
   ];
 
   return (
-    <div className="grid gap-3 sm:grid-cols-5 lg:grid-cols-5">
+    <div className="grid gap-3 grid-cols-2 sm:grid-cols-5 lg:grid-cols-5">
       {mainMetrics.map((m) => (
         <Card key={m.label} className="border-border/40 hover:border-border/70 transition-colors">
           <CardContent className="p-4 flex items-center gap-3">

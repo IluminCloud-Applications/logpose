@@ -37,7 +37,7 @@ const presetLabels: Record<DatePreset, string> = {
   "7d": "Últimos 7 dias",
   "30d": "Últimos 30 dias",
   "90d": "Últimos 90 dias",
-  all: "Todo período",
+  all: "1 Ano",
   custom: "Personalizado",
 };
 

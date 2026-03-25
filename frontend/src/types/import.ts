@@ -1,12 +1,17 @@
 // ── Preview Response ────────────────────────────────────────
 
+export interface DetectedCheckout {
+  code: string | null;
+  name: string;
+}
+
 export interface DetectedProduct {
   name: string;
   external_id: string;
   ticket: number;
   sales_count: number;
   total_revenue: number;
-  checkouts: string[];
+  checkouts: DetectedCheckout[];
 }
 
 export interface ImportPreviewResponse {

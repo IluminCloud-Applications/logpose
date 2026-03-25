@@ -129,26 +129,38 @@ export function DefineVideoModal({
                     key={p.id}
                     type="button"
                     onClick={() => setSelectedId(p.id)}
-                    className={`w-full text-left px-3 py-2.5 rounded-md text-sm transition-colors ${
+                    className={`w-full text-left px-3 py-2.5 rounded-md text-sm transition-colors flex flex-col sm:flex-row sm:items-center gap-2.5 sm:gap-2 min-w-0 ${
                       isSelected
-                        ? "bg-primary/10 text-primary border border-primary/30"
+                        ? "bg-primary/10 text-primary ring-1 ring-primary/30"
                         : "hover:bg-muted"
                     }`}
                   >
-                    <div className="flex items-center gap-2">
-                      {isSelected && <RiCheckLine className="size-4 shrink-0" />}
-                      <span className="truncate font-medium flex-1">{p.name}</span>
-                      <Badge variant="outline" className="shrink-0 text-[10px] gap-1">
+                    <div className="flex items-start sm:items-center gap-2 w-full min-w-0 flex-1">
+                      <div className="mt-0.5 sm:mt-0 shrink-0">
+                        {isSelected ? (
+                           <RiCheckLine className="size-4" />
+                        ) : (
+                           <div className="size-4" /> 
+                        )}
+                      </div>
+                      <div className="flex flex-col min-w-0 flex-1">
+                        <span className="font-medium break-words line-clamp-2 leading-tight" title={p.name}>
+                          {p.name}
+                        </span>
+                        <span className="text-[11px] text-muted-foreground mt-0.5 leading-tight" title={`${p.account_name} · ID: ${p.id}`}>
+                          {p.account_name} · ID: {p.id.slice(0, 8)}...
+                        </span>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-1.5 pl-6 sm:pl-0 shrink-0">
+                      <Badge variant="outline" className="text-[10px] gap-1">
                         <RiPlayLine className="size-3" />
                         {formatPlays(p.plays_30d)}
                       </Badge>
-                      <Badge variant="outline" className="shrink-0 text-[10px]">
+                      <Badge variant="outline" className="text-[10px]">
                         {formatDuration(p.duration)}
                       </Badge>
                     </div>
-                    <p className="text-[11px] text-muted-foreground mt-0.5 pl-6">
-                      {p.account_name} · ID: {p.id.slice(0, 8)}...
-                    </p>
                   </button>
                 );
               })

@@ -66,11 +66,11 @@ export function FunnelChart({ funnel, anchor }: FunnelChartProps) {
                           conversion >= 20 ? "bg-amber-500/10 text-amber-600 dark:text-amber-400" :
                           "bg-red-500/10 text-red-600 dark:text-red-400"
                         }`}>
-                          ✓ {conversion.toFixed(1)}%
+                          ✓ {conversion.toFixed(2)}%
                         </span>
                         {dropoff !== null && dropoff > 0 && (
                           <span className="text-[10px] tabular-nums text-muted-foreground/60">
-                            ✕ {dropoff.toFixed(1)}%
+                            ✕ {dropoff.toFixed(2)}%
                           </span>
                         )}
                       </div>

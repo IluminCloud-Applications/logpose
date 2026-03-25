@@ -2,12 +2,12 @@ import { RiMegaphoneLine, RiSearchLine, RiAddLine, RiSettings3Line } from "@remi
 import { useNavigate } from "react-router-dom";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
 import type { ColumnPreset } from "./columnPresets";
 import { BlurToggle, type BlurState } from "./BlurToggle";
 import { UtmParamsGuide } from "./UtmParamsGuide";
 import { RefreshButton } from "@/components/RefreshButton";
 import type { UnidentifiedProduct } from "@/services/campaigns";
+import { PresetTab } from "./PresetTab";
 
 interface CampaignsHeaderProps {
   search: string;
@@ -16,17 +16,23 @@ interface CampaignsHeaderProps {
   activePresetId: string;
   onPresetChange: (id: string) => void;
   onCreatePreset: () => void;
+  onEditPreset?: (preset: ColumnPreset) => void;
+  onDeletePreset?: (presetId: string) => void;
   blur: BlurState;
   onBlurChange: (blur: BlurState) => void;
   unidentifiedProducts?: UnidentifiedProduct[];
   onRefresh: () => Promise<void>;
   onOpenSettings: () => void;
+  /** IDs of built-in (non-editable) presets */
+  defaultPresetIds?: string[];
 }
 
 export function CampaignsHeader({
   search, onSearchChange,
   presets, activePresetId, onPresetChange, onCreatePreset,
+  onEditPreset, onDeletePreset,
   blur, onBlurChange, unidentifiedProducts, onRefresh, onOpenSettings,
+  defaultPresetIds = [],
 }: CampaignsHeaderProps) {
   const navigate = useNavigate();
 
@@ -45,7 +51,6 @@ export function CampaignsHeader({
           </div>
         </div>
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-2">
-          {/* Search - full width on mobile, own row */}
           <div className="relative w-full sm:w-auto">
             <RiSearchLine className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
             <Input
@@ -55,7 +60,6 @@ export function CampaignsHeader({
               className="pl-9 w-full sm:w-[220px] h-9 text-sm"
             />
           </div>
-          {/* Action buttons row */}
           <div className="flex items-center gap-2">
             <Button
               size="sm"
@@ -87,20 +91,20 @@ export function CampaignsHeader({
 
       {/* Preset tabs */}
       <div className="flex items-center gap-1 p-0.5 rounded-lg bg-muted/60 border border-border/40 w-fit overflow-x-auto max-w-full">
-        {presets.map((preset) => (
-          <Button
-            key={preset.id}
-            variant="ghost"
-            size="sm"
-            onClick={() => onPresetChange(preset.id)}
-            className={cn(
-              "text-xs rounded-md px-3",
-              activePresetId === preset.id && "bg-card shadow-sm font-semibold"
-            )}
-          >
-            {preset.name}
-          </Button>
-        ))}
+        {presets.map((preset) => {
+          const isDefault = defaultPresetIds.includes(preset.id);
+          return (
+            <PresetTab
+              key={preset.id}
+              preset={preset}
+              isActive={activePresetId === preset.id}
+              isDefault={isDefault}
+              onClick={() => onPresetChange(preset.id)}
+              onEdit={onEditPreset && !isDefault ? () => onEditPreset(preset) : undefined}
+              onDelete={onDeletePreset && !isDefault ? () => onDeletePreset(preset.id) : undefined}
+            />
+          );
+        })}
         <Button
           variant="ghost"
           size="icon"

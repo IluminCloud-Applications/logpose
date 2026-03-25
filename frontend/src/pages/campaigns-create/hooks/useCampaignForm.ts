@@ -61,11 +61,15 @@ export interface CampaignFormState {
   gender: number;
   interests: InterestData[];
   pageId: string;
+  pageLabel: string;
   instagramActorId: string;
+  instagramLabel: string;
   // Step 3 — Anúncios
   batchMode: boolean;
   bulkData: BulkEditData;
   ads: AdFormData[];
+  // Step 4 — Revisão
+  publishActive: boolean;
 }
 
 const INITIAL_STATE: CampaignFormState = {
@@ -90,10 +94,13 @@ const INITIAL_STATE: CampaignFormState = {
   gender: 0,
   interests: [],
   pageId: "",
+  pageLabel: "",
   instagramActorId: "",
+  instagramLabel: "",
   batchMode: true,
   bulkData: { ...INITIAL_BULK_DATA },
   ads: [],
+  publishActive: false,
 };
 
 export function useCampaignForm() {
@@ -111,15 +118,18 @@ export function useCampaignForm() {
     const isVideo = file.type.startsWith("video/");
     setForm((prev) => {
       const bulk = prev.bulkData;
+      const firstAd = prev.ads[0];
+      // Em modo individual, herda dados do primeiro criativo (se existir)
+      const source = prev.batchMode ? bulk : (firstAd || bulk);
       const newAd: AdFormData = {
         name: "",
-        primary_text: prev.batchMode ? bulk.primary_text : "",
-        headline: prev.batchMode ? bulk.headline : "",
-        description: prev.batchMode ? bulk.description : "",
-        link: prev.batchMode ? bulk.link : "",
+        primary_text: source.primary_text || "",
+        headline: source.headline || "",
+        description: source.description || "",
+        link: source.link || "",
         utm_params: DEFAULT_UTM_PARAMS,
-        extra_params: prev.batchMode ? bulk.extra_params : "",
-        cta_type: prev.batchMode ? bulk.cta_type : DEFAULT_CTA,
+        extra_params: source.extra_params || "",
+        cta_type: source.cta_type || DEFAULT_CTA,
         media_type: isVideo ? "video" : "image",
         file,
         preview_url: URL.createObjectURL(file),

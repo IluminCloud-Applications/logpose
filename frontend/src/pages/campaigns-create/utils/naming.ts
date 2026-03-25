@@ -41,8 +41,8 @@ export function generateAdSetName(
 
 /**
  * Gera nome padrão do anúncio.
- * Formato: AD | [Nome] | Criativo [N]
+ * Formato: AD [0N]
  */
-export function generateAdName(name: string, index: number): string {
-  return `AD | ${name || "Nova"} | Criativo ${index + 1}`;
+export function generateAdName(_name: string, index: number): string {
+  return `AD ${String(index + 1).padStart(2, "0")}`;
 }

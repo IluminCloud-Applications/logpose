@@ -25,7 +25,9 @@ export function computeDateRange(preset: string, startDate?: string, endDate?: s
     return { start: yd, end: yd };
   }
   if (preset === "all") {
-    return { start: "2020-01-01", end: getDateStr(new Date()) };
+    const d = new Date();
+    d.setDate(d.getDate() - 365);
+    return { start: getDateStr(d), end: getDateStr(new Date()) };
   }
   const daysMap: Record<string, number> = { "3d": 3, "7d": 7, "30d": 30, "90d": 90 };
   const days = daysMap[preset];

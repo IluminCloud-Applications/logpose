@@ -117,7 +117,7 @@ function CompactFunnel({ funnel, anchor }: { funnel: FunnelProduct; anchor: stri
                   conversion >= 50 ? "text-emerald-600 dark:text-emerald-400" :
                   conversion >= 20 ? "text-amber-600 dark:text-amber-400" : "text-red-600 dark:text-red-400"
                 }`}>
-                  {conversion.toFixed(1)}%
+                  {conversion.toFixed(2)}%
                 </span>
               )}
             </div>

@@ -1,4 +1,6 @@
-import { RiFlowChart, RiLayoutLeftLine, RiLayoutColumnLine } from "@remixicon/react";
+import { RiFlowChart, RiLayoutLeftLine, RiLayoutColumnLine, RiStarFill } from "@remixicon/react";
+
+const POPULAR_STAGES = ["Cliques", "Alcance"];
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
@@ -79,7 +81,7 @@ export function FunnelHeader({
 
         {viewMode === "single" && products.length > 0 && (
           <>
-            <div className="space-y-1.5 min-w-[200px]">
+            <div className="space-y-1.5 min-w-[220px]">
               <Label className="text-xs">Produto</Label>
               <Select value={selectedProduct} onValueChange={onProductChange}>
                 <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
@@ -90,14 +92,21 @@ export function FunnelHeader({
                 </SelectContent>
               </Select>
             </div>
-            <div className="space-y-1.5 min-w-[200px]">
+            <div className="space-y-1.5 min-w-[220px]">
               <Label className="text-xs">Conversão baseada em</Label>
               <Select value={anchor} onValueChange={onAnchorChange}>
                 <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="previous">Etapa Anterior</SelectItem>
                   {stages.map((stage) => (
-                    <SelectItem key={stage} value={stage}>{stage}</SelectItem>
+                    <SelectItem key={stage} value={stage}>
+                      <span className="flex items-center gap-1.5">
+                        {stage}
+                        {POPULAR_STAGES.includes(stage) && (
+                          <RiStarFill className="size-3 text-amber-400" />
+                        )}
+                      </span>
+                    </SelectItem>
                   ))}
                 </SelectContent>
               </Select>

@@ -12,6 +12,7 @@ export async function fetchProducts(): Promise<ProductAPI[]> {
 
 export async function createProduct(data: {
   name: string;
+  logo_url?: string | null;
 }): Promise<ProductAPI> {
   return apiRequest<ProductAPI>("/products", { method: "POST", body: data });
 }
@@ -20,17 +21,31 @@ export async function deleteProduct(id: number): Promise<void> {
   return apiRequest(`/products/${id}`, { method: "DELETE" });
 }
 
+export async function updateProduct(
+  id: number,
+  data: { name?: string; logo_url?: string | null },
+): Promise<ProductAPI> {
+  return apiRequest<ProductAPI>(`/products/${id}`, { method: "PUT", body: data });
+}
+
 // ── Items CRUD ──────────────────────────────────────────────
 
 export async function createCheckout(
   productId: number,
-  data: { url: string; price: number; platform: string },
+  data: { url: string; price: number; platform: string; checkout_code?: string | null; name?: string | null },
 ): Promise<CheckoutAPI> {
   return apiRequest(`/products/${productId}/checkouts`, { method: "POST", body: data });
 }
 
 export async function deleteCheckout(productId: number, itemId: number): Promise<void> {
   return apiRequest(`/products/${productId}/checkouts/${itemId}`, { method: "DELETE" });
+}
+
+export async function updateCheckout(
+  productId: number, itemId: number,
+  data: { url?: string; price?: number; platform?: string; checkout_code?: string | null; name?: string | null },
+): Promise<CheckoutAPI> {
+  return apiRequest(`/products/${productId}/checkouts/${itemId}`, { method: "PUT", body: data });
 }
 
 export async function createOrderBump(productId: number, data: { external_id?: string; name: string; price: number }): Promise<OrderBumpAPI> {
@@ -41,12 +56,26 @@ export async function deleteOrderBump(productId: number, itemId: number): Promis
   return apiRequest(`/products/${productId}/order-bumps/${itemId}`, { method: "DELETE" });
 }
 
+export async function updateOrderBump(
+  productId: number, itemId: number,
+  data: { external_id?: string; name?: string; price?: number },
+): Promise<OrderBumpAPI> {
+  return apiRequest(`/products/${productId}/order-bumps/${itemId}`, { method: "PUT", body: data });
+}
+
 export async function createUpsell(productId: number, data: { external_id?: string; name: string; price: number }): Promise<UpsellAPI> {
   return apiRequest(`/products/${productId}/upsells`, { method: "POST", body: data });
 }
 
 export async function deleteUpsell(productId: number, itemId: number): Promise<void> {
   return apiRequest(`/products/${productId}/upsells/${itemId}`, { method: "DELETE" });
+}
+
+export async function updateUpsell(
+  productId: number, itemId: number,
+  data: { external_id?: string; name?: string; price?: number },
+): Promise<UpsellAPI> {
+  return apiRequest(`/products/${productId}/upsells/${itemId}`, { method: "PUT", body: data });
 }
 
 // ── Fetch items for a product ───────────────────────────────
@@ -92,6 +121,7 @@ export async function fetchProductsWithStats(): Promise<ProductView[]> {
       const stat = productStat?.checkouts.find((s) => s.id === c.id);
       return {
         id: c.id, url: c.url, price: c.price, platform: c.platform,
+        checkoutCode: c.checkout_code, name: c.name,
         sales: stat?.sales ?? 0, revenue: stat?.revenue ?? 0,
         abandons: stat?.abandons ?? 0, conversionRate: stat?.conversion_rate ?? 0,
       };
@@ -118,6 +148,7 @@ export async function fetchProductsWithStats(): Promise<ProductView[]> {
     views.push({
       id: product.id,
       name: product.name,
+      logoUrl: product.logo_url,
       checkouts,
       orderBumps,
       upsells,

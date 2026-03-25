@@ -83,29 +83,31 @@ async def _fetch_pages_me(access_token: str) -> list[dict]:
 
 async def fetch_instagram_accounts(
     access_token: str,
-    page_id: str,
+    ad_account_id: str,
 ) -> list[dict]:
-    """Busca conta Instagram Business vinculada à página via field."""
-    url = f"{GRAPH_API_BASE}/{page_id}"
+    """Busca contas Instagram vinculadas à conta de anúncio via Ads API."""
+    act_id = ad_account_id if ad_account_id.startswith("act_") else f"act_{ad_account_id}"
+    url = f"{GRAPH_API_BASE}/{act_id}/instagram_accounts"
     params = {
         "access_token": access_token,
-        "fields": "instagram_business_account{id,username,profile_picture_url}",
+        "fields": "id,username,profile_picture_url",
+        "limit": "100",
     }
     async with httpx.AsyncClient(timeout=15.0) as http:
         response = await http.get(url, params=params)
         if response.status_code != 200:
-            logger.warning(f"Erro IG page {page_id}: {response.text}")
+            logger.warning(f"Erro IG ad account {act_id}: {response.text}")
             return []
         data = response.json()
 
-    ig = data.get("instagram_business_account")
-    if not ig:
-        return []
-    return [{
-        "id": ig.get("id", ""),
-        "username": ig.get("username", ""),
-        "profile_pic": ig.get("profile_picture_url", ""),
-    }]
+    return [
+        {
+            "id": ig.get("id", ""),
+            "username": ig.get("username", ""),
+            "profile_pic": ig.get("profile_picture_url", ""),
+        }
+        for ig in data.get("data", [])
+    ]
 
 
 async def search_interests(

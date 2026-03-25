@@ -99,15 +99,25 @@ export function DefineProductModal({
                     key={p.id}
                     type="button"
                     onClick={() => setSelectedId(String(p.id))}
-                    className={`w-full text-left px-3 py-2.5 rounded-md text-sm transition-colors ${
+                    className={`w-full text-left px-3 py-2.5 rounded-md text-sm transition-colors flex flex-col sm:flex-row sm:items-center gap-2 min-w-0 ${
                       isSelected
-                        ? "bg-primary/10 text-primary border border-primary/30"
+                        ? "bg-primary/10 text-primary ring-1 ring-primary/30"
                         : "hover:bg-muted"
                     }`}
                   >
-                    <div className="flex items-center gap-2">
-                      {isSelected && <RiCheckLine className="size-4 shrink-0" />}
-                      <span className="truncate font-medium flex-1">{p.name}</span>
+                    <div className="flex items-start sm:items-center gap-2 w-full min-w-0 flex-1">
+                      <div className="mt-0.5 sm:mt-0 shrink-0">
+                        {isSelected ? (
+                           <RiCheckLine className="size-4" />
+                        ) : (
+                           <div className="size-4" /> 
+                        )}
+                      </div>
+                      <div className="flex flex-col min-w-0 flex-1">
+                        <span className="font-medium break-words line-clamp-2 leading-tight" title={p.name}>
+                          {p.name}
+                        </span>
+                      </div>
                     </div>
                   </button>
                 );

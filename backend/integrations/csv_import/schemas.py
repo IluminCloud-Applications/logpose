@@ -24,6 +24,12 @@ class ImportRow(BaseModel):
     created_at: str | None = None
 
 
+class DetectedCheckout(BaseModel):
+    """Checkout detectado dentro de um produto no CSV/XLSX."""
+    code: str | None = None
+    name: str
+
+
 class DetectedProduct(BaseModel):
     """Produto detectado no CSV/XLSX durante o preview."""
     name: str
@@ -31,7 +37,7 @@ class DetectedProduct(BaseModel):
     ticket: float
     sales_count: int
     total_revenue: float
-    checkouts: list[str]
+    checkouts: list[DetectedCheckout]
 
 
 class ProductConfig(BaseModel):

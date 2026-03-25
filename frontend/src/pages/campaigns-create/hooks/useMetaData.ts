@@ -5,6 +5,7 @@ import {
   searchInterests,
   type PixelData,
   type PageData,
+  type InstagramAccount,
   type InterestData,
 } from "@/services/campaignCreator";
 
@@ -32,26 +33,29 @@ export function usePixels() {
 }
 
 /**
- * Hook para buscar páginas FB + contas IG vinculadas.
+ * Hook para buscar páginas FB + contas IG da conta de anúncio.
  */
 export function usePages() {
   const [pages, setPages] = useState<PageData[]>([]);
+  const [instagramAccounts, setInstagramAccounts] = useState<InstagramAccount[]>([]);
   const [loading, setLoading] = useState(false);
 
   const load = useCallback(async (accountId: number) => {
     setLoading(true);
     try {
       const data = await fetchPages(accountId);
-      setPages(data);
+      setPages(data.pages);
+      setInstagramAccounts(data.instagram_accounts);
     } catch (err) {
       console.error("Erro ao buscar páginas:", err);
       setPages([]);
+      setInstagramAccounts([]);
     } finally {
       setLoading(false);
     }
   }, []);
 
-  return { pages, loading, load };
+  return { pages, instagramAccounts, loading, load };
 }
 
 /**

@@ -1,4 +1,4 @@
-import { RiLogoutBoxLine, RiExpandUpDownLine, RiSunLine, RiMoonLine, RiUserLine } from "@remixicon/react";
+import { RiLogoutBoxLine, RiExpandUpDownLine, RiSunLine, RiMoonLine, RiUserLine, RiSettings3Line } from "@remixicon/react";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -88,13 +88,25 @@ export function SidebarUser() {
                 </Avatar>
                 <div className="grid flex-1 text-left text-sm leading-tight">
                   <span className="truncate font-medium">{user?.name || "Admin"}</span>
-                  <span className="truncate text-xs text-muted-foreground">
-                    {user?.email || "admin@logpose.app"}
-                  </span>
+                  <a
+                    href="https://ilumin.app"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="truncate text-xs text-muted-foreground hover:text-primary transition-colors"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    Powered by Ilumin
+                  </a>
                 </div>
               </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
+            {user?.role === "owner" && (
+              <DropdownMenuItem onClick={() => navigate("/advanced-settings")}>
+                <RiSettings3Line className="size-4" />
+                Opções Avançadas
+              </DropdownMenuItem>
+            )}
             <DropdownMenuItem onClick={() => navigate("/profile")}>
               <RiUserLine className="size-4" />
               Perfil

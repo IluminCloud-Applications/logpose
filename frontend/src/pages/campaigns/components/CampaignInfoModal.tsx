@@ -38,7 +38,7 @@ export function CampaignInfoModal({
       <DialogContent className="sm:max-w-[480px]">
         <DialogHeader>
           <DialogTitle>Informações da Campanha</DialogTitle>
-          <DialogDescription className="break-all">
+          <DialogDescription className="truncate" title={campaignName}>
             {campaignName}
           </DialogDescription>
         </DialogHeader>
@@ -68,8 +68,8 @@ export function CampaignInfoModal({
           >
             {hasCheckout && checkoutMarker && (
               <InfoCard
-                title={checkoutMarker.reference_label}
-                subtitle={`ID: ${checkoutMarker.reference_id}`}
+                title={extractCheckoutName(checkoutMarker.reference_label)}
+                subtitle={extractCheckoutUrl(checkoutMarker.reference_label) || `ID: ${checkoutMarker.reference_id}`}
                 actionLabel="Abrir Checkout"
                 actionUrl={extractCheckoutUrl(checkoutMarker.reference_label)}
               />
@@ -173,12 +173,12 @@ interface InfoCardProps {
 
 function InfoCard({ title, subtitle, actionLabel, actionUrl }: InfoCardProps) {
   return (
-    <div className="flex items-center justify-between gap-3 pl-6 min-w-0">
+    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pl-6 min-w-0">
       <div className="flex flex-col min-w-0 flex-1">
-        <span className="text-sm font-medium truncate block" title={title}>
+        <span className="text-sm font-medium break-words line-clamp-2" title={title}>
           {title}
         </span>
-        <span className="text-[11px] text-muted-foreground truncate block" title={subtitle}>
+        <span className="text-[11px] text-muted-foreground break-all line-clamp-2 mt-0.5" title={subtitle}>
           {subtitle}
         </span>
       </div>
@@ -186,11 +186,11 @@ function InfoCard({ title, subtitle, actionLabel, actionUrl }: InfoCardProps) {
         <Button
           variant="outline"
           size="sm"
-          className="shrink-0 gap-1.5 text-xs whitespace-nowrap"
+          className="shrink-0 gap-1.5 w-full sm:w-auto text-xs"
           onClick={() => window.open(actionUrl, "_blank")}
         >
-          <RiExternalLinkLine className="size-3.5" />
-          {actionLabel}
+          <RiExternalLinkLine className="size-3.5 shrink-0" />
+          <span className="truncate">{actionLabel}</span>
         </Button>
       )}
     </div>
@@ -206,4 +206,12 @@ function extractCheckoutUrl(referenceLabel: string): string | null {
     if (url.startsWith("http")) return url;
   }
   return null;
+}
+
+function extractCheckoutName(referenceLabel: string): string {
+  const parts = referenceLabel.split(" → ");
+  if (parts.length >= 2) {
+    return parts[parts.length - 1].trim();
+  }
+  return referenceLabel;
 }

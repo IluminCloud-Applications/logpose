@@ -1,6 +1,7 @@
 import type { CampaignFormState, AdFormData } from "../hooks/useCampaignForm";
 import { exportCampaign } from "@/services/campaignCreator";
 import { toast } from "sonner";
+import { getNextMidnightSP } from "./schedule";
 
 /**
  * Serializa o formulário para export JSON.
@@ -22,7 +23,9 @@ export function buildExportPayload(form: CampaignFormState): Record<string, unkn
       genders: form.gender, interests: form.interests,
     },
     page_id: form.pageId,
+    page_label: form.pageLabel,
     instagram_actor_id: form.instagramActorId,
+    instagram_label: form.instagramLabel,
     video_id: form.videoId,
     video_label: form.videoLabel,
     checkout_id: form.checkoutId,
@@ -36,6 +39,7 @@ export function buildExportPayload(form: CampaignFormState): Record<string, unkn
     })),
     batch_mode: form.batchMode,
     bulk_data: form.bulkData,
+    publish_active: form.publishActive,
   };
 }
 
@@ -63,7 +67,7 @@ export function applyDataToForm(
   updateField("adsetName", (data.adset_name as string) ?? "");
   updateField("adsetCount", (data.adset_count as number) ?? 1);
   updateField("pixelId", (data.pixel_id as string) ?? "");
-  updateField("startTime", (data.start_time as string) ?? "");
+  updateField("startTime", getNextMidnightSP());
   updateField("videoId", (data.video_id as string) ?? "");
   updateField("videoLabel", (data.video_label as string) ?? "");
   updateField("checkoutId", (data.checkout_id as string) ?? "");
@@ -80,7 +84,9 @@ export function applyDataToForm(
   }
 
   updateField("pageId", (data.page_id as string) ?? "");
+  updateField("pageLabel", (data.page_label as string) ?? "");
   updateField("instagramActorId", (data.instagram_actor_id as string) ?? "");
+  updateField("instagramLabel", (data.instagram_label as string) ?? "");
 
   // Import ads (sem file — precisam ser adicionados manualmente)
   if (Array.isArray(data.ads) && data.ads.length > 0) {
@@ -102,6 +108,9 @@ export function applyDataToForm(
 
   if (data.batch_mode !== undefined) {
     updateField("batchMode", Boolean(data.batch_mode));
+  }
+  if (data.publish_active !== undefined) {
+    updateField("publishActive", Boolean(data.publish_active));
   }
 
   // Import bulkData

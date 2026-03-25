@@ -63,6 +63,7 @@ export interface CampaignData {
   status: string;
   objective: string;
   bid_strategy?: string;
+  budget_type: "CBO" | "ABO";
   budget: number;
   spend: number;
   clicks: number;
@@ -167,6 +168,17 @@ export async function createPreset(
 ): Promise<PresetAPI> {
   return apiRequest<PresetAPI>("/campaigns/presets", {
     method: "POST",
+    body: { name, columns },
+  });
+}
+
+export async function updatePreset(
+  id: number,
+  name: string,
+  columns: string[],
+): Promise<PresetAPI> {
+  return apiRequest<PresetAPI>(`/campaigns/presets/${id}`, {
+    method: "PUT",
     body: { name, columns },
   });
 }

@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta
+
 from database.core.timezone import now_sp
 
 
@@ -16,6 +17,13 @@ def resolve_date_range(
     if preset == "today":
         start = today.replace(hour=0, minute=0, second=0, microsecond=0)
         return start, today
+
+    if preset == "yesterday":
+        yesterday = today - timedelta(days=1)
+        return yesterday.replace(hour=0, minute=0, second=0, microsecond=0), yesterday.replace(hour=23, minute=59, second=59, microsecond=999999)
+
+    if preset == "3d":
+        return today - timedelta(days=3), today
 
     if preset == "7d":
         return today - timedelta(days=7), today

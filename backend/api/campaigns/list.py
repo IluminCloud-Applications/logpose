@@ -161,6 +161,7 @@ def _build_unidentified(db: Session, date_start: str, date_end: str) -> dict:
         "name": "Não identificado",
         "status": "unidentified",
         "objective": "",
+        "budget_type": "CBO",
         "sales": len(unid),
         "revenue": revenue,
         "profit": revenue,

@@ -22,13 +22,16 @@ import CampaignsCreatePage from "@/pages/campaigns-create";
 import UsersPage from "@/pages/users";
 import StripePage from "@/pages/stripe";
 import SubscriptionsPage from "@/pages/subscriptions";
+import AdvancedSettingsPage from "@/pages/advanced-settings";
 import { AIChatProvider } from "@/components/ai-chat/AIChatProvider";
 import { Toaster } from "@/components/ui/sonner";
 import { PageDataProvider } from "@/contexts/PageDataContext";
+import { AdvancedFeaturesProvider } from "@/contexts/AdvancedFeaturesContext";
 
 export default function App() {
   return (
     <PageDataProvider>
+    <AdvancedFeaturesProvider>
     <BrowserRouter>
       <TooltipProvider>
         <AppGuard>
@@ -55,6 +58,7 @@ export default function App() {
               <Route path="/users" element={<UsersPage />} />
               <Route path="/stripe" element={<StripePage />} />
               <Route path="/subscriptions" element={<SubscriptionsPage />} />
+              <Route path="/advanced-settings" element={<AdvancedSettingsPage />} />
             </Route>
 
             <Route path="/" element={<Navigate to="/dashboard" replace />} />
@@ -65,6 +69,7 @@ export default function App() {
       <Toaster richColors position="top-right" />
       <AIChatProvider />
     </BrowserRouter>
+    </AdvancedFeaturesProvider>
     </PageDataProvider>
   );
 }

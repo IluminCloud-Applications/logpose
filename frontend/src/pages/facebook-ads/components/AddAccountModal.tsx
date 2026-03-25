@@ -111,14 +111,7 @@ export function AddAccountModal({
               autoComplete="off"
             />
           </div>
-          <div className="rounded-lg bg-muted/50 p-3">
-            <p className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground mb-1">
-              Parâmetro UTM
-            </p>
-            <code className="text-[10px] font-mono text-muted-foreground break-all">
-              utm_source={"{{placement}}"}&utm_medium={"{{adset.name}}"}&utm_campaign={"{{campaign.name}}"}&utm_content={"{{ad.name}}"}
-            </code>
-          </div>
+
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => handleClose(false)} disabled={isLoading}>Cancelar</Button>
             <Button type="submit" disabled={isLoading || !canSubmit}>

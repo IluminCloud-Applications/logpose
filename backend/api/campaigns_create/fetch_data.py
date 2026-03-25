@@ -54,23 +54,17 @@ async def list_pages(
     db: Session = Depends(get_db),
     _=Depends(get_current_user),
 ):
-    """Lista páginas do Facebook + contas Instagram vinculadas."""
+    """Lista páginas do Facebook + contas Instagram da conta de anúncio."""
     account = _get_fb_account(db, account_id)
 
     pages = await fetch_pages(account.access_token, account.account_id)
 
-    # Para cada página, busca contas Instagram vinculadas
-    pages_with_ig = []
-    for page in pages:
-        ig_accounts = await fetch_instagram_accounts(
-            account.access_token, page["id"]
-        )
-        pages_with_ig.append({
-            **page,
-            "instagram_accounts": ig_accounts,
-        })
+    # Busca contas Instagram via Ad Account (permissão ads_management)
+    ig_accounts = await fetch_instagram_accounts(
+        account.access_token, account.account_id
+    )
 
-    return {"pages": pages_with_ig}
+    return {"pages": pages, "instagram_accounts": ig_accounts}
 
 
 @router.get("/interests")

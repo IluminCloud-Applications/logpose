@@ -17,6 +17,7 @@ export interface CampaignFilterState {
   status: string;
   objective: string;
   bidStrategy: string;
+  budgetType: string;
   account: string;
   product: string;
   video: string;
@@ -169,6 +170,7 @@ export const defaultCampaignFilters: CampaignFilterState = {
   status: "active",
   objective: "sales",
   bidStrategy: "all",
+  budgetType: "all",
   account: "all",
   product: "all",
   video: "all",

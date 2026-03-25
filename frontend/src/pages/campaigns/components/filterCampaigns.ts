@@ -23,6 +23,7 @@ export function filterCampaigns(
       if (filters.status !== "all" && c.status !== filters.status) return false;
       if (filters.objective !== "all" && c.objective !== filters.objective) return false;
       if (filters.bidStrategy !== "all" && (c.bid_strategy || "volume") !== filters.bidStrategy) return false;
+      if (filters.budgetType !== "all" && c.budget_type !== filters.budgetType) return false;
       if (filters.tag !== "all") {
         const cTags = tagsMap[c.id] || [];
         if (!cTags.includes(filters.tag)) return false;

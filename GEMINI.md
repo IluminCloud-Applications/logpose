@@ -72,4 +72,9 @@ Esse é só um exemplo, nem toda página de login tem essas APIs, mas é só par
 - Não faça o deploy
 - Não inicie o app (docker compose up/npm run dev)
 - SEMPRE use shadcn, use a tool para baixar o elemento entender exemplos do design antes de criar o componente.
-- Para migrations estamos utilizando o alembic
+- A partir desse momento para migrations crie os .sql dentro de database/migrations/ 
+
+# Migrations
+- Coloque em database/migrations/ os arquivos .sql que serão executados para criar as tabelas e colunas necessárias para o funcionamento do app.
+- Cada .sql é com a data do dia das alterações, exemplo, se hoje for 2025-03-24, o arquivo será 2025-03-24.sql e todas as modificações que serem feitas no dia vão ser adicionadas nesse SQL.
+- Só precisa do .sql com a data do dia, toda o código para buscar e executar os .sql já foi criado em database/core/migrate_sql.py

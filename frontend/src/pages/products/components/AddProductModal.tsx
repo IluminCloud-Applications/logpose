@@ -9,11 +9,12 @@ import { Button } from "@/components/ui/button";
 interface AddProductModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onAdd: (data: { name: string }) => void;
+  onAdd: (data: { name: string; logo_url?: string | null }) => void;
 }
 
 export function AddProductModal({ open, onOpenChange, onAdd }: AddProductModalProps) {
   const [name, setName] = useState("");
+  const [logoUrl, setLogoUrl] = useState("");
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -21,7 +22,7 @@ export function AddProductModal({ open, onOpenChange, onAdd }: AddProductModalPr
     if (!name.trim()) return;
     setLoading(true);
     try {
-      await onAdd({ name: name.trim() });
+      await onAdd({ name: name.trim(), logo_url: logoUrl.trim() || null });
       reset();
     } finally {
       setLoading(false);
@@ -30,6 +31,7 @@ export function AddProductModal({ open, onOpenChange, onAdd }: AddProductModalPr
 
   const reset = () => {
     setName("");
+    setLogoUrl("");
   };
 
   const handleClose = (v: boolean) => {
@@ -57,6 +59,26 @@ export function AddProductModal({ open, onOpenChange, onAdd }: AddProductModalPr
               required
               autoFocus
             />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="prod-logo">Logo do Produto (URL)</Label>
+            <Input
+              id="prod-logo"
+              placeholder="https://exemplo.com/logo.png"
+              value={logoUrl}
+              onChange={(e) => setLogoUrl(e.target.value)}
+            />
+            {logoUrl.trim() && (
+              <div className="flex items-center justify-center p-3 rounded-lg border border-border/50 bg-muted/30">
+                <img
+                  src={logoUrl}
+                  alt="Preview"
+                  className="max-h-16 max-w-full object-contain rounded"
+                  onError={(e) => (e.currentTarget.style.display = 'none')}
+                  onLoad={(e) => (e.currentTarget.style.display = 'block')}
+                />
+              </div>
+            )}
           </div>
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => handleClose(false)}>Cancelar</Button>

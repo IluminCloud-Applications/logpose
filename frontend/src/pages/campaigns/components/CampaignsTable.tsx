@@ -117,7 +117,7 @@ export function CampaignsTable({
 
   return (
     <>
-      <Card className="border-border/40 premium-table">
+      <Card className="border-border/40 premium-table overflow-hidden min-w-0">
         <CardContent className="p-0">
           <div className="overflow-x-auto">
             <Table>
@@ -159,13 +159,16 @@ export function CampaignsTable({
                         <CampaignNameCell
                           campaign={row} isExpanded={isExpanded} blurName={blur.name}
                           noIdSales={c.no_id_sales} tags={tags}
+                          budgetType={c.budget_type}
                           onEditBudget={(e) => { e.stopPropagation(); setBudgetModal({ open: true, campaign: c }); }}
                           onToggle={(active) => handleToggle(c.id, "campaign", active)}
                         />
                       </TableCell>
                       {visibleCols.map((col) => (
                         <TableCell key={col} className={cn("text-right tabular-nums", blur.values && blurClass)}>
-                          {getCellValue(row, col, kpiColors)}
+                          {col === "budget" && c.budget_type === "ABO"
+                            ? <span className="text-xs text-muted-foreground">ABO</span>
+                            : getCellValue(row, col, kpiColors)}
                         </TableCell>
                       ))}
                     </TableRow>
@@ -176,6 +179,7 @@ export function CampaignsTable({
                       {isUnidentified ? rowContent : (
                         <CampaignContextMenu
                           isActive={row.status === "active"}
+                          isCbo={c.budget_type !== "ABO"}
                           onToggle={() => handleToggle(c.id, "campaign", row.status !== "active")}
                           onEditBudget={() => setBudgetModal({ open: true, campaign: c })}
                           onEditTags={() => setTagsModal({ open: true, campaign: c })}

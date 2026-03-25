@@ -67,7 +67,10 @@ export function DefineCheckoutModal({
   const filtered = useMemo(() => {
     if (!search) return checkouts;
     const q = search.toLowerCase();
-    return checkouts.filter((c) => c.url.toLowerCase().includes(q));
+    return checkouts.filter((c) =>
+      (c.name?.toLowerCase().includes(q)) ||
+      c.url.toLowerCase().includes(q),
+    );
   }, [checkouts, search]);
 
   const selectedProduct = products.find(
@@ -80,10 +83,11 @@ export function DefineCheckoutModal({
     if (!checkout || !selectedProduct) return;
 
     setSaving(true);
-    const label = `${selectedProduct.name} → ${checkout.url}`;
+    const label = checkout.name
+      ? `${selectedProduct.name} → ${checkout.name}`
+      : `${selectedProduct.name} → ${checkout.url}`;
     await onSave(String(checkout.id), label);
 
-    // Resolve produto automaticamente
     if (onProductResolved) {
       onProductResolved(String(selectedProduct.id), selectedProduct.name);
     }
@@ -132,36 +136,20 @@ export function DefineCheckoutModal({
                 />
               </div>
 
-              <div className="max-h-[200px] overflow-y-auto space-y-1 border rounded-md p-2">
+              <div className="max-h-[200px] overflow-y-auto overflow-x-hidden space-y-1 border rounded-md p-2">
                 {loading ? (
                   <p className="text-sm text-muted-foreground p-2">Carregando...</p>
                 ) : filtered.length === 0 ? (
                   <p className="text-sm text-muted-foreground p-2">Nenhum checkout encontrado</p>
                 ) : (
-                  filtered.map((c) => {
-                    const isSelected = String(c.id) === selectedId;
-                    return (
-                      <button
-                        key={c.id}
-                        type="button"
-                        onClick={() => setSelectedId(String(c.id))}
-                        className={`w-full text-left px-3 py-2 rounded-md text-sm transition-colors flex items-center gap-2 ${
-                          isSelected
-                            ? "bg-primary/10 text-primary border border-primary/30"
-                            : "hover:bg-muted"
-                        }`}
-                      >
-                        {isSelected && <RiCheckLine className="size-4 shrink-0" />}
-                        <span className="truncate flex-1">{c.url}</span>
-                        <Badge variant="outline" className="shrink-0 text-[10px]">
-                          {PLATFORM_LABELS[c.platform] ?? c.platform}
-                        </Badge>
-                        <Badge variant="outline" className="shrink-0 text-[10px]">
-                          R$ {c.price.toFixed(2)}
-                        </Badge>
-                      </button>
-                    );
-                  })
+                  filtered.map((c) => (
+                    <CheckoutOption
+                      key={c.id}
+                      checkout={c}
+                      isSelected={String(c.id) === selectedId}
+                      onSelect={() => setSelectedId(String(c.id))}
+                    />
+                  ))
                 )}
               </div>
             </>
@@ -178,5 +166,56 @@ export function DefineCheckoutModal({
         </div>
       </DialogContent>
     </Dialog>
+  );
+}
+
+// ── Sub-component ───────────────────────────────────────────────
+
+function CheckoutOption({ checkout, isSelected, onSelect }: {
+  checkout: CheckoutAPI;
+  isSelected: boolean;
+  onSelect: () => void;
+}) {
+  const displayName = checkout.name || checkout.url;
+  const subtitle = checkout.name ? checkout.url : null;
+
+  return (
+    <button
+      type="button"
+      onClick={onSelect}
+      className={`w-full text-left px-3 py-2.5 rounded-md text-sm transition-colors flex flex-col sm:flex-row sm:items-center gap-2.5 sm:gap-2 min-w-0 ${
+        isSelected
+          ? "bg-primary/10 text-primary ring-1 ring-primary/30"
+          : "hover:bg-muted"
+      }`}
+    >
+      <div className="flex items-start sm:items-center gap-2 w-full min-w-0 flex-1">
+        <div className="mt-0.5 sm:mt-0 shrink-0">
+          {isSelected ? (
+             <RiCheckLine className="size-4" />
+          ) : (
+             <div className="size-4" /> 
+          )}
+        </div>
+        <div className="flex flex-col min-w-0 flex-1">
+          <span className="font-medium break-words line-clamp-2 leading-tight" title={displayName}>
+            {displayName}
+          </span>
+          {subtitle && (
+            <span className="text-[10px] text-muted-foreground break-all line-clamp-2 mt-0.5 leading-tight" title={subtitle}>
+              {subtitle}
+            </span>
+          )}
+        </div>
+      </div>
+      <div className="flex items-center gap-1.5 pl-6 sm:pl-0 shrink-0">
+        <Badge variant="outline" className="text-[10px]">
+          {PLATFORM_LABELS[checkout.platform] ?? checkout.platform}
+        </Badge>
+        <Badge variant="outline" className="text-[10px]">
+          R$ {checkout.price.toFixed(2)}
+        </Badge>
+      </div>
+    </button>
   );
 }

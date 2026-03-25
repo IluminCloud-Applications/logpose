@@ -4,12 +4,11 @@ import type { AdFormData } from "../hooks/useCampaignForm";
 interface AdCardProps {
   ad: AdFormData;
   index: number;
-  showFields: boolean;
   onUpdate: (data: Partial<AdFormData>) => void;
   onRemove: () => void;
 }
 
-export function AdCard({ ad, index, showFields, onUpdate, onRemove }: AdCardProps) {
+export function AdCard({ ad, index, onUpdate, onRemove }: AdCardProps) {
   const isVideo = ad.media_type === "video";
 
   return (
@@ -26,7 +25,7 @@ export function AdCard({ ad, index, showFields, onUpdate, onRemove }: AdCardProp
         ) : (
           <img
             src={ad.preview_url}
-            alt={`Criativo ${index + 1}`}
+            alt={`AD ${String(index + 1).padStart(2, "0")}`}
             className="w-full h-full object-cover"
           />
         )}
@@ -48,43 +47,14 @@ export function AdCard({ ad, index, showFields, onUpdate, onRemove }: AdCardProp
         </button>
       </div>
 
-      {/* Info */}
+      {/* Nome do criativo */}
       <div className="p-3">
         <input
           className="w-full text-sm font-medium bg-transparent border-b border-transparent hover:border-border focus:border-primary focus:outline-none transition-colors pb-1"
-          placeholder={`Criativo ${index + 1}`}
+          placeholder={`AD ${String(index + 1).padStart(2, "0")}`}
           value={ad.name}
           onChange={(e) => onUpdate({ name: e.target.value })}
         />
-
-        {showFields && (
-          <div className="mt-3 space-y-2">
-            <input
-              className="w-full text-xs bg-transparent border rounded px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-primary"
-              placeholder="Texto Principal"
-              value={ad.primary_text}
-              onChange={(e) => onUpdate({ primary_text: e.target.value })}
-            />
-            <input
-              className="w-full text-xs bg-transparent border rounded px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-primary"
-              placeholder="Título"
-              value={ad.headline}
-              onChange={(e) => onUpdate({ headline: e.target.value })}
-            />
-            <input
-              className="w-full text-xs bg-transparent border rounded px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-primary"
-              placeholder="Descrição"
-              value={ad.description}
-              onChange={(e) => onUpdate({ description: e.target.value })}
-            />
-            <input
-              className="w-full text-xs bg-transparent border rounded px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-primary"
-              placeholder="https://suaoferta.com"
-              value={ad.link}
-              onChange={(e) => onUpdate({ link: e.target.value })}
-            />
-          </div>
-        )}
       </div>
     </div>
   );

@@ -44,6 +44,17 @@ export default function LoginPage() {
         </div>
 
         <LoginForm onSubmit={handleSubmit} error={error} loading={loading} />
+
+        <div className="flex justify-center">
+          <a
+            href="https://ilumin.app"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-xs text-white/50 hover:text-white/80 transition-colors"
+          >
+            Powered by Ilumin
+          </a>
+        </div>
       </div>
     </div>
   );

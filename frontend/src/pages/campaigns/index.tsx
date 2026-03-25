@@ -31,10 +31,13 @@ import { useCampaignPageData } from "@/hooks/useCampaignPageData";
 import { useKpiColors } from "@/hooks/useKpiColors";
 import { invalidateCacheByPrefix } from "@/lib/queryCache";
 
+const DEFAULT_PRESET_IDS = defaultPresets.map((p) => p.id);
+
 export default function CampaignsPage() {
   const [search, setSearch] = useState("");
   const [filters, setFilters] = useState<CampaignFilterState>(defaultCampaignFilters);
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [editingPreset, setEditingPreset] = useState<ColumnPreset | null>(null);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [blur, setBlur] = useState<BlurState>({
     name: false, values: false, hideUnidentified: false, hiddenProducts: [],
@@ -46,7 +49,7 @@ export default function CampaignsPage() {
   const hasVturb = vturbAccounts.length > 0;
   const { kpiColors, save: saveKpiColors } = useKpiColors();
 
-  const { presets: dbPresets, addPreset } = useCampaignPresets();
+  const { presets: dbPresets, addPreset, editPreset, removePreset } = useCampaignPresets();
   const allPresets: ColumnPreset[] = useMemo(() => {
     const fromDb = dbPresets.map((p) => ({ id: String(p.id), name: p.name, columns: p.columns }));
     return [...defaultPresets, ...fromDb];
@@ -64,28 +67,22 @@ export default function CampaignsPage() {
     toggle, changeBudget, reload,
   } = useCampaigns(dateStart, dateEnd);
 
-  // Background prefetch other date ranges
   useCampaignPrefetch(activeAccountId);
 
-  // Stale data toast after 5 min of inactivity
   const handleRefresh = useCallback(async () => {
     invalidateCacheByPrefix("campaigns");
     await reload();
   }, [reload]);
   useStaleDataToast(handleRefresh);
 
-  // Products from unidentified sales (for BlurToggle)
   const unidentifiedProducts = unidentified?.products ?? [];
 
   const allRows = useMemo(() => {
     const rows: CampaignData[] = [...campaigns];
     if (!unidentified || unidentified.sales <= 0) return rows;
-
-    // Filter unidentified by hidden products
     if (blur.hideUnidentified) return rows;
 
     if (blur.hiddenProducts.length > 0 && unidentifiedProducts.length > 0) {
-      // Calculate remaining sales/revenue after hiding
       const visibleProducts = unidentifiedProducts.filter(
         (p) => !blur.hiddenProducts.includes(p.name),
       );
@@ -136,6 +133,7 @@ export default function CampaignsPage() {
       setSelectedAccountId(value === "all" ? undefined : Number(value));
     }
     else if (key === "bidStrategy") setFilters((p) => ({ ...p, bidStrategy: value }));
+    else if (key === "budgetType") setFilters((p) => ({ ...p, budgetType: value }));
     else if (key === "product") setFilters((p) => ({ ...p, product: value }));
     else if (key === "video") setFilters((p) => ({ ...p, video: value }));
     else if (key === "checkout") setFilters((p) => ({ ...p, checkout: value }));
@@ -150,25 +148,47 @@ export default function CampaignsPage() {
     setFilters((p) => ({ ...p, valueFilters: [...p.valueFilters, vf] }));
   };
 
-  const metricsForKpi = filtered.map(campaignToMetricRow);
+  const handleSavePreset = async (preset: ColumnPreset) => {
+    if (editingPreset) {
+      await editPreset(Number(preset.id), preset.name, preset.columns);
+    } else {
+      await addPreset(preset.name, preset.columns);
+    }
+    setEditingPreset(null);
+  };
 
-  // Registra dados da página para a AI
+  const handleEditPreset = (preset: ColumnPreset) => {
+    setEditingPreset(preset);
+    setDrawerOpen(true);
+  };
+
+  const handleDeletePreset = async (presetId: string) => {
+    await removePreset(Number(presetId));
+    if (activePresetId === presetId) {
+      setActivePresetId(defaultPresets[0].id);
+    }
+  };
+
+  const metricsForKpi = filtered.map(campaignToMetricRow);
   useCampaignPageData(filtered, filters, dateStart, dateEnd);
 
   return (
-    <div className="flex flex-col gap-6 p-6">
+    <div className="flex flex-col gap-6 p-6 min-w-0">
       <CampaignsHeader
         search={search}
         onSearchChange={setSearch}
         presets={allPresets}
         activePresetId={activePresetId}
         onPresetChange={setActivePresetId}
-        onCreatePreset={() => setDrawerOpen(true)}
+        onCreatePreset={() => { setEditingPreset(null); setDrawerOpen(true); }}
+        onEditPreset={handleEditPreset}
+        onDeletePreset={handleDeletePreset}
         blur={blur}
         onBlurChange={setBlur}
         unidentifiedProducts={unidentifiedProducts}
         onRefresh={handleRefresh}
         onOpenSettings={() => setSettingsOpen(true)}
+        defaultPresetIds={DEFAULT_PRESET_IDS}
       />
       <CampaignsKpis data={metricsForKpi} />
       <div className="flex flex-wrap items-center gap-2">
@@ -201,8 +221,12 @@ export default function CampaignsPage() {
       )}
       <PresetDrawer
         open={drawerOpen}
-        onOpenChange={setDrawerOpen}
-        onSave={async (preset: ColumnPreset) => { await addPreset(preset.name, preset.columns); }}
+        onOpenChange={(open) => {
+          setDrawerOpen(open);
+          if (!open) setEditingPreset(null);
+        }}
+        onSave={handleSavePreset}
+        editingPreset={editingPreset}
       />
       <KpiColorsDrawer
         open={settingsOpen}

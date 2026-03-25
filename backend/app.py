@@ -61,9 +61,15 @@ from api.users.invite import router as users_invite_router
 from api.users.manage import router as users_manage_router
 from api.stripe.accounts import router as stripe_accounts_router
 from api.subscriptions.metrics import router as subscriptions_metrics_router
+from api.advanced_settings.features import router as advanced_settings_router
+
+from database.core.migrate_sql import run_sql_migrations
 
 # Migrate ENUM columns → VARCHAR (idempotent, runs on every boot)
 run_enum_migrations(engine)
+
+# Run SQL migrations from database/migrations/
+run_sql_migrations()
 
 # Create tables
 Base.metadata.create_all(bind=engine)
@@ -128,6 +134,7 @@ app.include_router(users_invite_router, prefix="/api")
 app.include_router(users_manage_router, prefix="/api")
 app.include_router(stripe_accounts_router, prefix="/api")
 app.include_router(subscriptions_metrics_router, prefix="/api")
+app.include_router(advanced_settings_router, prefix="/api")
 
 # SPA Middleware (serves frontend in production)
 _frontend_dir = os.path.join(os.path.dirname(__file__), "frontend_dist")

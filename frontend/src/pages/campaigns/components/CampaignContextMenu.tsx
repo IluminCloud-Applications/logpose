@@ -10,6 +10,7 @@ import {
 interface CampaignContextMenuProps {
   children: React.ReactNode;
   isActive: boolean;
+  isCbo?: boolean;
   onToggle: () => void;
   onEditBudget: () => void;
   onEditTags: () => void;
@@ -22,7 +23,7 @@ interface CampaignContextMenuProps {
 }
 
 export function CampaignContextMenu({
-  children, isActive, onToggle, onEditBudget, onEditTags,
+  children, isActive, isCbo = true, onToggle, onEditBudget, onEditTags,
   onDefineVideo, onDefineCheckout, onDefineProduct,
   onExportCampaign, onDuplicateCampaign, onViewInfo,
 }: CampaignContextMenuProps) {
@@ -45,10 +46,12 @@ export function CampaignContextMenu({
             </>
           )}
         </ContextMenuItem>
-        <ContextMenuItem onClick={onEditBudget} className="gap-2">
-          <RiMoneyDollarCircleLine className="size-4 text-muted-foreground" />
-          Editar Orçamento
-        </ContextMenuItem>
+        {isCbo && (
+          <ContextMenuItem onClick={onEditBudget} className="gap-2">
+            <RiMoneyDollarCircleLine className="size-4 text-muted-foreground" />
+            Editar Orçamento
+          </ContextMenuItem>
+        )}
         <ContextMenuSeparator />
         <ContextMenuItem onClick={onEditTags} className="gap-2">
           <RiPriceTag3Line className="size-4 text-muted-foreground" />
@@ -83,3 +86,4 @@ export function CampaignContextMenu({
     </ContextMenu>
   );
 }
+

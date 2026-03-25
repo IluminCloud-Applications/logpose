@@ -2,7 +2,9 @@ from fastapi import APIRouter, UploadFile, File, Form, Depends, HTTPException
 from api.auth.deps import get_current_user
 from integrations.csv_import.kiwify_csv import parse_kiwify_csv
 from integrations.csv_import.payt_xlsx import parse_payt_xlsx
-from integrations.csv_import.schemas import ImportPreviewResponse, DetectedProduct, ImportRow
+from integrations.csv_import.schemas import (
+    ImportPreviewResponse, DetectedProduct, DetectedCheckout, ImportRow,
+)
 
 router = APIRouter(prefix="/import", tags=["import"])
 
@@ -82,7 +84,7 @@ def _detect_products(rows: list[ImportRow]) -> list[DetectedProduct]:
                 "tickets": set(),
                 "sales_count": 0,
                 "total_revenue": 0.0,
-                "checkouts": set(),
+                "checkouts": {},  # code -> name
             }
 
         p = product_map[name]
@@ -92,19 +94,26 @@ def _detect_products(rows: list[ImportRow]) -> list[DetectedProduct]:
             p["sales_count"] += 1
             p["total_revenue"] += row.amount
 
+        # Collect checkout info (code + name)
         if row.checkout_name:
-            p["checkouts"].add(row.checkout_name)
+            code = row.checkout_code or None
+            p["checkouts"][row.checkout_name] = code
 
     detected = []
     for p in product_map.values():
         tickets = sorted(p["tickets"], reverse=True)
+        checkouts = [
+            DetectedCheckout(code=code, name=name)
+            for name, code in sorted(p["checkouts"].items())
+        ]
         detected.append(DetectedProduct(
             name=p["name"],
             external_id=p["external_id"],
             ticket=tickets[0] if tickets else 0.0,
             sales_count=p["sales_count"],
             total_revenue=round(p["total_revenue"], 2),
-            checkouts=sorted(p["checkouts"]),
+            checkouts=checkouts,
         ))
 
     return sorted(detected, key=lambda x: x.total_revenue, reverse=True)
+

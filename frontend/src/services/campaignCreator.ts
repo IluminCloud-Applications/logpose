@@ -20,7 +20,6 @@ export interface PageData {
   id: string;
   name: string;
   picture?: { data?: { url?: string } };
-  instagram_accounts: InstagramAccount[];
 }
 
 export interface InterestData {
@@ -46,11 +45,15 @@ export async function fetchPixels(accountId: number): Promise<PixelData[]> {
   return res.pixels;
 }
 
-export async function fetchPages(accountId: number): Promise<PageData[]> {
-  const res = await apiRequest<{ pages: PageData[] }>(
+export interface PagesResponse {
+  pages: PageData[];
+  instagram_accounts: InstagramAccount[];
+}
+
+export async function fetchPages(accountId: number): Promise<PagesResponse> {
+  return apiRequest<PagesResponse>(
     `/campaigns/create/pages?account_id=${accountId}`
   );
-  return res.pages;
 }
 
 export async function searchInterests(

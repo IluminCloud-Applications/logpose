@@ -18,6 +18,8 @@ export interface NewItemData {
   name: string;
   price: number;
   platform?: string;
+  checkoutCode?: string;
+  checkoutName?: string;
 }
 
 interface AddItemModalProps {
@@ -54,7 +56,11 @@ export function AddItemModal({ open, onOpenChange, onAdd, productName }: AddItem
   const [name, setName] = useState("");
   const [price, setPrice] = useState("");
   const [platform, setPlatform] = useState("kiwify");
+  const [checkoutCode, setCheckoutCode] = useState("");
+  const [checkoutName, setCheckoutName] = useState("");
   const [loading, setLoading] = useState(false);
+
+  const isPaytCheckout = type === "checkout" && platform === "payt";
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -67,6 +73,8 @@ export function AddItemModal({ open, onOpenChange, onAdd, productName }: AddItem
         name: name.trim(),
         price: Number(price) || 0,
         platform: type === "checkout" ? platform : undefined,
+        checkoutCode: isPaytCheckout ? checkoutCode.trim() : undefined,
+        checkoutName: type === "checkout" ? checkoutName.trim() : undefined,
       });
       reset();
     } finally {
@@ -75,7 +83,8 @@ export function AddItemModal({ open, onOpenChange, onAdd, productName }: AddItem
   };
 
   const reset = () => {
-    setType(null); setExternalId(""); setName(""); setPrice(""); setPlatform("kiwify");
+    setType(null); setExternalId(""); setName(""); setPrice("");
+    setPlatform("kiwify"); setCheckoutCode(""); setCheckoutName("");
   };
 
   const handleClose = (v: boolean) => {
@@ -136,6 +145,37 @@ export function AddItemModal({ open, onOpenChange, onAdd, productName }: AddItem
                       <SelectItem value="payt">PayT</SelectItem>
                     </SelectContent>
                   </Select>
+                </div>
+              )}
+
+              {isPaytCheckout && (
+                <div className="space-y-2 animate-in fade-in slide-in-from-top-1 duration-200">
+                  <Label htmlFor="checkout-code">Código do Checkout</Label>
+                  <Input
+                    id="checkout-code"
+                    placeholder="Ex: RB75VZ"
+                    value={checkoutCode}
+                    onChange={(e) => setCheckoutCode(e.target.value)}
+                    className="font-mono"
+                  />
+                  <p className="text-[10px] text-muted-foreground">
+                    Código usado pela PayT para identificar o checkout (encontrado no XLSX)
+                  </p>
+                </div>
+              )}
+
+              {type === "checkout" && (
+                <div className="space-y-2">
+                  <Label htmlFor="checkout-name">Nome do Checkout</Label>
+                  <Input
+                    id="checkout-name"
+                    placeholder="Ex: Checkout Principal"
+                    value={checkoutName}
+                    onChange={(e) => setCheckoutName(e.target.value)}
+                  />
+                  <p className="text-[10px] text-muted-foreground">
+                    Nome para identificar facilmente este checkout
+                  </p>
                 </div>
               )}
 

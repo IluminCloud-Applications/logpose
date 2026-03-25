@@ -21,6 +21,7 @@ async def create_campaign(
     name: str,
     daily_budget_reais: float,
     bid_strategy: str,
+    status: str = "PAUSED",
 ) -> dict:
     """
     Cria uma campanha CBO com objetivo de vendas.
@@ -31,6 +32,7 @@ async def create_campaign(
         name: Nome da campanha
         daily_budget_reais: Orçamento diário em Reais
         bid_strategy: VOLUME | BID_CAP | COST_CAP | ROAS
+        status: ACTIVE ou PAUSED
     
     Returns:
         {"success": True, "campaign_id": "123"} ou {"success": False, "error": "..."}
@@ -47,13 +49,14 @@ async def create_campaign(
         "access_token": access_token,
         "name": name,
         "objective": "OUTCOME_SALES",
-        "status": "PAUSED",
-        "special_ad_categories": "[]",
+        "status": status,
+        "special_ad_categories": "NONE",
         "daily_budget": str(budget_cents),
         "bid_strategy": api_bid_strategy,
     }
 
     logger.info(f"Criando campanha: {name} | Budget: R${daily_budget_reais} | Strategy: {bid_strategy}")
+    logger.info(f"Payload campanha: {data}")
 
     async with httpx.AsyncClient(timeout=30.0) as http:
         response = await http.post(url, data=data)
@@ -68,8 +71,12 @@ async def create_campaign(
         try:
             body = response.json()
             error_msg = body.get("error", {}).get("message", f"Erro {response.status_code}")
+            error_code = body.get("error", {}).get("code", "N/A")
+            error_subcode = body.get("error", {}).get("error_subcode", "N/A")
+            logger.error(f"Erro ao criar campanha: {error_msg} (code={error_code}, subcode={error_subcode})")
+            logger.error(f"Response body: {body}")
         except Exception:
             error_msg = f"Erro {response.status_code} da Meta API"
+            logger.error(f"Erro ao criar campanha (não JSON): {response.text}")
 
-        logger.error(f"Erro ao criar campanha: {error_msg}")
         return {"success": False, "error": error_msg}

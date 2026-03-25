@@ -70,7 +70,7 @@ def process_transactions(
             utm_source=row.utm_source, utm_medium=row.utm_medium,
             utm_campaign=row.utm_campaign, utm_content=row.utm_content,
             utm_term=row.utm_term, src=row.src,
-            checkout_url=row.checkout_name,
+            checkout_url=row.checkout_code or row.checkout_name,
             created_at=_parse_date(row.created_at),
         )
         db.add(tx)

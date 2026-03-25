@@ -34,12 +34,17 @@ async def upload_image(
         if response.status_code == 200:
             result = response.json()
             images = result.get("images", {})
-            # A chave é o nome do campo (filename)
-            image_data = images.get("filename", {})
-            image_hash = image_data.get("hash")
-            if image_hash:
-                logger.info(f"Imagem uploaded: {filename} → hash={image_hash}")
-                return {"success": True, "image_hash": image_hash}
+            # A Meta retorna o hash usando o nome real do arquivo como chave
+            # Iterar sobre todas as entradas para encontrar o hash
+            for key, image_data in images.items():
+                image_hash = image_data.get("hash")
+                if image_hash:
+                    logger.info(f"Imagem uploaded: {filename} → hash={image_hash}")
+                    return {"success": True, "image_hash": image_hash}
+
+            # Se chegou aqui, status 200 mas sem hash
+            logger.error(f"Upload imagem {filename}: status 200 mas sem hash. Response: {result}")
+            return {"success": False, "error": "Upload retornou 200 mas sem image hash"}
 
         error_msg = _parse_error(response)
         logger.error(f"Erro upload imagem {filename}: {error_msg}")

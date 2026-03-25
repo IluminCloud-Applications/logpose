@@ -4,9 +4,13 @@ import {
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { RiExternalLinkLine, RiArrowUpSLine, RiAddLine, RiDeleteBinLine } from "@remixicon/react";
+import { RiAddLine, RiDeleteBinLine, RiPencilLine } from "@remixicon/react";
 import { ProductTable } from "./ProductTable";
 import { PlatformLogo } from "@/components/PlatformLogo";
+import {
+  CheckoutIdentifierCell, PlatformCell, ConversionCell,
+  ProductAvatar, KpiPill,
+} from "./ProductCells";
 import type { ProductView } from "@/types/product";
 
 function fmt(v: number): string {
@@ -18,34 +22,39 @@ function fmt(v: number): string {
 interface ProductAccordionProps {
   product: ProductView;
   onAddItem: (productId: number) => void;
+  onEditProduct: (product: ProductView) => void;
   onDeleteProduct: (productId: number) => void;
+  onEditItem: (item: { productId: number; itemId: number; type: "checkout" | "orderBump" | "upsell" }) => void;
 }
 
-export function ProductAccordion({ product, onAddItem, onDeleteProduct }: ProductAccordionProps) {
+export function ProductAccordion({ product, onAddItem, onEditProduct, onDeleteProduct, onEditItem }: ProductAccordionProps) {
   const totalSales = product.checkouts.reduce((s, c) => s + c.sales, 0);
   const totalRevenue = product.checkouts.reduce((s, c) => s + c.revenue, 0);
   const obRevenue = product.orderBumps.reduce((s, c) => s + c.revenue, 0);
   const upRevenue = product.upsells.reduce((s, c) => s + c.revenue, 0);
   const grandTotal = totalRevenue + obRevenue + upRevenue;
 
-  // Platforms where this product has checkouts
   const platforms = [...new Set(product.checkouts.map((c) => c.platform))];
 
   return (
-    <Card className="border-border/40 overflow-hidden hover:border-border/60 transition-colors">
+    <Card className="group/card border-border/40 overflow-hidden hover:border-border/60 transition-colors">
       <Accordion type="single" collapsible>
         <AccordionItem value={String(product.id)} className="border-none">
           <AccordionTrigger className="px-5 py-4 hover:no-underline hover:bg-muted/20 transition-colors">
             <div className="flex items-center justify-between w-full pr-3">
               <div className="flex items-center gap-4">
-                <div className="flex size-11 items-center justify-center rounded-xl bg-gradient-to-br from-primary/15 to-primary/5 shadow-sm">
-                  <span className="text-lg font-bold text-primary">
-                    {product.name.charAt(0)}
-                  </span>
-                </div>
+                <ProductAvatar name={product.name} logoUrl={product.logoUrl} />
                 <div className="text-left">
                   <div className="flex items-center gap-2.5">
                     <span className="font-semibold text-sm">{product.name}</span>
+                    <button
+                      type="button"
+                      className="relative z-10 opacity-0 group-hover/card:opacity-100 transition-opacity p-1 rounded-md hover:bg-muted/60"
+                      onClick={(e) => { e.stopPropagation(); e.preventDefault(); onEditProduct(product); }}
+                      title="Editar produto"
+                    >
+                      <RiPencilLine className="size-3.5 text-muted-foreground" />
+                    </button>
                     {platforms.map((p) => (
                       <Badge key={p} variant="outline" className="text-[10px] font-medium border border-border/50 gap-1 px-2 py-0.5">
                         <PlatformLogo platform={p} size="sm" />
@@ -64,7 +73,7 @@ export function ProductAccordion({ product, onAddItem, onDeleteProduct }: Produc
             </div>
           </AccordionTrigger>
           <AccordionContent className="px-5 pb-5">
-            <ProductAccordionContent product={product} onAddItem={onAddItem} onDeleteProduct={onDeleteProduct} />
+            <ProductAccordionContent product={product} onAddItem={onAddItem} onDeleteProduct={onDeleteProduct} onEditItem={onEditItem} />
           </AccordionContent>
         </AccordionItem>
       </Accordion>
@@ -75,8 +84,13 @@ export function ProductAccordion({ product, onAddItem, onDeleteProduct }: Produc
 // ── Accordion internal content ──────────────────────────────
 
 function ProductAccordionContent({
-  product, onAddItem, onDeleteProduct,
-}: { product: ProductView; onAddItem: (id: number) => void; onDeleteProduct: (id: number) => void }) {
+  product, onAddItem, onDeleteProduct, onEditItem,
+}: {
+  product: ProductView;
+  onAddItem: (id: number) => void;
+  onDeleteProduct: (id: number) => void;
+  onEditItem: (item: { productId: number; itemId: number; type: "checkout" | "orderBump" | "upsell" }) => void;
+}) {
   return (
     <div className="space-y-5 pt-2">
       <div className="flex items-center justify-between">
@@ -100,13 +114,15 @@ function ProductAccordionContent({
 
       <ProductTable
         title="Checkouts"
-        columns={["URL", "Plataforma", "Preço", "Vendas", "Faturamento", "Abandonos", "Conversão"]}
+        columns={["Identificação", "Plataforma", "Preço", "Vendas", "Faturamento", "Abandonos", "Conversão"]}
         rows={product.checkouts.map((c) => [
-          <UrlCell key={c.id} url={c.url} />,
+          <CheckoutIdentifierCell key={c.id} url={c.url} checkoutCode={c.checkoutCode} platform={c.platform} name={c.name} />,
           <PlatformCell key={`p-${c.id}`} platform={c.platform} />,
           fmt(c.price), String(c.sales), fmt(c.revenue),
           String(c.abandons), `${c.conversionRate.toFixed(1)}%`,
         ])}
+        rowIds={product.checkouts.map((c) => c.id)}
+        onRowEdit={(id) => onEditItem({ productId: product.id, itemId: id, type: "checkout" })}
       />
       {product.orderBumps.length > 0 && (
         <ProductTable
@@ -116,6 +132,8 @@ function ProductAccordionContent({
             o.name, fmt(o.price), String(o.sales), fmt(o.revenue),
             <ConversionCell key={o.id} rate={o.conversionRate} />,
           ])}
+          rowIds={product.orderBumps.map((o) => o.id)}
+          onRowEdit={(id) => onEditItem({ productId: product.id, itemId: id, type: "orderBump" })}
         />
       )}
       {product.upsells.length > 0 && (
@@ -126,46 +144,10 @@ function ProductAccordionContent({
             u.name, fmt(u.price), String(u.sales), fmt(u.revenue),
             <ConversionCell key={u.id} rate={u.conversionRate} />,
           ])}
+          rowIds={product.upsells.map((u) => u.id)}
+          onRowEdit={(id) => onEditItem({ productId: product.id, itemId: id, type: "upsell" })}
         />
       )}
     </div>
-  );
-}
-
-// ── Sub-components ──────────────────────────────────────────
-
-function KpiPill({ label, value, accent }: { label: string; value: string; accent?: boolean }) {
-  return (
-    <div className="text-right">
-      <p className="text-[10px] uppercase tracking-wider text-muted-foreground">{label}</p>
-      <p className={`text-sm font-bold tabular-nums ${accent ? "text-primary" : ""}`}>{value}</p>
-    </div>
-  );
-}
-
-function UrlCell({ url }: { url: string }) {
-  return (
-    <div className="flex items-center gap-1.5 max-w-[220px]">
-      <RiExternalLinkLine className="size-3.5 shrink-0 text-muted-foreground" />
-      <span className="font-mono text-xs truncate">{url}</span>
-    </div>
-  );
-}
-
-function PlatformCell({ platform }: { platform: "kiwify" | "payt" }) {
-  return (
-    <Badge variant="outline" className="text-[10px] gap-1 py-0.5">
-      <PlatformLogo platform={platform} size="sm" showLabel={false} />
-      {platform === "payt" ? "PayT" : "Kiwify"}
-    </Badge>
-  );
-}
-
-function ConversionCell({ rate }: { rate: number }) {
-  return (
-    <span className="inline-flex items-center gap-0.5 text-[var(--color-success)] font-medium">
-      <RiArrowUpSLine className="size-3.5" />
-      {rate.toFixed(1)}%
-    </span>
   );
 }
