@@ -120,3 +120,4 @@ def _ensure_customer_product(db: Session, customer_id: int, product_id: int):
     ).first()
     if not exists:
         db.add(CustomerProduct(customer_id=customer_id, product_id=product_id))
+        db.flush()
