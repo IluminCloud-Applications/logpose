@@ -44,12 +44,13 @@ async def execute_import(
     if not frontends:
         raise HTTPException(400, "Pelo menos 1 produto deve ser marcado como Frontend")
 
-    # Validar: upsells/orderbumps precisam de parent
+    # Validar: upsells/orderbumps precisam de ao menos 1 parent
     for c in configs:
-        if c.type in ("upsell", "order_bump") and not c.parent_product_name:
+        if c.type in ("upsell", "order_bump") and not c.get_parents():
             raise HTTPException(
-                400, f"Produto '{c.name}' ({c.type}) precisa de um produto pai"
+                400, f"Produto '{c.name}' ({c.type}) precisa de pelo menos um produto pai"
             )
+
 
     # Re-parsear arquivos
     rows = await _parse_files(platform, file, file_vendas, file_origem)

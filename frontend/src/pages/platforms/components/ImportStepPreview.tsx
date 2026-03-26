@@ -67,8 +67,10 @@ export function ImportStepPreview({ preview, onExecute, onBack, isLoading, error
   const handleExecute = () => {
     const productConfigs: ProductConfig[] = Object.entries(configs).map(([name, c]) => ({
       name,
+      display_name: null,
       type: c.type,
       parent_product_name: c.parent,
+      parent_product_names: null,
       product_id: c.productId,
     }));
     onExecute(productConfigs);
@@ -153,19 +155,17 @@ function ProductConfigCard({
   onUpdateType, onUpdateParent, onUpdateProductId, fmt,
 }: ProductConfigCardProps) {
   return (
-    <div className="rounded-lg border border-border/50 p-3 space-y-2.5">
-      <div className="flex items-center justify-between gap-2">
-        <div className="min-w-0">
-          <p className="text-sm font-medium truncate">{product.name}</p>
-          <p className="text-[11px] text-muted-foreground">
-            {product.sales_count} vendas · {fmt(product.total_revenue)} · Ticket {fmt(product.ticket)}
-          </p>
-        </div>
+    <div className="rounded-lg border border-border/50 p-3 space-y-2.5 overflow-hidden">
+      <div className="overflow-hidden">
+        <p className="text-sm font-medium truncate w-full" title={product.name}>{product.name}</p>
+        <p className="text-[11px] text-muted-foreground truncate">
+          {product.sales_count} vendas · {fmt(product.total_revenue)} · Ticket {fmt(product.ticket)}
+        </p>
       </div>
 
       <div className="flex items-center gap-2 flex-wrap">
         <Select value={config?.type} onValueChange={(v) => onUpdateType(v as ProductType)}>
-          <SelectTrigger className="h-8 text-xs w-[140px]">
+          <SelectTrigger className="h-8 text-xs w-[130px] shrink-0">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -177,7 +177,7 @@ function ProductConfigCard({
 
         {config?.type !== "frontend" && (
           <Select value={config?.parent ?? ""} onValueChange={onUpdateParent}>
-            <SelectTrigger className="h-8 text-xs flex-1">
+            <SelectTrigger className="h-8 text-xs flex-1 min-w-0">
               <SelectValue placeholder="Produto pai..." />
             </SelectTrigger>
             <SelectContent>
@@ -195,7 +195,7 @@ function ProductConfigCard({
             value={config.productId ? String(config.productId) : "new"}
             onValueChange={onUpdateProductId}
           >
-            <SelectTrigger className="h-8 text-xs flex-1">
+            <SelectTrigger className="h-8 text-xs flex-1 min-w-0">
               <SelectValue placeholder="Vincular a produto..." />
             </SelectTrigger>
             <SelectContent>
@@ -212,7 +212,7 @@ function ProductConfigCard({
         )}
 
         {config?.type === "upsell" && (
-          <Badge className="text-[10px] h-6 bg-blue-500/10 text-blue-600 border-blue-500/20">
+          <Badge className="text-[10px] h-6 bg-blue-500/10 text-blue-600 border-blue-500/20 shrink-0">
             <RiArrowUpLine className="size-3 mr-0.5" /> Upsell
           </Badge>
         )}
@@ -223,12 +223,12 @@ function ProductConfigCard({
 
 function KpiCard({ icon, label, value }: { icon: React.ReactNode; label: string; value: string | number }) {
   return (
-    <div className="rounded-lg bg-muted/50 p-3 text-center">
+    <div className="rounded-lg bg-muted/50 p-3 text-center overflow-hidden">
       <div className="flex items-center justify-center gap-1.5 text-muted-foreground mb-1">
         {icon}
         <span className="text-[10px] font-medium uppercase tracking-wider">{label}</span>
       </div>
-      <p className="text-lg font-bold">{value}</p>
+      <p className="text-sm font-bold leading-tight break-all">{value}</p>
     </div>
   );
 }

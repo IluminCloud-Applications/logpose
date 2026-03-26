@@ -2,8 +2,12 @@ import { useState } from "react";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription,
 } from "@/components/ui/dialog";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
+import { RiFlashlightLine } from "@remixicon/react";
 import { ImportStepPlatform } from "./ImportStepPlatform";
 import { ImportStepPreview } from "./ImportStepPreview";
+import { ImportStepAdvanced } from "./ImportStepAdvanced";
 import { ImportStepResult } from "./ImportStepResult";
 import type {
   ImportStep, ImportPlatform, ImportPreviewResponse,
@@ -24,6 +28,7 @@ export function ImportModal({ open, onOpenChange }: ImportModalProps) {
   const [result, setResult] = useState<ImportResultResponse | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [advancedMode, setAdvancedMode] = useState(false);
 
   const resetState = () => {
     setStep("platform");
@@ -72,18 +77,19 @@ export function ImportModal({ open, onOpenChange }: ImportModalProps) {
 
   const titles: Record<ImportStep, string> = {
     platform: "Importação Inteligente",
-    preview: "Configurar Produtos",
+    preview: advancedMode ? "Modo Avançado — Configurar Grupos" : "Configurar Produtos",
     result: "Resultado da Importação",
   };
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-[600px] max-h-[85vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-[640px] max-h-[85vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>{titles[step]}</DialogTitle>
           <DialogDescription>
             {step === "platform" && "Selecione a plataforma e faça upload do relatório"}
-            {step === "preview" && "Revise os produtos detectados e configure seus tipos"}
+            {step === "preview" && !advancedMode && "Revise os produtos detectados e configure seus tipos"}
+            {step === "preview" && advancedMode && "Defina um separador para agrupar variantes em um único produto"}
             {step === "result" && "Veja o resumo da importação realizada"}
           </DialogDescription>
         </DialogHeader>
@@ -97,13 +103,43 @@ export function ImportModal({ open, onOpenChange }: ImportModalProps) {
         )}
 
         {step === "preview" && preview && (
-          <ImportStepPreview
-            preview={preview}
-            onExecute={handleExecute}
-            onBack={() => setStep("platform")}
-            isLoading={isLoading}
-            error={error}
-          />
+          <>
+            {/* Toggle de modo avançado */}
+            <div className="flex items-center gap-2 bg-muted/40 rounded-lg px-3 py-2 mb-1">
+              <RiFlashlightLine className="size-4 text-amber-500 shrink-0" />
+              <div className="flex-1 min-w-0">
+                <Label htmlFor="advanced-toggle" className="text-sm font-medium cursor-pointer">
+                  Modo Avançado
+                </Label>
+                <p className="text-[11px] text-muted-foreground">
+                  Agrupe variantes e vincule upsells a múltiplos produtos
+                </p>
+              </div>
+              <Switch
+                id="advanced-toggle"
+                checked={advancedMode}
+                onCheckedChange={setAdvancedMode}
+              />
+            </div>
+
+            {advancedMode ? (
+              <ImportStepAdvanced
+                preview={preview}
+                onExecute={handleExecute}
+                onBack={() => setStep("platform")}
+                isLoading={isLoading}
+                error={error}
+              />
+            ) : (
+              <ImportStepPreview
+                preview={preview}
+                onExecute={handleExecute}
+                onBack={() => setStep("platform")}
+                isLoading={isLoading}
+                error={error}
+              />
+            )}
+          </>
         )}
 
         {step === "result" && result && (

@@ -42,10 +42,24 @@ class DetectedProduct(BaseModel):
 
 class ProductConfig(BaseModel):
     """Configuração do usuário para cada produto detectado."""
-    name: str
-    type: str  # frontend | upsell | order_bump
-    parent_product_name: str | None = None
-    product_id: int | None = None  # ID de produto existente para vincular
+    name: str                           # nome original do CSV (chave de lookup)
+    display_name: str | None = None     # nome canônico para criação (modo avançado)
+    type: str                           # frontend | upsell | order_bump
+    parent_product_name: str | None = None        # legado / modo comum (1 pai)
+    parent_product_names: list[str] | None = None  # modo avançado (N pais)
+    product_id: int | None = None
+
+    def get_parents(self) -> list[str]:
+        """Retorna lista de pais independente do modo (único ou múltiplo)."""
+        if self.parent_product_names:
+            return self.parent_product_names
+        if self.parent_product_name:
+            return [self.parent_product_name]
+        return []
+
+    def get_canonical_name(self) -> str:
+        """Retorna o nome canônico do produto (display_name se definido, senão name)."""
+        return self.display_name if self.display_name else self.name
 
 
 class ImportPreviewResponse(BaseModel):

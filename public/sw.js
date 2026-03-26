@@ -1,11 +1,11 @@
-const CACHE_NAME = 'logpose-v3';
+const CACHE_NAME = 'logpose-v2';
 
 const STATIC_ASSETS = [
   '/',
   '/dashboard',
   '/manifest.json',
-  '/icons/pwa-192.png',
-  '/icons/pwa-512.png',
+  '/pwa-192.png',
+  '/pwa-512.png',
 ];
 
 // Install: cache static assets

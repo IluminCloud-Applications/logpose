@@ -30,11 +30,26 @@ export interface ImportPreviewResponse {
 export type ProductType = "frontend" | "upsell" | "order_bump";
 
 export interface ProductConfig {
-  name: string;
+  name: string;           // nome original do CSV (chave de lookup)
+  display_name: string | null;  // nome canônico para criação do produto (modo avançado)
   type: ProductType;
   parent_product_name: string | null;
-  product_id: number | null;  // ID de produto existente para vincular
+  parent_product_names: string[] | null; // modo avançado: múltiplos pais
+  product_id: number | null;
 }
+
+// Modo avançado: configuração de um grupo de produtos
+export interface SmartGroupConfig {
+  /** Nome canônico do produto (após split) */
+  groupName: string;
+  /** Nomes originais do CSV que fazem parte desse grupo */
+  originalNames: string[];
+  type: ProductType;
+  /** Para upsell/order_bump: lista de grupos pai (nomes canônicos) */
+  parentGroups: string[];
+  product_id: number | null;
+}
+
 
 // ── Execute Result ──────────────────────────────────────────
 

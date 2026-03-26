@@ -56,11 +56,15 @@ def process_transactions(
         config = config_map.get(row.product_name)
         product_id = None
         if config and config.type == "frontend":
-            p = product_db.get(row.product_name)
+            # Lookup pelo nome canônico (pode ser diferente do nome original)
+            p = product_db.get(config.get_canonical_name())
             product_id = p.id if p else None
-        elif config and config.parent_product_name:
-            p = product_db.get(config.parent_product_name)
-            product_id = p.id if p else None
+        elif config:
+            parents = config.get_parents()
+            if parents:
+                p = product_db.get(parents[0])
+                product_id = p.id if p else None
+
 
         tx = Transaction(
             external_id=row.external_id, platform=platform_enum,

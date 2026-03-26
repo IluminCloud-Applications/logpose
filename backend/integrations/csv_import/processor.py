@@ -18,6 +18,7 @@ def process_import(
 ) -> ImportResultResponse:
     """Processa a importação: cria Products, Customers, Transactions."""
     platform_enum = PaymentPlatform(platform)
+    # config_map: nome original do CSV -> config
     config_map = {pc.name: pc for pc in products_config}
 
     result = ImportResultResponse(
@@ -25,10 +26,9 @@ def process_import(
         upsells_created=0, order_bumps_created=0, skipped_duplicates=0, errors=[],
     )
 
-    # Fase 1: Criar produtos (só frontends primeiro)
-    product_db = _create_frontend_products(
-        db, rows, config_map, result
-    )
+    # Fase 1: Criar produtos frontend.
+    # product_db é indexado pelo nome CANÔNICO (display_name ou name)
+    product_db = _create_frontend_products(db, rows, config_map, result)
 
     # Fase 2: Criar upsells e order bumps
     _create_sub_products(db, rows, config_map, product_db, result)
@@ -48,24 +48,29 @@ def process_import(
     return result
 
 
-
 def _create_frontend_products(
     db: Session, rows: list[ImportRow], config_map: dict,
     result: ImportResultResponse,
 ) -> dict[str, Product]:
-    """Cria ou encontra Products para cada produto marcado como frontend."""
+    """
+    Cria ou encontra Products para cada produto marcado como frontend.
+
+    product_db é indexado pelo nome CANÔNICO (config.get_canonical_name()),
+    que pode ser diferente do nome original do CSV quando há display_name (modo avançado).
+    Múltiplos nomes originais podem mapear para o mesmo canônico — criamos apenas 1 produto.
+    """
     product_db: dict[str, Product] = {}
-    seen_names: set[str] = set()
+    seen_canonical: set[str] = set()
 
     for row in rows:
-        name = row.product_name
-        if name in seen_names:
-            continue
-        seen_names.add(name)
-
-        config = config_map.get(name)
+        config = config_map.get(row.product_name)
         if not config or config.type != "frontend":
             continue
+
+        canonical = config.get_canonical_name()
+        if canonical in seen_canonical:
+            continue
+        seen_canonical.add(canonical)
 
         # Se o user selecionou um produto existente (product_id), usar esse
         if config.product_id:
@@ -73,22 +78,19 @@ def _create_frontend_products(
                 Product.id == config.product_id
             ).first()
             if existing:
-                product_db[name] = existing
+                product_db[canonical] = existing
                 continue
 
-        # Buscar pelo nome exato
-        existing = db.query(Product).filter(
-            Product.name == name
-        ).first()
-
+        # Buscar pelo nome canônico
+        existing = db.query(Product).filter(Product.name == canonical).first()
         if existing:
-            product_db[name] = existing
+            product_db[canonical] = existing
             continue
 
-        product = Product(name=name)
+        product = Product(name=canonical)
         db.add(product)
         db.flush()
-        product_db[name] = product
+        product_db[canonical] = product
         result.products_created += 1
 
     return product_db
@@ -98,37 +100,49 @@ def _create_sub_products(
     db: Session, rows: list[ImportRow], config_map: dict,
     product_db: dict[str, Product], result: ImportResultResponse,
 ):
-    """Cria Upsells e OrderBumps vinculados aos produtos pai."""
-    seen: set[str] = set()
-    for row in rows:
-        name = row.product_name
-        if name in seen:
-            continue
-        seen.add(name)
+    """
+    Cria Upsells e OrderBumps vinculados aos produtos pai (1 ou N).
+    Os pais são identificados pelo nome canônico.
+    """
+    seen_canonical: set[str] = set()
 
-        config = config_map.get(name)
+    for row in rows:
+        config = config_map.get(row.product_name)
         if not config or config.type == "frontend":
             continue
 
-        parent = product_db.get(config.parent_product_name or "")
-        if not parent:
+        canonical = config.get_canonical_name()
+        if canonical in seen_canonical:
+            continue
+        seen_canonical.add(canonical)
+
+        parents = config.get_parents()
+        if not parents:
             result.errors.append(
-                f"Pai '{config.parent_product_name}' não encontrado para '{name}'"
+                f"Produto '{canonical}' ({config.type}) não tem produto(s) pai configurado"
             )
             continue
 
-        if config.type == "upsell":
-            db.add(Upsell(
-                product_id=parent.id, external_id=row.product_external_id,
-                name=name, price=row.product_ticket,
-            ))
-            result.upsells_created += 1
-        elif config.type == "order_bump":
-            db.add(OrderBump(
-                product_id=parent.id, external_id=row.product_external_id,
-                name=name, price=row.product_ticket,
-            ))
-            result.order_bumps_created += 1
+        for parent_name in parents:
+            parent = product_db.get(parent_name)
+            if not parent:
+                result.errors.append(
+                    f"Pai '{parent_name}' não encontrado para '{canonical}'"
+                )
+                continue
+
+            if config.type == "upsell":
+                db.add(Upsell(
+                    product_id=parent.id, external_id=row.product_external_id,
+                    name=canonical, price=row.product_ticket,
+                ))
+                result.upsells_created += 1
+            elif config.type == "order_bump":
+                db.add(OrderBump(
+                    product_id=parent.id, external_id=row.product_external_id,
+                    name=canonical, price=row.product_ticket,
+                ))
+                result.order_bumps_created += 1
 
     db.flush()
 
@@ -139,10 +153,8 @@ def _auto_create_payt_checkouts(
 ):
     """
     Auto-cria checkouts PayT a partir dos códigos encontrados no XLSX.
-    Se o checkout_code já existe no banco para o mesmo produto, ignora.
-    Cria com url vazio (o user preenche depois) e price=0.
+    Usa o nome canônico para lookup no product_db.
     """
-    # Coletar checkouts únicos por produto: {product_name: {code: name}}
     product_checkouts: dict[str, dict[str, str]] = {}
     for row in rows:
         if not row.checkout_code:
@@ -150,13 +162,18 @@ def _auto_create_payt_checkouts(
         config = config_map.get(row.product_name)
         if not config:
             continue
-        # Resolve product name (frontend or parent)
-        prod_name = row.product_name if config.type == "frontend" else config.parent_product_name
-        if not prod_name or prod_name not in product_db:
-            continue
-        if prod_name not in product_checkouts:
-            product_checkouts[prod_name] = {}
-        product_checkouts[prod_name][row.checkout_code] = row.checkout_name or row.checkout_code
+
+        if config.type == "frontend":
+            prod_names = [config.get_canonical_name()]
+        else:
+            prod_names = config.get_parents()
+
+        for prod_name in prod_names:
+            if prod_name not in product_db:
+                continue
+            if prod_name not in product_checkouts:
+                product_checkouts[prod_name] = {}
+            product_checkouts[prod_name][row.checkout_code] = row.checkout_name or row.checkout_code
 
     for prod_name, checkouts in product_checkouts.items():
         product = product_db[prod_name]
@@ -169,7 +186,7 @@ def _auto_create_payt_checkouts(
                 continue
             db.add(Checkout(
                 product_id=product.id,
-                url="",  # User fills in later
+                url="",
                 price=0.0,
                 platform=CheckoutPlatform.PAYT,
                 checkout_code=code,
