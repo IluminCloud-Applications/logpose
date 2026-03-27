@@ -1,5 +1,8 @@
+import { useState, useMemo, useCallback } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import type { FunnelProduct } from "@/services/funnel";
+import { FunnelTooltip } from "./FunnelTooltip";
+import { buildFunnelGeometry, SVG_W, SVG_H } from "./funnelGeometry";
 
 interface FunnelChartProps {
   funnel: FunnelProduct;
@@ -12,95 +15,164 @@ function formatNumber(v: number): string {
   return v.toLocaleString("pt-BR");
 }
 
-// Deep navy → teal gradient palette for a modern premium look
-const stageColors = [
-  { bg: "#1e3a5f", text: "#e8f0fe" },
-  { bg: "#1d4e7e", text: "#e0ecf9" },
-  { bg: "#1a6493", text: "#d6e8f5" },
-  { bg: "#1878a6", text: "#cce3f0" },
-  { bg: "#178db5", text: "#c0dfeb" },
-  { bg: "#17a2b8", text: "#b5dce5" },
-  { bg: "#20b1b0", text: "#aad8d8" },
-  { bg: "#2cc4a4", text: "#a0d4cc" },
-  { bg: "#3cd194", text: "#97d0c0" },
-  { bg: "#4ede84", text: "#8eccb4" },
-];
+function formatCurrency(v: number): string {
+  return v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+}
 
 export function FunnelChart({ funnel, anchor }: FunnelChartProps) {
   const stages = funnel.stages;
-  const total = stages.length;
+  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
 
-  const getConversion = (index: number): number | null => {
-    if (index === 0) return null;
-    const base = anchor === "previous"
-      ? stages[index - 1]?.value
-      : stages.find((s) => s.name === anchor)?.value;
-    return base ? (stages[index].value / base) * 100 : null;
-  };
+  const getConversion = useCallback(
+    (index: number): number | null => {
+      if (index === 0) return null;
+      const base =
+        anchor === "previous"
+          ? stages[index - 1]?.value
+          : stages.find((s) => s.name === anchor)?.value;
+      return base ? (stages[index].value / base) * 100 : null;
+    },
+    [stages, anchor],
+  );
 
-  const getDropoff = (index: number): number | null => {
-    if (index === 0) return null;
-    const conv = getConversion(index);
-    return conv !== null ? 100 - conv : null;
-  };
+  const geo = useMemo(
+    () => buildFunnelGeometry(stages.map((s) => s.value), stages.length),
+    [stages],
+  );
+
+  const handleMouseMove = useCallback(
+    (e: React.MouseEvent<SVGSVGElement>) => {
+      const rect = e.currentTarget.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const scaledX = (x / rect.width) * SVG_W;
+      const idx = Math.floor(scaledX / geo.stageWidth);
+      setHoveredIndex(idx >= 0 && idx < stages.length ? idx : null);
+      setMousePos({ x: e.clientX, y: e.clientY });
+    },
+    [geo.stageWidth, stages.length],
+  );
 
   return (
     <Card className="border-border/40 overflow-hidden">
-      <CardContent className="p-6 sm:p-8">
-        <div className="flex flex-col items-center gap-0">
-          {stages.map((stage, index) => {
-            const widthPercent = 100 - ((index / Math.max(total - 1, 1)) * 70);
-            const conversion = getConversion(index);
-            const dropoff = getDropoff(index);
-            const color = stageColors[index % stageColors.length];
+      <CardContent className="p-0">
+        <div className="overflow-x-auto w-full">
+          <div className="min-w-[900px] flex flex-col">
+            {/* Header row — stage names + values */}
+            <div
+              className="grid border-b border-border/30 w-full"
+              style={{ gridTemplateColumns: `repeat(${stages.length}, 1fr)` }}
+            >
+          {stages.map((stage, i) => {
+            const conversion = getConversion(i);
+            const isHovered = hoveredIndex === i;
 
             return (
-              <div key={stage.name} className="flex flex-col items-center w-full">
-                {index > 0 && (
-                  <div className="flex items-center justify-center gap-3 h-8">
-                    <div className="w-px h-full bg-border/50" />
-                    {conversion !== null && (
-                      <div className="flex items-center gap-2">
-                        <span className={`text-[11px] font-bold tabular-nums px-2 py-0.5 rounded-full ${
-                          conversion >= 50 ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400" :
-                          conversion >= 20 ? "bg-amber-500/10 text-amber-600 dark:text-amber-400" :
-                          "bg-red-500/10 text-red-600 dark:text-red-400"
-                        }`}>
-                          ✓ {conversion.toFixed(2)}%
-                        </span>
-                        {dropoff !== null && dropoff > 0 && (
-                          <span className="text-[10px] tabular-nums text-muted-foreground/60">
-                            ✕ {dropoff.toFixed(2)}%
-                          </span>
-                        )}
-                      </div>
-                    )}
-                  </div>
+              <div
+                key={stage.name}
+                className={`
+                  px-3 py-3 border-r border-border/20 last:border-r-0
+                  transition-colors duration-150
+                  ${isHovered ? "bg-muted/40" : ""}
+                  ${i > 0 ? "border-l border-border/10" : ""}
+                `}
+              >
+                <p className="text-[11px] text-muted-foreground font-medium truncate mb-0.5">
+                  {stage.name}
+                </p>
+                <p className="text-base font-bold tabular-nums leading-tight">
+                  {formatNumber(stage.value)}
+                </p>
+                {stage.revenue != null && stage.revenue > 0 && (
+                  <p className="text-[10px] text-primary font-semibold">
+                    {formatCurrency(stage.revenue)}
+                  </p>
                 )}
-
-                <div
-                  className="relative group transition-all duration-300 hover:scale-[1.01] cursor-default"
-                  style={{ width: `${widthPercent}%` }}
-                >
-                  <div
-                    className="flex items-center justify-between px-5 py-4 rounded-xl transition-shadow duration-200 group-hover:shadow-lg"
-                    style={{ backgroundColor: color.bg, color: color.text }}
+                {conversion !== null && (
+                  <p
+                    className={`text-[10px] font-bold mt-0.5 ${
+                      conversion >= 50
+                        ? "text-success"
+                        : conversion >= 20
+                          ? "text-warning"
+                          : "text-destructive"
+                    }`}
                   >
-                    <div className="flex items-center gap-3">
-                      <span className="flex size-7 items-center justify-center rounded-lg bg-white/15 text-[11px] font-bold">
-                        {index + 1}
-                      </span>
-                      <span className="text-sm font-semibold tracking-tight">{stage.name}</span>
-                    </div>
-                    <span className="text-base font-bold tabular-nums tracking-tight">
-                      {formatNumber(stage.value)}
-                    </span>
-                  </div>
-                </div>
+                    ↓ {conversion.toFixed(1)}%
+                  </p>
+                )}
               </div>
             );
           })}
         </div>
+
+        {/* Horizontal flowing funnel SVG */}
+        <div className="relative">
+          <svg
+            viewBox={`0 0 ${SVG_W} ${SVG_H}`}
+            className="w-full h-auto"
+            preserveAspectRatio="none"
+            onMouseMove={handleMouseMove}
+            onMouseLeave={() => setHoveredIndex(null)}
+          >
+            <defs>
+              <linearGradient id="funnel-h-grad" x1="0" y1="0" x2="1" y2="0">
+                {geo.gradientStops.map((s, i) => (
+                  <stop key={i} offset={s.offset} stopColor={s.color} />
+                ))}
+              </linearGradient>
+            </defs>
+
+            {/* Main flowing horizontal funnel shape */}
+            {geo.pathD && (
+              <path
+                d={geo.pathD}
+                fill="url(#funnel-h-grad)"
+                opacity={0.88}
+              />
+            )}
+
+            {/* Stage divider lines */}
+            {stages.map((_, i) => {
+              if (i === 0) return null;
+              const x = geo.stageWidth * i;
+              return (
+                <line
+                  key={i}
+                  x1={x} y1={0} x2={x} y2={SVG_H}
+                  stroke="currentColor"
+                  strokeOpacity={0.1}
+                  strokeWidth={1}
+                  strokeDasharray="3 3"
+                />
+              );
+            })}
+
+            {/* Hover column highlight */}
+            {hoveredIndex !== null && (
+              <rect
+                x={geo.stageWidth * hoveredIndex}
+                y={0}
+                width={geo.stageWidth}
+                height={SVG_H}
+                fill="currentColor"
+                opacity={0.05}
+              />
+            )}
+          </svg>
+
+          {/* Tooltip */}
+          {hoveredIndex !== null && stages[hoveredIndex] && (
+            <FunnelTooltip
+              stage={stages[hoveredIndex]}
+              conversion={getConversion(hoveredIndex)}
+              mouseX={mousePos.x}
+              mouseY={mousePos.y}
+            />
+          )}
+        </div>
+      </div>
+    </div>
       </CardContent>
     </Card>
   );

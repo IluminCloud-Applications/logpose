@@ -10,6 +10,10 @@ function formatNumber(v: number): string {
   return v.toLocaleString("pt-BR");
 }
 
+function formatCurrency(v: number): string {
+  return v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+}
+
 function getAllStages(funnels: FunnelProduct[]): string[] {
   const stageSet = new Set<string>();
   funnels.forEach((f) => f.stages.forEach((s) => stageSet.add(s.name)));
@@ -23,8 +27,8 @@ interface FunnelStatsProps {
 export function FunnelStats({ funnels }: FunnelStatsProps) {
   const allStages = getAllStages(funnels);
 
-  const getStageValue = (f: FunnelProduct, stageName: string): number | null => {
-    return f.stages.find((s) => s.name === stageName)?.value ?? null;
+  const getStage = (f: FunnelProduct, stageName: string) => {
+    return f.stages.find((s) => s.name === stageName);
   };
 
   return (
@@ -37,9 +41,11 @@ export function FunnelStats({ funnels }: FunnelStatsProps) {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="min-w-[160px] sticky left-0 bg-muted/30 z-10">Produto</TableHead>
+                <TableHead className="min-w-[160px] sticky left-0 bg-muted/30 z-10">
+                  Produto
+                </TableHead>
                 {allStages.map((stage) => (
-                  <TableHead key={stage} className="text-right min-w-[100px]">
+                  <TableHead key={stage} className="text-right min-w-[120px]">
                     {stage}
                   </TableHead>
                 ))}
@@ -51,12 +57,21 @@ export function FunnelStats({ funnels }: FunnelStatsProps) {
                   <TableCell className="font-medium text-sm sticky left-0 bg-card z-10">
                     {f.productName}
                   </TableCell>
-                  {allStages.map((stage) => {
-                    const val = getStageValue(f, stage);
+                  {allStages.map((stageName) => {
+                    const stage = getStage(f, stageName);
                     return (
-                      <TableCell key={stage} className="text-right tabular-nums text-sm">
-                        {val !== null ? (
-                          <span className="font-medium">{formatNumber(val)}</span>
+                      <TableCell key={stageName} className="text-right tabular-nums text-sm">
+                        {stage ? (
+                          <div className="flex flex-col items-end">
+                            <span className="font-medium">
+                              {formatNumber(stage.value)}
+                            </span>
+                            {stage.revenue != null && stage.revenue > 0 && (
+                              <span className="text-[10px] text-primary font-medium">
+                                {formatCurrency(stage.revenue)}
+                              </span>
+                            )}
+                          </div>
                         ) : (
                           <span className="text-muted-foreground/40">—</span>
                         )}

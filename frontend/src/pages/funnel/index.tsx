@@ -11,6 +11,11 @@ import type { DatePreset } from "@/components/DateFilter";
 type ViewMode = "single" | "compare";
 type AnchorMode = "previous" | string;
 
+export interface ExtraSlot {
+  id: string;
+  productId: string;
+}
+
 export default function FunnelPage() {
   const [datePreset, setDatePreset] = useState<DatePreset>("today");
   const [dateStart, setDateStart] = useState("");
@@ -26,8 +31,8 @@ export default function FunnelPage() {
   const [compareProduct, setCompareProduct] = useState("");
   const [anchor, setAnchor] = useState<AnchorMode>("previous");
   const [viewMode, setViewMode] = useState<ViewMode>("single");
+  const [extraSlots, setExtraSlots] = useState<ExtraSlot[]>([]);
 
-  // Select first product when data loads
   const effectiveSelected = selectedProduct || funnels[0]?.productId || "";
   const effectiveCompare = compareProduct || funnels[1]?.productId || "";
 
@@ -106,6 +111,8 @@ export default function FunnelPage() {
           onRightChange={setCompareProduct}
           funnels={funnels}
           anchor={anchor}
+          extraSlots={extraSlots}
+          setExtraSlots={setExtraSlots}
         />
       )}
     </div>

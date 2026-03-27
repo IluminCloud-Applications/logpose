@@ -1,8 +1,18 @@
 import { apiRequest } from "./api";
 
+export interface FunnelStageMeta {
+  impressions?: number;
+  ctr?: number;
+  cpm?: number;
+  cpc?: number;
+  spend?: number;
+}
+
 export interface FunnelStage {
   name: string;
   value: number;
+  revenue?: number;
+  meta?: FunnelStageMeta;
 }
 
 export interface FunnelProduct {
