@@ -5,6 +5,7 @@ import { AppSidebar } from "./AppSidebar";
 import { MobileBottomNav } from "./MobileBottomNav";
 import { MobileAIChat } from "./MobileAIChat";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { IntroVideo } from "./IntroVideo";
 
 export function DashboardLayout() {
   const isMobile = useIsMobile();
@@ -14,6 +15,7 @@ export function DashboardLayout() {
   if (isMobile) {
     return (
       <>
+        <IntroVideo />
         <div className="flex flex-col min-h-[100dvh]">
           <main className="flex-1 overflow-auto pb-20">
             <div className="mx-auto w-full min-h-full">
@@ -28,21 +30,24 @@ export function DashboardLayout() {
   }
 
   return (
-    <SidebarProvider
-      style={{ "--sidebar-width": "14.5rem" } as React.CSSProperties}
-      className="h-screen"
-    >
-      <div className="flex flex-1 h-full p-2.5 gap-2.5 min-w-0">
-        <AppSidebar />
-        <SidebarInset className="overflow-y-auto overflow-x-hidden flex-1 min-w-0">
-          <div
-            className="mx-auto w-full min-h-full rounded-xl border border-border/40 bg-background shadow-sm overflow-auto"
-            style={{ maxWidth: "min(1600px, 100%)" }}
-          >
-            <Outlet />
-          </div>
-        </SidebarInset>
-      </div>
-    </SidebarProvider>
+    <>
+      <IntroVideo />
+      <SidebarProvider
+        style={{ "--sidebar-width": "14.5rem" } as React.CSSProperties}
+        className="h-screen"
+      >
+        <div className="flex flex-1 h-full p-2.5 gap-2.5 min-w-0">
+          <AppSidebar />
+          <SidebarInset className="overflow-y-auto overflow-x-hidden flex-1 min-w-0">
+            <div
+              className="mx-auto w-full min-h-full rounded-xl border border-border/40 bg-background shadow-sm overflow-auto"
+              style={{ maxWidth: "min(1600px, 100%)" }}
+            >
+              <Outlet />
+            </div>
+          </SidebarInset>
+        </div>
+      </SidebarProvider>
+    </>
   );
 }

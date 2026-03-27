@@ -39,10 +39,20 @@ def process_transactions(
     result: ImportResultResponse,
 ):
     """Cria Customers e Transactions para cada linha do CSV/XLSX."""
+    # Rastreia IDs já processados neste lote para evitar duplicatas no próprio arquivo
+    seen_ids: set[str] = set()
+
     for row in rows:
         if not row.customer_email:
             continue
 
+        # Duplicata dentro do próprio arquivo (ex: mesmo registro exportado 2x)
+        if row.external_id in seen_ids:
+            result.skipped_duplicates += 1
+            continue
+        seen_ids.add(row.external_id)
+
+        # Duplicata já existente no banco
         existing_tx = db.query(Transaction).filter(
             Transaction.external_id == row.external_id
         ).first()

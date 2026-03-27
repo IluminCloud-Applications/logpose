@@ -36,6 +36,16 @@ export function getCache<T>(key: string): T | null {
   return entry.data as T;
 }
 
+/**
+ * Returns true if the cache entry exists AND is older than `ttlMs`.
+ * Used to trigger a background refetch after a given time window.
+ */
+export function isCacheStale(key: string, ttlMs: number): boolean {
+  const entry = store.get(key);
+  if (!entry) return false;
+  return Date.now() - entry.timestamp > ttlMs;
+}
+
 /** Store data in cache. */
 export function setCache<T>(key: string, data: T): void {
   store.set(key, { data, timestamp: Date.now() });

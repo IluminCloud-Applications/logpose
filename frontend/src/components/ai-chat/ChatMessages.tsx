@@ -1,11 +1,25 @@
 import { RiMessageAi3Line } from "@remixicon/react";
 import Markdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
-import { dracula } from 'react-syntax-highlighter/dist/esm/styles/prism';
+import { lazy, Suspense } from 'react';
 import { ActionButton } from "./ActionButton";
 import { parseActionBlocks, hasActionBlocks } from "./actionParser";
 import type { AiAction } from "@/services/integrations";
+
+const SyntaxHighlighter = lazy(() =>
+  import('react-syntax-highlighter').then((m) => ({ default: m.Prism }))
+);
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+let draculaStyle: any = null;
+const getDraculaStyle = async () => {
+  if (!draculaStyle) {
+    const mod = await import('react-syntax-highlighter/dist/esm/styles/prism');
+    draculaStyle = mod.dracula;
+  }
+  return draculaStyle;
+};
+void getDraculaStyle();
 
 interface ChatMessage {
   role: "user" | "assistant";
@@ -136,15 +150,17 @@ function MarkdownContent({ text }: { text: string }) {
           const match = /language-(\w+)/.exec(className || '');
           const inline = !match;
           return !inline && match ? (
-            <SyntaxHighlighter
-              style={dracula as any}
-              language={match[1]}
-              PreTag="div"
-              className="rounded-md !my-2 !text-[11px]"
-              {...props}
-            >
-              {String(children).replace(/\n$/, '')}
-            </SyntaxHighlighter>
+            <Suspense fallback={<pre className="rounded-md my-2 text-[11px] bg-muted/50 p-3 overflow-x-auto"><code>{String(children)}</code></pre>}>
+              <SyntaxHighlighter
+                style={draculaStyle ?? {}}
+                language={match[1]}
+                PreTag="div"
+                className="rounded-md !my-2 !text-[11px]"
+                {...props}
+              >
+                {String(children).replace(/\n$/, '')}
+              </SyntaxHighlighter>
+            </Suspense>
           ) : (
             <code className={`${className} bg-background/50 px-1 py-0.5 rounded-sm`} {...props}>
               {children}

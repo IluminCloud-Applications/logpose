@@ -4,6 +4,7 @@ import {
   getCache,
   setCache,
   invalidateCache,
+  isCacheStale,
 } from "@/lib/queryCache";
 
 interface UseCachedQueryOptions<T> {
@@ -15,6 +16,8 @@ interface UseCachedQueryOptions<T> {
   queryFn: () => Promise<T>;
   /** If true, skip fetching (useful for conditional queries). */
   enabled?: boolean;
+  /** Stale TTL in ms. If cache is older than this on mount, refetch in bg. Default: 120s. */
+  staleTtlMs?: number;
 }
 
 interface UseCachedQueryResult<T> {
@@ -42,7 +45,7 @@ const inflightRequests = new Map<string, Promise<unknown>>();
 export function useCachedQuery<T>(
   options: UseCachedQueryOptions<T>,
 ): UseCachedQueryResult<T> {
-  const { cachePrefix, params, queryFn, enabled = true } = options;
+  const { cachePrefix, params, queryFn, enabled = true, staleTtlMs = 120_000 } = options;
 
   // Estabiliza params por valor (JSON) para evitar re-renders com objetos novos
   const paramsStr = params ? JSON.stringify(params) : "";
@@ -118,9 +121,17 @@ export function useCachedQuery<T>(
     [cachePrefix, paramsStr, enabled],
   );
 
-  // Auto-fetch on mount or when params change
+  // Auto-fetch on mount or when params change.
+  // If cache hit but stale (> staleTtlMs), refetch in background
+  // keeping the existing data visible while the fresh data loads.
   useEffect(() => {
-    fetchData();
+    const key = buildCacheKey(cachePrefix, stableParams);
+    if (enabled && isCacheStale(key, staleTtlMs)) {
+      fetchData(true);
+    } else {
+      fetchData();
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fetchData]);
 
   const reload = useCallback(async () => {
