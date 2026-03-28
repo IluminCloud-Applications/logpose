@@ -29,7 +29,7 @@ export function useCampaigns(dateStart: string, dateEnd: string) {
 
   const activeAccountId = selectedAccountId ?? accounts[0]?.id;
 
-  const { data, isLoading, error, reload } = useCachedQuery<{
+  const { data, isLoading, error, reload, silentReload } = useCachedQuery<{
     campaigns: CampaignData[];
     unidentified: CampaignData | null;
   }>({
@@ -37,7 +37,11 @@ export function useCampaigns(dateStart: string, dateEnd: string) {
     params: { dateStart, dateEnd, activeAccountId },
     queryFn: () => fetchCampaignsData(dateStart, dateEnd, activeAccountId),
     enabled: !!dateStart && !!dateEnd,
+    autoRefreshMs: 30_000,
   });
+
+  // isInitialLoading = loading + no data yet (first load only)
+  const isInitialLoading = isLoading && !data;
 
   const applyOverrides = useCallback(
     (campaigns: CampaignData[]): CampaignData[] =>
@@ -96,8 +100,8 @@ export function useCampaigns(dateStart: string, dateEnd: string) {
         entityName, metrics, budget,
       );
       invalidateCacheByPrefix("campaigns");
-      await reload();
-      // On success, clear override only after reload brings fresh data
+      // Silent reload — table stays visible, no loading spinner
+      await silentReload();
       clearOverride(entityId, "status");
     } catch {
       // Revert on error only
@@ -126,7 +130,8 @@ export function useCampaigns(dateStart: string, dateEnd: string) {
         entityName, budgetBefore, metrics,
       );
       invalidateCacheByPrefix("campaigns");
-      await reload();
+      // Silent reload — no loading spinner
+      await silentReload();
       clearOverride(entityId, "budget");
     } catch {
       clearOverride(entityId, "budget");
@@ -139,7 +144,7 @@ export function useCampaigns(dateStart: string, dateEnd: string) {
   return {
     campaigns,
     unidentified: data?.unidentified ?? null,
-    isLoading,
+    isLoading: isInitialLoading,
     error,
     accounts,
     activeAccountId,
@@ -147,6 +152,7 @@ export function useCampaigns(dateStart: string, dateEnd: string) {
     toggle,
     changeBudget,
     reload,
+    silentReload,
   };
 }
 

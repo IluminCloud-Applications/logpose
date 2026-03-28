@@ -20,6 +20,7 @@ export function useChannelConfigs() {
       setIsSaving(true);
       await updateChannelConfigs(updated);
       invalidateCacheByPrefix("channel-configs");
+      invalidateCacheByPrefix("recoveries");
       await reload();
     } finally {
       setIsSaving(false);

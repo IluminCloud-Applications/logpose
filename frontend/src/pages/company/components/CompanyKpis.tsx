@@ -10,15 +10,8 @@ import {
 } from "@remixicon/react";
 import { KpiCard } from "@/pages/dashboard/components/KpiCard";
 import { calcCompanyKpis } from "@/utils/company-kpis";
+import { fmtCompact } from "@/utils/format";
 import type { MonthlyFinancial, CompanySettings } from "@/types/company";
-
-function fmt(v: number): string {
-  return v.toLocaleString("pt-BR", {
-    style: "currency",
-    currency: "BRL",
-    minimumFractionDigits: 0,
-  });
-}
 
 interface CompanyKpisProps {
   data: MonthlyFinancial[];
@@ -34,21 +27,21 @@ export function CompanyKpis({ data, settings, totalSalesCount, uniqueCustomersCo
   const kpis = [
     {
       title: "Faturamento Anual",
-      value: fmt(k.totalRevenue),
+      value: fmtCompact(k.totalRevenue),
       icon: RiMoneyDollarBoxLine,
       subtitle: `${k.currentMonth} meses ativos`,
       variant: "primary" as const,
     },
     {
       title: "Lucro Líquido Real",
-      value: fmt(k.netProfit),
+      value: fmtCompact(k.netProfit),
       icon: RiLineChartLine,
       subtitle: `Após impostos e operacional`,
       variant: k.netProfit > 0 ? ("success" as const) : ("destructive" as const),
     },
     {
       title: "Ticket Médio (AOV)",
-      value: fmt(k.aov),
+      value: fmtCompact(k.aov),
       icon: RiShoppingCartLine,
       subtitle: `${k.totalSales} vendas no período`,
       variant: "primary" as const,
@@ -70,16 +63,16 @@ export function CompanyKpis({ data, settings, totalSalesCount, uniqueCustomersCo
     },
     {
       title: "Investido Total",
-      value: fmt(k.totalSpend),
+      value: fmtCompact(k.totalSpend),
       icon: RiBarChartLine,
-      subtitle: `Impostos: ${fmt(k.taxAmount)}`,
+      subtitle: `Impostos: ${fmtCompact(k.taxAmount)}`,
       variant: "default" as const,
     },
     {
       title: `Projeção ${year}`,
-      value: fmt(k.projectedAnnualRevenue),
+      value: fmtCompact(k.projectedAnnualRevenue),
       icon: RiCalendarCheckLine,
-      subtitle: `Média/mês: ${fmt(k.avgMonthlyRevenue)}`,
+      subtitle: `Média/mês: ${fmtCompact(k.avgMonthlyRevenue)}`,
       variant: "primary" as const,
     },
     {

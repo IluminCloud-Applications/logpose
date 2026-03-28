@@ -11,6 +11,7 @@ const typeLabels: Record<string, string> = {
   declined_card: "Cartão Recusado",
   unpaid_pix: "PIX Não Pago",
   trial: "Trial",
+  unidentified: "Não Identificado",
 };
 
 const channelLabels: Record<string, string> = {

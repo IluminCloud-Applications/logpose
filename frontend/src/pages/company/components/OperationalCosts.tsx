@@ -4,18 +4,11 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { RiAddLine, RiDeleteBinLine, RiToolsLine } from "@remixicon/react";
 import type { OperationalCost } from "@/data/mock-company";
+import { fmtCompact } from "@/utils/format";
 
 interface OperationalCostsProps {
   costs: OperationalCost[];
   onCostsChange: (costs: OperationalCost[]) => void;
-}
-
-function fmt(v: number): string {
-  return v.toLocaleString("pt-BR", {
-    style: "currency",
-    currency: "BRL",
-    minimumFractionDigits: 0,
-  });
 }
 
 export function OperationalCosts({ costs, onCostsChange }: OperationalCostsProps) {
@@ -124,7 +117,7 @@ export function OperationalCosts({ costs, onCostsChange }: OperationalCostsProps
           <span className="text-sm font-medium text-muted-foreground">
             Total mensal
           </span>
-          <span className="text-base font-bold tabular-nums">{fmt(total)}</span>
+          <span className="text-base font-bold tabular-nums">{fmtCompact(total)}</span>
         </div>
       </CardContent>
     </Card>

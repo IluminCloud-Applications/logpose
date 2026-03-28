@@ -72,7 +72,7 @@ def process_webhook_event(db: Session, event: StandardizedWebhookEvent):
             customer.last_purchase_at = get_saopaulo_time()
             if not customer.first_purchase_at:
                 customer.first_purchase_at = customer.last_purchase_at
-            mark_recovery_as_recovered(db, event.customer_email, event.product_name)
+            mark_recovery_as_recovered(db, event.customer_email, event.product_name, event.src)
                 
         elif is_newly_refunded:
             customer.total_spent -= existing_tx.amount

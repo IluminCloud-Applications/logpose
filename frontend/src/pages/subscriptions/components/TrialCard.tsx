@@ -1,14 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { RiTestTubeLine } from "@remixicon/react";
 import type { TrialMetrics } from "@/services/stripe";
-
-function fmt(v: number): string {
-  return v.toLocaleString("pt-BR", {
-    style: "currency",
-    currency: "BRL",
-    minimumFractionDigits: 2,
-  });
-}
+import { fmtCompact } from "@/utils/format";
 
 interface TrialCardProps {
   trials: TrialMetrics;
@@ -28,20 +21,20 @@ export function TrialCard({ trials }: TrialCardProps) {
       <CardContent className="space-y-4">
         {/* Stats grid */}
         <div className="grid grid-cols-2 gap-4">
-          <div className="space-y-1">
+          <div className="space-y-1 min-w-0">
             <p className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
               Trials Ativos
             </p>
-            <p className="text-2xl font-bold tabular-nums text-amber-500">
+            <p className="text-2xl font-bold tabular-nums text-amber-500 truncate">
               {trials.count}
             </p>
           </div>
-          <div className="space-y-1">
+          <div className="space-y-1 min-w-0">
             <p className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
               Valor Potencial
             </p>
-            <p className="text-2xl font-bold tabular-nums text-primary">
-              {fmt(trials.potential_value)}
+            <p className="text-2xl font-bold tabular-nums text-primary truncate" title={fmtCompact(trials.potential_value)}>
+              {fmtCompact(trials.potential_value)}
             </p>
           </div>
         </div>

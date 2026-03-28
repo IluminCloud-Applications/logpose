@@ -10,14 +10,7 @@ import {
 } from "@remixicon/react";
 import { KpiCard } from "./KpiCard";
 import type { DashboardKpis } from "@/types/dashboard";
-
-function fmt(v: number): string {
-  return v.toLocaleString("pt-BR", {
-    style: "currency",
-    currency: "BRL",
-    minimumFractionDigits: 2,
-  });
-}
+import { fmtCompact } from "@/utils/format";
 
 interface KpiGridProps {
   kpis: DashboardKpis;
@@ -50,21 +43,21 @@ export function KpiGrid({ kpis, taxEnabled, taxRate, opCostsEnabled, opCostsTota
   const kpiCards = [
     {
       title: revenueLabel,
-      value: fmt(revenue),
+      value: fmtCompact(revenue),
       icon: RiMoneyDollarBoxLine,
       variant: "primary" as const,
     },
     {
       title: profitLabel,
-      value: fmt(profit),
+      value: fmtCompact(profit),
       icon: RiLineChartLine,
       variant: profit >= 0 ? ("success" as const) : ("destructive" as const),
     },
     {
       title: "Investido",
-      value: fmt(kpis.total_spend),
+      value: fmtCompact(kpis.total_spend),
       icon: RiBarChartLine,
-      subtitle: `CPA: ${fmt(kpis.cpa)}`,
+      subtitle: `CPA: ${fmtCompact(kpis.cpa)}`,
       variant: "default" as const,
     },
     {
@@ -77,7 +70,7 @@ export function KpiGrid({ kpis, taxEnabled, taxRate, opCostsEnabled, opCostsTota
       title: "Vendas",
       value: kpis.total_sales.toLocaleString("pt-BR"),
       icon: RiShoppingBagLine,
-      subtitle: `Ticket Médio: ${fmt(kpis.average_ticket)}`,
+      subtitle: `Ticket Médio: ${fmtCompact(kpis.average_ticket)}`,
       variant: "success" as const,
     },
     {
@@ -95,7 +88,7 @@ export function KpiGrid({ kpis, taxEnabled, taxRate, opCostsEnabled, opCostsTota
     },
     {
       title: "Chargebacks",
-      value: fmt(kpis.chargeback_amount),
+      value: fmtCompact(kpis.chargeback_amount),
       icon: RiErrorWarningLine,
       subtitle: `Taxa: ${kpis.chargeback_rate}%`,
       variant: "destructive" as const,

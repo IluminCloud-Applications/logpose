@@ -11,14 +11,7 @@ import {
 } from "@remixicon/react";
 import { KpiCard } from "@/pages/dashboard/components/KpiCard";
 import type { SubscriptionMetrics } from "@/services/stripe";
-
-function fmt(v: number): string {
-  return v.toLocaleString("pt-BR", {
-    style: "currency",
-    currency: "BRL",
-    minimumFractionDigits: 2,
-  });
-}
+import { fmtCompact } from "@/utils/format";
 
 interface SubscriptionKpiGridProps {
   metrics: SubscriptionMetrics;
@@ -28,21 +21,21 @@ export function SubscriptionKpiGrid({ metrics }: SubscriptionKpiGridProps) {
   const kpiCards = [
     {
       title: "MRR",
-      value: fmt(metrics.mrr),
+      value: fmtCompact(metrics.mrr),
       subtitle: "Receita Recorrente Mensal",
       icon: RiMoneyDollarBoxLine,
       variant: "primary" as const,
     },
     {
       title: "ARR",
-      value: fmt(metrics.arr),
+      value: fmtCompact(metrics.arr),
       subtitle: "Receita Recorrente Anual",
       icon: RiCalendarLine,
       variant: "primary" as const,
     },
     {
       title: "LTV",
-      value: fmt(metrics.ltv),
+      value: fmtCompact(metrics.ltv),
       subtitle: "Valor vitalício por cliente",
       icon: RiVipCrownLine,
       variant: "success" as const,
@@ -61,7 +54,7 @@ export function SubscriptionKpiGrid({ metrics }: SubscriptionKpiGridProps) {
     },
     {
       title: "Ticket Médio",
-      value: fmt(metrics.ticket_medio),
+      value: fmtCompact(metrics.ticket_medio),
       subtitle: "Valor médio por assinatura",
       icon: RiPriceTag3Line,
       variant: "default" as const,

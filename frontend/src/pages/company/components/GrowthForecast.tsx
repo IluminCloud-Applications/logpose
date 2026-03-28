@@ -7,19 +7,12 @@ import {
 } from "@remixicon/react";
 import { calcCompanyKpis } from "@/utils/company-kpis";
 import type { MonthlyFinancial, CompanySettings } from "@/types/company";
+import { fmtCompact } from "@/utils/format";
 import { cn } from "@/lib/utils";
 
 interface GrowthForecastProps {
   data: MonthlyFinancial[];
   settings: CompanySettings;
-}
-
-function fmt(v: number): string {
-  return v.toLocaleString("pt-BR", {
-    style: "currency",
-    currency: "BRL",
-    minimumFractionDigits: 0,
-  });
 }
 
 export function GrowthForecast({ data, settings }: GrowthForecastProps) {
@@ -35,19 +28,19 @@ export function GrowthForecast({ data, settings }: GrowthForecastProps) {
   const items = [
     {
       label: `Projeção até 31/12/${year}`,
-      value: fmt(k.projectedAnnualRevenue),
+      value: fmtCompact(k.projectedAnnualRevenue),
       icon: RiCalendarLine,
       desc: `${remainingMonths} meses restantes`,
     },
     {
       label: "Melhor mês",
-      value: bestMonth ? `${bestMonth.label} — ${fmt(bestMonth.revenue)}` : "—",
+      value: bestMonth ? `${bestMonth.label} — ${fmtCompact(bestMonth.revenue)}` : "—",
       icon: RiTrophyLine,
       desc: "Maior faturamento",
     },
     {
       label: "Faturamento último mês",
-      value: fmt(k.lastMonthRevenue),
+      value: fmtCompact(k.lastMonthRevenue),
       icon: k.growthRate >= 0 ? RiArrowUpSLine : RiArrowDownSLine,
       desc: `${k.growthRate >= 0 ? "+" : ""}${k.growthRate.toFixed(1)}% vs anterior`,
     },
@@ -102,7 +95,7 @@ export function GrowthForecast({ data, settings }: GrowthForecastProps) {
                       />
                     </div>
                     <span className="text-xs font-medium tabular-nums w-20 text-right">
-                      {fmt(m.revenue)}
+                      {fmtCompact(m.revenue)}
                     </span>
                   </div>
                 );

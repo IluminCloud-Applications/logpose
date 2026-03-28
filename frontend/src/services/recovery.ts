@@ -2,12 +2,12 @@ import { apiRequest } from "./api";
 
 // ── Types ───────────────────────────────────────────────
 export interface RecoveryRow {
-  id: number;
+  id: string;
   date: string | null;
   customerName: string;
   customerEmail: string;
   product: string;
-  type: "abandoned_cart" | "declined_card" | "unpaid_pix" | "trial";
+  type: "abandoned_cart" | "declined_card" | "unpaid_pix" | "trial" | "unidentified";
   amount: number;
   recovered: boolean;
   channel: string;

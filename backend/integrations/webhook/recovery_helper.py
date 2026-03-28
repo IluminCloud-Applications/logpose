@@ -53,7 +53,6 @@ def create_recovery_if_pending(
     if existing:
         return
 
-    channel = classify_recovery_channel(event.src, db)
     recovery_type = classify_recovery_type(event)
 
     recovery = Recovery(
@@ -64,7 +63,7 @@ def create_recovery_if_pending(
         type=recovery_type,
         amount=event.amount,
         recovered=False,
-        channel=channel,
+        channel=RecoveryChannel.OTHER,
         src=event.src,
     )
     db.add(recovery)
@@ -74,8 +73,13 @@ def mark_recovery_as_recovered(
     db: Session,
     customer_email: str,
     product_name: str,
+    approved_src: str | None = None,
 ):
-    """Marca uma recovery pendente como recuperada quando a venda é aprovada."""
+    """
+    Marca uma recovery pendente como recuperada quando a venda é aprovada.
+    Atualiza o src e o channel com base no evento aprovado, pois é o src
+    do approved que indica por qual canal a recuperação aconteceu.
+    """
     pending_recovery = db.query(Recovery).filter(
         Recovery.customer_email == customer_email,
         Recovery.product_name == product_name,
@@ -84,3 +88,9 @@ def mark_recovery_as_recovered(
     if pending_recovery:
         pending_recovery.recovered = True
         pending_recovery.recovered_at = now_sp()
+        if approved_src:
+            pending_recovery.src = approved_src
+        channel = classify_recovery_channel(
+            approved_src or pending_recovery.src, db,
+        )
+        pending_recovery.channel = channel

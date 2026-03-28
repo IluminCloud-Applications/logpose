@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { RecoveryHeader } from "./components/RecoveryHeader";
 import { RecoveryInlineFilters } from "./components/RecoveryInlineFilters";
 import { RecoveryKpis } from "./components/RecoveryKpis";
@@ -19,7 +19,7 @@ export default function RecoveryPage() {
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [configOpen, setConfigOpen] = useState(false);
 
-  const { data, total, page, setPage, resetPage, isLoading } = useRecoveries({
+  const { data, total, page, setPage, resetPage, isLoading, reload } = useRecoveries({
     preset: dateRange.preset,
     dateStart: dateRange.preset === "custom" ? dateRange.startDate : undefined,
     dateEnd: dateRange.preset === "custom" ? dateRange.endDate : undefined,
@@ -34,6 +34,11 @@ export default function RecoveryPage() {
   }, [typeFilter, statusFilter, channelFilter, dateRange, search, resetPage]);
 
   const { configs, isSaving, save } = useChannelConfigs();
+
+  const handleSaveConfig = useCallback(async (updated: import("@/services/recovery").ChannelConfig[]) => {
+    await save(updated);
+    await reload();
+  }, [save, reload]);
 
   return (
     <div className="flex flex-col gap-6 p-6">
@@ -71,7 +76,7 @@ export default function RecoveryPage() {
         open={configOpen}
         onOpenChange={setConfigOpen}
         configs={configs}
-        onSave={save}
+        onSave={handleSaveConfig}
         isSaving={isSaving}
       />
     </div>

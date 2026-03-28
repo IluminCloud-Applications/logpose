@@ -69,27 +69,27 @@ export function ChurnCard({
 
         {/* Stats */}
         <div className="grid grid-cols-3 gap-3 pt-2 border-t border-border/40">
-          <div className="space-y-1 text-center">
+          <div className="space-y-1 text-center min-w-0">
             <p className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
               Cancelados
             </p>
-            <p className="text-lg font-bold tabular-nums text-destructive">
+            <p className="text-lg font-bold tabular-nums text-destructive truncate">
               {totalCanceled}
             </p>
           </div>
-          <div className="space-y-1 text-center">
+          <div className="space-y-1 text-center min-w-0">
             <p className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
               Média Permanência
             </p>
-            <p className="text-lg font-bold tabular-nums">
+            <p className="text-lg font-bold tabular-nums truncate">
               {avgTenure}<span className="text-xs text-muted-foreground ml-0.5">m</span>
             </p>
           </div>
-          <div className="space-y-1 text-center">
+          <div className="space-y-1 text-center min-w-0">
             <p className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
               Média Cancela
             </p>
-            <p className="text-lg font-bold tabular-nums">
+            <p className="text-lg font-bold tabular-nums truncate">
               {avgCancelMonths}<span className="text-xs text-muted-foreground ml-0.5">m</span>
             </p>
           </div>

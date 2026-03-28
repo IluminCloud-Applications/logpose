@@ -19,7 +19,7 @@ import { useCampaignTags } from "@/hooks/useCampaignTags";
 import { useCampaignMarkers } from "@/hooks/useCampaignMarkers";
 import { useVturbAccounts } from "@/hooks/useVturbAccounts";
 import { useCampaignPrefetch } from "@/hooks/useCampaignPrefetch";
-import { useStaleDataToast } from "@/hooks/useStaleDataToast";
+
 import { campaignToMetricRow } from "./components/mappers";
 import type { CampaignData } from "@/services/campaigns";
 import { CampaignsLoading } from "./components/CampaignsLoading";
@@ -64,16 +64,15 @@ export default function CampaignsPage() {
   const {
     campaigns, unidentified, isLoading, error,
     accounts: fbAccounts, activeAccountId, setSelectedAccountId,
-    toggle, changeBudget, reload,
+    toggle, changeBudget, silentReload,
   } = useCampaigns(dateStart, dateEnd);
 
   useCampaignPrefetch(activeAccountId);
 
   const handleRefresh = useCallback(async () => {
     invalidateCacheByPrefix("campaigns");
-    await reload();
-  }, [reload]);
-  useStaleDataToast(handleRefresh);
+    await silentReload();
+  }, [silentReload]);
 
   const unidentifiedProducts = unidentified?.products ?? [];
 

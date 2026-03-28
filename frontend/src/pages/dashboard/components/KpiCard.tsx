@@ -36,19 +36,28 @@ export function KpiCard({
   trend,
   variant = "default",
 }: KpiCardProps) {
+  const isLongValue = value.length > 12;
+
   return (
     <Card className="group relative overflow-hidden border-border/40 transition-all duration-300 hover:shadow-lg hover:border-primary/20">
       <CardContent className="p-3 sm:p-5">
-        <div className="flex items-start justify-between">
-          <div className="space-y-1.5">
+        <div className="flex items-start justify-between gap-2">
+          <div className="min-w-0 flex-1 space-y-1.5">
             <p className="text-[10px] sm:text-xs font-medium uppercase tracking-wider text-muted-foreground truncate">
               {title}
             </p>
-            <p className={cn("text-lg sm:text-2xl font-bold tabular-nums truncate", variantStyles[variant])}>
+            <p
+              className={cn(
+                "font-bold tabular-nums truncate",
+                isLongValue ? "text-base sm:text-lg" : "text-lg sm:text-2xl",
+                variantStyles[variant],
+              )}
+              title={value}
+            >
               {value}
             </p>
             {subtitle && (
-              <p className="text-xs text-muted-foreground">{subtitle}</p>
+              <p className="text-xs text-muted-foreground truncate">{subtitle}</p>
             )}
             {trend && (
               <div className="flex items-center gap-1">
@@ -64,7 +73,7 @@ export function KpiCard({
               </div>
             )}
           </div>
-          <div className={cn("rounded-lg p-1.5 sm:p-2.5", iconBgStyles[variant])}>
+          <div className={cn("rounded-lg p-1.5 sm:p-2.5 shrink-0", iconBgStyles[variant])}>
             <Icon className={cn("size-4 sm:size-5", variantStyles[variant])} />
           </div>
         </div>
