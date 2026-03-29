@@ -63,6 +63,26 @@ export async function bulkCreateFacebookAccounts(
   });
 }
 
+export interface DiscoveredAccount {
+  account_id: string;
+  name: string;
+}
+
+export interface DiscoverResponse {
+  accounts: DiscoveredAccount[];
+  total: number;
+}
+
+export async function discoverFacebookAccounts(
+  accessToken: string,
+  businessId: string
+): Promise<DiscoverResponse> {
+  return apiRequest<DiscoverResponse>("/facebook/accounts/discover", {
+    method: "POST",
+    body: { access_token: accessToken, business_id: businessId },
+  });
+}
+
 // ─── Platforms (Webhooks) ────────────────────────────────────────────
 
 export interface WebhookEndpointAPI {

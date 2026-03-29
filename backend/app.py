@@ -20,6 +20,7 @@ from api.company.settings import router as company_router
 from api.company.dashboard import router as company_dash_router
 from api.vturb.accounts import router as vturb_router
 from api.facebook.accounts import router as facebook_router
+from api.facebook.discover import router as facebook_discover_router
 from api.platforms.webhooks import router as platforms_router
 from api.products.crud import router as products_router
 from api.products.items import router as product_items_router
@@ -94,6 +95,7 @@ app.include_router(company_dash_router, prefix="/api")
 app.include_router(profile_router, prefix="/api")
 app.include_router(vturb_router, prefix="/api")
 app.include_router(facebook_router, prefix="/api")
+app.include_router(facebook_discover_router, prefix="/api")
 app.include_router(platforms_router, prefix="/api")
 app.include_router(products_router, prefix="/api")
 app.include_router(product_items_router, prefix="/api")

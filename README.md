@@ -6,7 +6,7 @@ Dashboard estratégico de performance para Direct Response.
 
 ```bash
 git add -A
-git commit -m "v1.7 - rec + cards"
+git commit -m "v1.8 - import fb auto"
 git push
 ```
 

@@ -6,6 +6,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { AccountIdBadges } from "./AccountIdBadges";
+import { AutoImportToggle } from "./AutoImportToggle";
+import type { DiscoveredAccount } from "@/services/integrations";
 
 export interface AddAccountModalProps {
   open: boolean;
@@ -64,6 +66,13 @@ export function AddAccountModal({
     onOpenChange(v);
   };
 
+  const handleAccountsDiscovered = (accounts: DiscoveredAccount[]) => {
+    const newIds = accounts
+      .map((a) => a.account_id)
+      .filter((id) => !accountIds.includes(id));
+    setAccountIds((prev) => [...prev, ...newIds]);
+  };
+
   const canSubmit = accessToken.trim() && accountIds.length > 0;
 
   return (
@@ -93,11 +102,6 @@ export function AddAccountModal({
               autoComplete="off"
             />
           </div>
-          <AccountIdBadges
-            accountIds={accountIds}
-            onChange={setAccountIds}
-            disabled={isLoading}
-          />
           <div className="space-y-2">
             <Label htmlFor="fb-token">Access Token</Label>
             <Input
@@ -111,6 +115,18 @@ export function AddAccountModal({
               autoComplete="off"
             />
           </div>
+
+          <AutoImportToggle
+            accessToken={accessToken}
+            onAccountsDiscovered={handleAccountsDiscovered}
+            disabled={isLoading}
+          />
+
+          <AccountIdBadges
+            accountIds={accountIds}
+            onChange={setAccountIds}
+            disabled={isLoading}
+          />
 
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => handleClose(false)} disabled={isLoading}>Cancelar</Button>
