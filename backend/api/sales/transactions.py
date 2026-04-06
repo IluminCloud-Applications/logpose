@@ -9,6 +9,7 @@ from database.models.transaction import Transaction, TransactionStatus, PaymentP
 from database.models.product import Product
 from database.core.timezone import now_sp, SP_ZONE
 from api.auth.deps import get_current_user
+from api.products.alias_helper import get_product_names_for_filter
 
 router = APIRouter(prefix="/sales", tags=["sales"])
 
@@ -44,7 +45,7 @@ def _parse_date_range(preset: str, start: Optional[str], end: Optional[str]):
 
 
 def _apply_filters(
-    query, preset, start_date, end_date,
+    query, db, preset, start_date, end_date,
     status, platform, product_id, campaign, search,
 ):
     """Aplica filtros comuns de vendas à query."""
@@ -64,7 +65,9 @@ def _apply_filters(
         except ValueError:
             pass
     if product_id:
-        query = query.filter(Transaction.product_id == product_id)
+        names = get_product_names_for_filter(db, product_id)
+        if names:
+            query = query.filter(Transaction.product_name.in_(names))
     if campaign and campaign != "all":
         query = query.filter(Transaction.utm_campaign == campaign)
     if search:
@@ -88,7 +91,7 @@ def list_transactions(
     _=Depends(get_current_user),
 ):
     query = _apply_filters(
-        db.query(Transaction), preset, start_date, end_date,
+        db.query(Transaction), db, preset, start_date, end_date,
         status, platform, product_id, campaign, search,
     )
     total = query.count()
@@ -110,7 +113,6 @@ def sales_summary(
     preset: str = Query("all"),
     start_date: Optional[str] = Query(None),
     end_date: Optional[str] = Query(None),
-    status: Optional[str] = Query(None),
     platform: Optional[str] = Query(None),
     product_id: Optional[int] = Query(None),
     campaign: Optional[str] = Query(None),
@@ -118,21 +120,24 @@ def sales_summary(
     db: Session = Depends(get_db),
     _=Depends(get_current_user),
 ):
-    """KPIs agregados com os mesmos filtros da listagem."""
+    """KPIs agregados — o status NAO filtra o resumo, apenas data/produto/plataforma/campanha."""
+    # Ignora o filtro de status para que o resumo sempre exiba todos os status.
     query = _apply_filters(
-        db.query(Transaction), preset, start_date, end_date,
-        status, platform, product_id, campaign, search,
+        db.query(Transaction), db, preset, start_date, end_date,
+        None, platform, product_id, campaign, search,
     )
 
     total = query.count()
-    approved = query.filter(Transaction.status == TransactionStatus.APPROVED).count()
+
+    approved_q = query.filter(Transaction.status == TransactionStatus.APPROVED)
+    approved = approved_q.count()
     refunded = query.filter(Transaction.status == TransactionStatus.REFUNDED).count()
     chargebacks = query.filter(Transaction.status == TransactionStatus.CHARGEBACK).count()
     pending = query.filter(Transaction.status == TransactionStatus.PENDING).count()
     trial = query.filter(Transaction.status == TransactionStatus.TRIAL).count()
 
     revenue = db.query(func.coalesce(func.sum(Transaction.amount), 0)).filter(
-        Transaction.id.in_([t.id for t in query.filter(Transaction.status == TransactionStatus.APPROVED).all()])
+        Transaction.id.in_([t.id for t in approved_q.all()])
     ).scalar()
 
     avg_ticket = (float(revenue) / approved) if approved > 0 else 0

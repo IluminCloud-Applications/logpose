@@ -16,6 +16,7 @@ from api.dashboard.meta_data import (
 )
 from api.dashboard.kpis import calc_kpis
 from api.dashboard.top_campaigns import build_top_campaigns
+from api.products.alias_helper import get_product_names_for_filter
 
 router = APIRouter(prefix="/dashboard", tags=["dashboard"])
 
@@ -49,7 +50,7 @@ def _parse_date_range(preset: str, start: Optional[str], end: Optional[str]):
     return None, None
 
 
-def _apply_filters(query, preset, start, end, platform, product_id):
+def _apply_filters(query, db, preset, start, end, platform, product_id):
     d_start, d_end = _parse_date_range(preset, start, end)
     if d_start:
         query = query.filter(Transaction.created_at >= d_start)
@@ -61,7 +62,9 @@ def _apply_filters(query, preset, start, end, platform, product_id):
         except ValueError:
             pass
     if product_id:
-        query = query.filter(Transaction.product_id == product_id)
+        names = get_product_names_for_filter(db, product_id)
+        if names:
+            query = query.filter(Transaction.product_name.in_(names))
     return query
 
 
@@ -86,7 +89,7 @@ async def dashboard_overview(
     _=Depends(get_current_user),
 ):
     base = db.query(Transaction)
-    base = _apply_filters(base, preset, start_date, end_date, platform, product_id)
+    base = _apply_filters(base, db, preset, start_date, end_date, platform, product_id)
 
     # Datas formatadas para a Meta API
     ds, de = _date_range_strings(preset, start_date, end_date)

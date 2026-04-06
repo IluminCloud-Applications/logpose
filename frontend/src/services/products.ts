@@ -98,6 +98,30 @@ export async function fetchProductStats(): Promise<ProductStats[]> {
   return apiRequest<ProductStats[]>("/products/stats");
 }
 
+// ── Aliases ─────────────────────────────────────────────────
+
+export interface AliasAPI {
+  id: number;
+  product_id: number;
+  alias: string;
+  created_at: string | null;
+}
+
+export async function fetchAliases(productId: number): Promise<AliasAPI[]> {
+  return apiRequest<AliasAPI[]>(`/products/${productId}/aliases`);
+}
+
+export async function createAlias(productId: number, alias: string): Promise<AliasAPI> {
+  return apiRequest<AliasAPI>(`/products/${productId}/aliases`, {
+    method: "POST",
+    body: { alias },
+  });
+}
+
+export async function deleteAlias(productId: number, aliasId: number): Promise<void> {
+  return apiRequest(`/products/${productId}/aliases/${aliasId}`, { method: "DELETE" });
+}
+
 // ── Merge products + items + stats into view models ─────────
 
 export async function fetchProductsWithStats(): Promise<ProductView[]> {

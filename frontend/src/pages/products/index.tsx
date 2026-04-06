@@ -160,6 +160,7 @@ export default function ProductsPage() {
         onSave={handleEdit}
         initialName={editModal.product?.name ?? ""}
         initialLogoUrl={editModal.product?.logoUrl ?? null}
+        productId={editModal.product?.id ?? null}
       />
       <AddItemModal
         open={itemModal.open}

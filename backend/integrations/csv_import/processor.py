@@ -5,6 +5,7 @@ from integrations.csv_import.schemas import ImportRow, ProductConfig, ImportResu
 from integrations.csv_import.transaction_handler import process_transactions
 from database.models.product import Product
 from database.models.product_items import Upsell, OrderBump, Checkout, CheckoutPlatform
+from database.models.product_alias import ProductAlias
 from database.models.transaction import PaymentPlatform
 
 logger = logging.getLogger(__name__)
@@ -55,12 +56,14 @@ def _create_frontend_products(
     """
     Cria ou encontra Products para cada produto marcado como frontend.
 
-    product_db é indexado pelo nome CANÔNICO (config.get_canonical_name()),
-    que pode ser diferente do nome original do CSV quando há display_name (modo avançado).
-    Múltiplos nomes originais podem mapear para o mesmo canônico — criamos apenas 1 produto.
+    product_db é indexado pelo nome CANÔNICO (config.get_canonical_name()).
+    Quando display_name está definido (modo avançado com '|'), o nome original
+    do CSV é salvo automaticamente como alias para garantir que o filtro funcione.
     """
     product_db: dict[str, Product] = {}
     seen_canonical: set[str] = set()
+    # Acumula aliases por produto canônico para salvar após flush
+    alias_map: dict[str, set[str]] = {}
 
     for row in rows:
         config = config_map.get(row.product_name)
@@ -68,6 +71,11 @@ def _create_frontend_products(
             continue
 
         canonical = config.get_canonical_name()
+
+        # Se nome original != canônico, coletar como alias
+        if config.name != canonical:
+            alias_map.setdefault(canonical, set()).add(config.name)
+
         if canonical in seen_canonical:
             continue
         seen_canonical.add(canonical)
@@ -92,6 +100,20 @@ def _create_frontend_products(
         db.flush()
         product_db[canonical] = product
         result.products_created += 1
+
+    # Salvar aliases coletados
+    for canonical, alias_names in alias_map.items():
+        product = product_db.get(canonical)
+        if not product:
+            continue
+        for alias_str in alias_names:
+            exists = db.query(ProductAlias).filter(
+                ProductAlias.product_id == product.id,
+                ProductAlias.alias == alias_str,
+            ).first()
+            if not exists:
+                db.add(ProductAlias(product_id=product.id, alias=alias_str))
+    db.flush()
 
     return product_db
 

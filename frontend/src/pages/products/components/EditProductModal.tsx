@@ -5,6 +5,8 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
+import { ProductAliasManager } from "./ProductAliasManager";
 
 interface EditProductModalProps {
   open: boolean;
@@ -12,10 +14,11 @@ interface EditProductModalProps {
   onSave: (data: { name: string; logo_url?: string | null }) => void;
   initialName: string;
   initialLogoUrl: string | null;
+  productId: number | null;
 }
 
 export function EditProductModal({
-  open, onOpenChange, onSave, initialName, initialLogoUrl,
+  open, onOpenChange, onSave, initialName, initialLogoUrl, productId,
 }: EditProductModalProps) {
   const [name, setName] = useState(initialName);
   const [logoUrl, setLogoUrl] = useState(initialLogoUrl ?? "");
@@ -34,7 +37,6 @@ export function EditProductModal({
     setLoading(true);
     try {
       await onSave({ name: name.trim(), logo_url: logoUrl.trim() || null });
-      onOpenChange(false);
     } finally {
       setLoading(false);
     }
@@ -42,13 +44,14 @@ export function EditProductModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[400px]">
+      <DialogContent className="sm:max-w-[520px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Editar Produto</DialogTitle>
           <DialogDescription>
-            Altere o nome ou a logo do produto.
+            Altere o nome, logo ou nomes na plataforma do produto.
           </DialogDescription>
         </DialogHeader>
+
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="edit-prod-name">Nome do Produto</Label>
@@ -81,6 +84,15 @@ export function EditProductModal({
               </div>
             )}
           </div>
+
+          {/* Aliases — dentro do form, aparece antes do footer */}
+          {productId && (
+            <>
+              <Separator />
+              <ProductAliasManager productId={productId} />
+            </>
+          )}
+
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>Cancelar</Button>
             <Button type="submit" disabled={!name.trim() || loading}>

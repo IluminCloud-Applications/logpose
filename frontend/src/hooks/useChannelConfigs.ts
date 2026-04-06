@@ -3,7 +3,10 @@ import { useCachedQuery } from "./useCachedQuery";
 import {
   fetchChannelConfigs,
   updateChannelConfigs,
+  createCustomChannel,
+  deleteCustomChannel,
   type ChannelConfig,
+  type CustomChannelPayload,
 } from "@/services/recovery";
 import { invalidateCacheByPrefix } from "@/lib/queryCache";
 
@@ -19,13 +22,45 @@ export function useChannelConfigs() {
     try {
       setIsSaving(true);
       await updateChannelConfigs(updated);
-      invalidateCacheByPrefix("channel-configs");
-      invalidateCacheByPrefix("recoveries");
-      await reload();
+      _invalidateAndReload();
     } finally {
       setIsSaving(false);
     }
   };
 
-  return { configs: data ?? [], isLoading, isSaving, save, reload };
+  const addCustom = async (payload: CustomChannelPayload) => {
+    try {
+      setIsSaving(true);
+      await createCustomChannel(payload);
+      _invalidateAndReload();
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const removeCustom = async (channel: string) => {
+    try {
+      setIsSaving(true);
+      await deleteCustomChannel(channel);
+      _invalidateAndReload();
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const _invalidateAndReload = () => {
+    invalidateCacheByPrefix("channel-configs");
+    invalidateCacheByPrefix("recoveries");
+    reload();
+  };
+
+  return {
+    configs: data ?? [],
+    isLoading,
+    isSaving,
+    save,
+    addCustom,
+    removeCustom,
+    reload,
+  };
 }

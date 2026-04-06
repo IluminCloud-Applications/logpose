@@ -6,6 +6,16 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import type { ChannelConfig } from "@/services/recovery";
+
+// Canais padrão sempre exibidos
+const DEFAULT_CHANNEL_OPTIONS = [
+  { value: "whatsapp", label: "WhatsApp" },
+  { value: "email", label: "Email" },
+  { value: "sms", label: "SMS" },
+  { value: "back_redirect", label: "BackRedirect" },
+  { value: "other", label: "Outras" },
+];
 
 interface RecoveryInlineFiltersProps {
   typeFilter: string;
@@ -15,6 +25,7 @@ interface RecoveryInlineFiltersProps {
   channelFilter: string;
   onChannelChange: (v: string) => void;
   onClose: () => void;
+  channelConfigs?: ChannelConfig[];
 }
 
 export function RecoveryInlineFilters({
@@ -22,6 +33,7 @@ export function RecoveryInlineFilters({
   statusFilter, onStatusChange,
   channelFilter, onChannelChange,
   onClose,
+  channelConfigs = [],
 }: RecoveryInlineFiltersProps) {
   const activeCount = [
     typeFilter !== "all",
@@ -34,6 +46,13 @@ export function RecoveryInlineFilters({
     onStatusChange("all");
     onChannelChange("all");
   };
+
+  // Monta opções: padrão + personalizados
+  const customOptions = channelConfigs
+    .filter((c) => c.is_custom)
+    .map((c) => ({ value: c.channel, label: c.label || c.channel }));
+
+  const allChannelOptions = [...DEFAULT_CHANNEL_OPTIONS, ...customOptions];
 
   return (
     <div className="rounded-xl border border-border/50 bg-card/80 backdrop-blur-sm p-4 space-y-4 animate-in fade-in slide-in-from-top-2 duration-200">
@@ -95,11 +114,11 @@ export function RecoveryInlineFilters({
             <SelectTrigger className="h-9 w-full"><SelectValue /></SelectTrigger>
             <SelectContent>
               <SelectItem value="all">Todas</SelectItem>
-              <SelectItem value="whatsapp">WhatsApp</SelectItem>
-              <SelectItem value="email">Email</SelectItem>
-              <SelectItem value="sms">SMS</SelectItem>
-              <SelectItem value="back_redirect">BackRedirect</SelectItem>
-              <SelectItem value="other">Outras</SelectItem>
+              {allChannelOptions.map((opt) => (
+                <SelectItem key={opt.value} value={opt.value}>
+                  {opt.label}
+                </SelectItem>
+              ))}
             </SelectContent>
           </Select>
         </div>

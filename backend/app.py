@@ -25,6 +25,7 @@ from api.platforms.webhooks import router as platforms_router
 from api.products.crud import router as products_router
 from api.products.items import router as product_items_router
 from api.products.stats import router as product_stats_router
+from api.products.aliases import router as product_aliases_router
 from api.funnel.data import router as funnel_router
 from api.sales.transactions import router as sales_router
 from api.sales.delete import router as sales_delete_router
@@ -100,6 +101,7 @@ app.include_router(platforms_router, prefix="/api")
 app.include_router(products_router, prefix="/api")
 app.include_router(product_items_router, prefix="/api")
 app.include_router(product_stats_router, prefix="/api")
+app.include_router(product_aliases_router, prefix="/api")
 app.include_router(funnel_router, prefix="/api")
 app.include_router(sales_router, prefix="/api")
 app.include_router(sales_delete_router, prefix="/api")

@@ -3,7 +3,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { RiCheckboxCircleLine, RiTimeLine } from "@remixicon/react";
-import type { RecoveryRow } from "@/services/recovery";
+import type { RecoveryRow, ChannelConfig } from "@/services/recovery";
 import { PaginationBar } from "@/components/PaginationBar";
 
 const typeLabels: Record<string, string> = {
@@ -14,7 +14,7 @@ const typeLabels: Record<string, string> = {
   unidentified: "Não Identificado",
 };
 
-const channelLabels: Record<string, string> = {
+const STATIC_CHANNEL_LABELS: Record<string, string> = {
   whatsapp: "WhatsApp",
   email: "Email",
   sms: "SMS",
@@ -22,12 +22,21 @@ const channelLabels: Record<string, string> = {
   other: "Outro",
 };
 
+function buildChannelLabelMap(configs: ChannelConfig[]): Record<string, string> {
+  const map = { ...STATIC_CHANNEL_LABELS };
+  configs.forEach((c) => {
+    if (c.label) map[c.channel] = c.label;
+  });
+  return map;
+}
+
 interface RecoveryTableProps {
   data: RecoveryRow[];
   isLoading: boolean;
   total: number;
   page: number;
   onPageChange: (page: number) => void;
+  channelConfigs?: ChannelConfig[];
 }
 
 function TableSkeleton() {
@@ -44,7 +53,8 @@ function TableSkeleton() {
   );
 }
 
-export function RecoveryTable({ data, isLoading, total, page, onPageChange }: RecoveryTableProps) {
+export function RecoveryTable({ data, isLoading, total, page, onPageChange, channelConfigs = [] }: RecoveryTableProps) {
+  const channelLabels = buildChannelLabelMap(channelConfigs);
   if (isLoading) return <TableSkeleton />;
 
   if (data.length === 0) {
@@ -113,7 +123,7 @@ export function RecoveryTable({ data, isLoading, total, page, onPageChange }: Re
                     )}
                   </TableCell>
                   <TableCell className="text-muted-foreground">
-                    {channelLabels[row.channel] || "—"}
+                    {channelLabels[row.channel] || row.channel || "—"}
                   </TableCell>
                 </TableRow>
               ))}

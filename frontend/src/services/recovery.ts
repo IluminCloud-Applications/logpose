@@ -17,6 +17,13 @@ export interface RecoveryRow {
 export interface ChannelConfig {
   channel: string;
   keyword: string;
+  label?: string | null;
+  is_custom?: boolean;
+}
+
+export interface CustomChannelPayload {
+  name: string;
+  keyword: string;
 }
 
 // ── Channel Config ──────────────────────────────────────
@@ -30,6 +37,21 @@ export async function updateChannelConfigs(
   return apiRequest<ChannelConfig[]>("/recovery/config", {
     method: "PUT",
     body: { configs },
+  });
+}
+
+export async function createCustomChannel(
+  payload: CustomChannelPayload,
+): Promise<ChannelConfig> {
+  return apiRequest<ChannelConfig>("/recovery/config/custom", {
+    method: "POST",
+    body: payload,
+  });
+}
+
+export async function deleteCustomChannel(channel: string): Promise<void> {
+  await apiRequest<void>(`/recovery/config/custom/${channel}`, {
+    method: "DELETE",
   });
 }
 

@@ -7,6 +7,7 @@ import { ConfigDrawer } from "./components/ConfigDrawer";
 import { useRecoveries } from "@/hooks/useRecoveries";
 import { useChannelConfigs } from "@/hooks/useChannelConfigs";
 import type { DateRangeState } from "@/components/DateRangeFilter";
+import type { ChannelConfig, CustomChannelPayload } from "@/services/recovery";
 
 export default function RecoveryPage() {
   const [typeFilter, setTypeFilter] = useState("all");
@@ -33,12 +34,22 @@ export default function RecoveryPage() {
     resetPage();
   }, [typeFilter, statusFilter, channelFilter, dateRange, search, resetPage]);
 
-  const { configs, isSaving, save } = useChannelConfigs();
+  const { configs, isSaving, save, addCustom, removeCustom } = useChannelConfigs();
 
-  const handleSaveConfig = useCallback(async (updated: import("@/services/recovery").ChannelConfig[]) => {
+  const handleSaveConfig = useCallback(async (updated: ChannelConfig[]) => {
     await save(updated);
     await reload();
   }, [save, reload]);
+
+  const handleAddCustom = useCallback(async (payload: CustomChannelPayload) => {
+    await addCustom(payload);
+    await reload();
+  }, [addCustom, reload]);
+
+  const handleRemoveCustom = useCallback(async (channel: string) => {
+    await removeCustom(channel);
+    await reload();
+  }, [removeCustom, reload]);
 
   return (
     <div className="flex flex-col gap-6 p-6">
@@ -61,6 +72,7 @@ export default function RecoveryPage() {
           channelFilter={channelFilter}
           onChannelChange={setChannelFilter}
           onClose={() => setFiltersOpen(false)}
+          channelConfigs={configs}
         />
       )}
 
@@ -71,12 +83,15 @@ export default function RecoveryPage() {
         total={total}
         page={page}
         onPageChange={setPage}
+        channelConfigs={configs}
       />
       <ConfigDrawer
         open={configOpen}
         onOpenChange={setConfigOpen}
         configs={configs}
         onSave={handleSaveConfig}
+        onAddCustom={handleAddCustom}
+        onRemoveCustom={handleRemoveCustom}
         isSaving={isSaving}
       />
     </div>

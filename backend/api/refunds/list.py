@@ -14,6 +14,7 @@ from database.models.refund_reason import RefundReason
 from database.models.product import Product
 from database.core.timezone import now_sp, SP_ZONE
 from api.auth.deps import get_current_user
+from api.products.alias_helper import get_product_names_for_filter
 
 router = APIRouter(prefix="/refunds", tags=["refunds"])
 
@@ -85,7 +86,9 @@ def list_refunds(
             pass
 
     if product_id:
-        query = query.filter(Transaction.product_id == product_id)
+        names = get_product_names_for_filter(db, product_id)
+        if names:
+            query = query.filter(Transaction.product_name.in_(names))
 
     if search:
         term = f"%{search}%"

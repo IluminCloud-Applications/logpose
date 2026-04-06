@@ -45,7 +45,24 @@ export function useSales() {
     return p;
   }, [filters, page]);
 
+  const buildSummaryParams = useCallback(() => {
+    const p: Record<string, unknown> = {
+      preset: filters.dateRange.preset,
+    };
+    if (filters.dateRange.preset === "custom") {
+      p.start_date = filters.dateRange.startDate;
+      p.end_date = filters.dateRange.endDate;
+    }
+    // status is intentionally excluded — summary always shows all statuses
+    if (filters.platform !== "all") p.platform = filters.platform;
+    if (filters.productId !== "all") p.product_id = Number(filters.productId);
+    if (filters.campaign !== "all") p.campaign = filters.campaign;
+    if (filters.search) p.search = filters.search;
+    return p;
+  }, [filters]);
+
   const params = buildParams();
+  const summaryParams = buildSummaryParams();
 
   const { data: txData, isLoading: txLoading, reload: reloadTx } = useCachedQuery<{
     items: SaleAPI[];
@@ -58,8 +75,8 @@ export function useSales() {
 
   const { data: summary, reload: reloadSummary } = useCachedQuery<SalesSummary>({
     cachePrefix: "sales-summary",
-    params,
-    queryFn: () => fetchSalesSummary(params as Record<string, string | number | undefined>),
+    params: summaryParams,
+    queryFn: () => fetchSalesSummary(summaryParams as Record<string, string | number | undefined>),
   });
 
   useEffect(() => {

@@ -11,6 +11,7 @@ from database.models.product import Product
 from database.models.transaction import Transaction, TransactionStatus, PaymentPlatform
 from database.core.timezone import now_sp, SP_ZONE
 from api.auth.deps import get_current_user
+from api.products.alias_helper import get_product_names_for_filter
 
 router = APIRouter(prefix="/customers", tags=["customers"])
 
@@ -78,12 +79,15 @@ def list_customers(
         except ValueError:
             pass
 
-    # Product filter: customers that purchased a specific product
+    # Product filter: customers with transactions matching product (name + aliases)
     if product_id:
-        cp_ids = db.query(CustomerProduct.customer_id).filter(
-            CustomerProduct.product_id == product_id
-        ).subquery()
-        query = query.filter(Customer.id.in_(db.query(cp_ids)))
+        names = get_product_names_for_filter(db, product_id)
+        if names:
+            tx_customer_ids = db.query(Transaction.customer_id).filter(
+                Transaction.product_name.in_(names),
+                Transaction.customer_id.isnot(None),
+            ).distinct().subquery()
+            query = query.filter(Customer.id.in_(db.query(tx_customer_ids)))
 
     # Campaign filter (utm_campaign): customers with transactions matching campaign
     if campaign and campaign != "all":
