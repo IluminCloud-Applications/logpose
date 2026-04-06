@@ -6,7 +6,7 @@ Dashboard estratégico de performance para Direct Response.
 
 ```bash
 git add -A
-git commit -m "v1.9 - implement recovery channel config"
+git commit -m "v1.92 - implement recovery channel config"
 git push
 ```
 

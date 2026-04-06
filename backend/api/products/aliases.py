@@ -1,11 +1,13 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
+from sqlalchemy import func
 from pydantic import BaseModel
 from datetime import datetime
 
 from database.core.connection import get_db
 from database.models.product import Product
 from database.models.product_alias import ProductAlias
+from database.models.transaction import Transaction
 from api.auth.deps import get_current_user
 
 router = APIRouter(prefix="/products", tags=["product-aliases"])
@@ -92,3 +94,49 @@ def delete_alias(
 
     db.delete(alias)
     db.commit()
+
+
+@router.get("/{product_id}/detect-aliases")
+def detect_aliases(
+    product_id: int,
+    db: Session = Depends(get_db),
+    _=Depends(get_current_user),
+):
+    """
+    Detecta nomes automáticos nas transações que iniciam com o nome canônico do produto
+    mas são diferentes dele — sugerindo-os como aliases candidatos.
+
+    Exclui nomes que já são o nome canônico ou já estão cadastrados como alias.
+    """
+    product = db.query(Product).filter(Product.id == product_id).first()
+    if not product:
+        raise HTTPException(status_code=404, detail="Produto não encontrado")
+
+    # Nomes já registrados (canônico + aliases existentes)
+    existing_aliases = (
+        db.query(ProductAlias.alias)
+        .filter(ProductAlias.product_id == product_id)
+        .all()
+    )
+    excluded_names = {product.name} | {a.alias for a in existing_aliases}
+
+    # Buscar nomes distintos nas transações que começam com o nome canônico
+    pattern = f"{product.name}%"
+    rows = (
+        db.query(Transaction.product_name)
+        .filter(
+            Transaction.product_name.isnot(None),
+            func.lower(Transaction.product_name).like(func.lower(pattern)),
+            Transaction.product_name != product.name,
+        )
+        .distinct()
+        .all()
+    )
+
+    detected = [
+        r.product_name for r in rows
+        if r.product_name and r.product_name not in excluded_names
+    ]
+
+    return {"detected": detected}
+

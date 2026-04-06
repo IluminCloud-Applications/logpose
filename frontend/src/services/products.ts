@@ -122,6 +122,11 @@ export async function deleteAlias(productId: number, aliasId: number): Promise<v
   return apiRequest(`/products/${productId}/aliases/${aliasId}`, { method: "DELETE" });
 }
 
+export async function detectAliases(productId: number): Promise<string[]> {
+  const res = await apiRequest<{ detected: string[] }>(`/products/${productId}/detect-aliases`);
+  return res.detected;
+}
+
 // ── Merge products + items + stats into view models ─────────
 
 export async function fetchProductsWithStats(): Promise<ProductView[]> {

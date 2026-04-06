@@ -1,10 +1,12 @@
 import { useState, useEffect } from "react";
-import { Plus, X, Loader2 } from "lucide-react";
+import { Plus, X, Loader2, Sparkles } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
-import { fetchAliases, createAlias, deleteAlias, type AliasAPI } from "@/services/products";
+import {
+  fetchAliases, createAlias, deleteAlias, detectAliases, type AliasAPI,
+} from "@/services/products";
 
 interface ProductAliasManagerProps {
   productId: number;
@@ -15,7 +17,9 @@ export function ProductAliasManager({ productId }: ProductAliasManagerProps) {
   const [newAlias, setNewAlias] = useState("");
   const [loading, setLoading] = useState(false);
   const [adding, setAdding] = useState(false);
+  const [detecting, setDetecting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [detectInfo, setDetectInfo] = useState<string | null>(null);
 
   useEffect(() => {
     loadAliases();
@@ -59,6 +63,41 @@ export function ProductAliasManager({ productId }: ProductAliasManagerProps) {
     }
   };
 
+  const handleDetect = async () => {
+    setDetecting(true);
+    setError(null);
+    setDetectInfo(null);
+    try {
+      const detected = await detectAliases(productId);
+      if (detected.length === 0) {
+        setDetectInfo("Nenhum nome novo encontrado nas transações.");
+        return;
+      }
+      // Adicionar todos os detectados que ainda não estão na lista
+      const existing = new Set(aliases.map((a) => a.alias));
+      const toAdd = detected.filter((d) => !existing.has(d));
+      const added: AliasAPI[] = [];
+      for (const name of toAdd) {
+        try {
+          const created = await createAlias(productId, name);
+          added.push(created);
+        } catch {
+          // Ignora duplicatas (já existe no banco por corrida)
+        }
+      }
+      if (added.length > 0) {
+        setAliases((prev) => [...prev, ...added]);
+        setDetectInfo(`${added.length} nome${added.length > 1 ? "s" : ""} detectado${added.length > 1 ? "s" : ""} e adicionado${added.length > 1 ? "s" : ""}.`);
+      } else {
+        setDetectInfo("Todos os nomes detectados já estavam cadastrados.");
+      }
+    } catch {
+      setError("Erro ao detectar nomes automaticamente.");
+    } finally {
+      setDetecting(false);
+    }
+  };
+
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter") {
       e.preventDefault();
@@ -69,7 +108,24 @@ export function ProductAliasManager({ productId }: ProductAliasManagerProps) {
   return (
     <div className="space-y-3">
       <div className="space-y-1">
-        <Label>Nomes na Plataforma</Label>
+        <div className="flex items-center justify-between">
+          <Label>Nomes na Plataforma</Label>
+          <Button
+            type="button"
+            size="sm"
+            variant="ghost"
+            onClick={handleDetect}
+            disabled={detecting}
+            className="h-7 px-2 text-xs text-muted-foreground hover:text-foreground gap-1.5"
+          >
+            {detecting ? (
+              <Loader2 className="h-3 w-3 animate-spin" />
+            ) : (
+              <Sparkles className="h-3 w-3" />
+            )}
+            Detectar automaticamente
+          </Button>
+        </div>
         <p className="text-xs text-muted-foreground">
           Adicione os nomes exatos que chegam via webhook ou plataforma para este produto.
           Eles serão incluídos no filtro automaticamente.
@@ -100,9 +156,8 @@ export function ProductAliasManager({ productId }: ProductAliasManagerProps) {
         </Button>
       </div>
 
-      {error && (
-        <p className="text-xs text-destructive">{error}</p>
-      )}
+      {error && <p className="text-xs text-destructive">{error}</p>}
+      {detectInfo && <p className="text-xs text-muted-foreground">{detectInfo}</p>}
 
       {loading ? (
         <div className="flex items-center gap-2 py-1">
