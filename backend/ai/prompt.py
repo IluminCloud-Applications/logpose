@@ -18,7 +18,7 @@ SEMPRE envie TODAS as consultas que precisa em UMA ÚNICA chamada.
 Tipos de consulta disponíveis:
 - "transactions": vendas (extras: status, utm_campaign)
 - "kpis": KPIs gerais (revenue, spend, profit, ROAS, CPA)
-- "meta_campaigns": campanhas Meta Ads (extras: level=campaign|adset|ad)
+- "meta_campaigns": campanhas Meta Ads (extras: level=campaign|adset|ad, status=active|all)
 - "creatives": top criativos por performance (extras: sort_by=roas|sales|cpa, limit)
 - "recovery": recuperação de vendas perdidas
 - "funnel": funil de conversão com detecção de gargalos

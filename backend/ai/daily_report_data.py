@@ -90,7 +90,7 @@ def _fetch_campaigns_today(db: Session, ds: str, de: str) -> str:
     data.sort(key=lambda x: x.spend, reverse=True)
     lines = []
     for item in data[:20]:
-        st = "🟢" if item.status == "active" else "🟡"
+        st = "(ATIVA) 🟢" if getattr(item, "status", "") == "active" else "(DESATIVADA) 🟡"
         lines.append(
             f"{st} [ID:{item.id}] {item.name} | Budget: R${item.budget:.0f}"
             f" | Spend: R${item.spend:.2f}"

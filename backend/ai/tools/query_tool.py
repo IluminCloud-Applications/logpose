@@ -23,7 +23,7 @@ def query_business_data(queries: list[dict]) -> str:
     Tipos disponíveis (call):
     - "transactions": vendas/transações (extras: status, utm_campaign)
     - "kpis": KPIs principais (revenue, spend, profit, ROAS, CPA)
-    - "meta_campaigns": campanhas do Meta Ads (extras: level=campaign|adset|ad)
+    - "meta_campaigns": campanhas do Meta Ads (extras: level=campaign|adset|ad, status=active|all)
     - "creatives": melhores criativos/anúncios (extras: sort_by=roas|sales|cpa, limit)
     - "recovery": recuperação de vendas (carrinho abandonado, pix, cartão)
     - "funnel": funil de conversão por campanha (identifica gargalos)

@@ -23,6 +23,7 @@ def _get_meta_service(db):
 def query_meta_campaigns(
     days_back: int = 30,
     level: str = "campaign",
+    status: str = "all",
 ) -> str:
     """Busca métricas do Meta Ads: campanhas, conjuntos ou anúncios com spend, CPC, CTR.
     Use para responder sobre performance de campanhas, gastos, cliques, impressões.
@@ -30,6 +31,7 @@ def query_meta_campaigns(
     Args:
         days_back: Quantidade de dias para trás (default 30)
         level: Nível de detalhe: campaign, adset, ad
+        status: status (active ou all)
     """
     db = SessionLocal()
     try:
@@ -56,6 +58,12 @@ def query_meta_campaigns(
         if not data:
             return f"Nenhum dado encontrado no nível '{level}' nos últimos {days_back} dias."
 
+        if status == "active":
+            data = [i for i in data if getattr(i, "status", "") == "active"]
+
+        if not data:
+            return f"Nenhum dado encontrado no nível '{level}' (filtro: {status})."
+
         # Ordena por spend desc
         data.sort(key=lambda x: x.spend, reverse=True)
 
@@ -64,7 +72,7 @@ def query_meta_campaigns(
 
         for item in data[:15]:
             total_spend += item.spend
-            status_icon = "🟢" if item.status == "active" else "🟡"
+            status_icon = "(ATIVA) 🟢" if getattr(item, "status", "") == "active" else "(DESATIVADA) 🟡"
             lines.append(
                 f"{status_icon} {item.name}\n"
                 f"   Spend: R$ {item.spend:,.2f} | Clicks: {item.clicks} | "

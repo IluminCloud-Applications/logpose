@@ -176,6 +176,7 @@ def _handle_kpis(db, date_start, date_end, **kwargs):
 
 def _handle_meta_campaigns(db, date_start, date_end, **kwargs):
     level = kwargs.get("level", "campaign")
+    status_filter = kwargs.get("status", "all")
     token, acct_id = _get_fb_credentials(db)
     if not token:
         return "Sem conta Facebook Ads."
@@ -187,10 +188,16 @@ def _handle_meta_campaigns(db, date_start, date_end, **kwargs):
     if not data:
         return f"Sem dados de {level}."
 
+    if status_filter == "active":
+        data = [i for i in data if getattr(i, "status", "") == "active"]
+
+    if not data:
+        return f"Sem dados de {level} (filtro: {status_filter})."
+
     data.sort(key=lambda x: x.spend, reverse=True)
     lines = []
     for item in data[:15]:
-        st = "🟢" if item.status == "active" else "🟡"
+        st = "(ATIVA) 🟢" if getattr(item, "status", "") == "active" else "(DESATIVADA) 🟡"
         lines.append(
             f"{st} [ID:{item.id}] {item.name} | "
             f"Budget: R${item.budget:,.0f} | Spend: R${item.spend:,.2f} | "

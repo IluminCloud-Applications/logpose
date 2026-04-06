@@ -6,7 +6,7 @@ Dashboard estratégico de performance para Direct Response.
 
 ```bash
 git add -A
-git commit -m "v1.97 - fix timezone"
+git commit -m "v1.99 - fix AI"
 git push
 ```
 
