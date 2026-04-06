@@ -13,6 +13,7 @@ from database.models.campaign_marker import CampaignMarker, MarkerType
 from api.auth.deps import get_current_user
 from api.funnel.date_helpers import resolve_date_range, date_to_meta_format
 from api.funnel.facebook_data import fetch_facebook_aggregated
+from api.products.alias_helper import get_product_names_for_filter
 
 router = APIRouter(prefix="/funnel", tags=["funnel"])
 
@@ -37,8 +38,8 @@ async def get_funnel_data(
         campaign_ids = _get_product_campaign_ids(db, str(product.id))
         fb = await _get_fb_for_product(accounts, meta_start, meta_end, campaign_ids)
 
-        sales_count, sales_revenue = _count_sales(db, product.id, dt_start, dt_end)
-        ob_count, ob_revenue = _count_order_bumps(db, product.id, dt_start, dt_end)
+        sales_count, sales_revenue = _count_sales(db, product, dt_start, dt_end)
+        ob_count, ob_revenue = _count_order_bumps(db, product, dt_start, dt_end)
         upsell_stages = _get_upsell_stages(db, product.id, dt_start, dt_end)
 
         stages = [
@@ -106,14 +107,15 @@ async def _get_fb_for_product(
 
 
 def _count_sales(
-    db: Session, product_id: int,
+    db: Session, product: Product,
     dt_start: datetime | None, dt_end: datetime | None,
 ) -> tuple[int, float]:
+    names = get_product_names_for_filter(db, product.id)
     q = db.query(
         func.count(Transaction.id),
         func.coalesce(func.sum(Transaction.amount), 0),
     ).filter(
-        Transaction.product_id == product_id,
+        Transaction.product_name.in_(names) if names else Transaction.product_id == product.id,
         Transaction.status == TransactionStatus.APPROVED,
     )
     if dt_start:
@@ -125,19 +127,20 @@ def _count_sales(
 
 
 def _count_order_bumps(
-    db: Session, product_id: int,
+    db: Session, product: Product,
     dt_start: datetime | None, dt_end: datetime | None,
 ) -> tuple[int, float]:
     ob_ids = db.query(OrderBump.external_id).filter(
-        OrderBump.product_id == product_id,
+        OrderBump.product_id == product.id,
         OrderBump.external_id.isnot(None),
     ).all()
     ob_codes = {r[0] for r in ob_ids}
     if not ob_codes:
         return 0, 0.0
 
+    names = get_product_names_for_filter(db, product.id)
     q = db.query(Transaction).filter(
-        Transaction.product_id == product_id,
+        Transaction.product_name.in_(names) if names else Transaction.product_id == product.id,
         Transaction.status == TransactionStatus.APPROVED,
         Transaction.order_bumps.isnot(None),
     )
