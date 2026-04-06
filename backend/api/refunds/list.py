@@ -38,9 +38,9 @@ def _parse_date_range(preset: str, start: Optional[str], end: Optional[str]):
         return now - timedelta(days=90), now
     elif preset == "custom" and start and end:
         try:
-            s = datetime.strptime(start, "%Y-%m-%d").replace(tzinfo=SP_ZONE)
+            s = datetime.strptime(start, "%Y-%m-%d")
             e = datetime.strptime(end, "%Y-%m-%d").replace(
-                hour=23, minute=59, second=59, tzinfo=SP_ZONE
+                hour=23, minute=59, second=59
             )
             return s, e
         except ValueError:

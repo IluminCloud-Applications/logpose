@@ -66,9 +66,9 @@ def _parse_dates(query: dict):
 
     if ds and de:
         try:
-            start = datetime.strptime(ds, "%Y-%m-%d").replace(tzinfo=SP_ZONE)
+            start = datetime.strptime(ds, "%Y-%m-%d")
             end = datetime.strptime(de, "%Y-%m-%d").replace(
-                hour=23, minute=59, second=59, tzinfo=SP_ZONE
+                hour=23, minute=59, second=59
             )
             return start, end
         except ValueError:

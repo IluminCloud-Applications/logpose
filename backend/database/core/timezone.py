@@ -13,7 +13,7 @@ UPDATED_AT_DEFAULT = text("(NOW() AT TIME ZONE 'America/Sao_Paulo')")
 
 def now_sp() -> datetime:
     """Retorna datetime.now() no timezone de São Paulo."""
-    return datetime.now(SP_ZONE)
+    return datetime.now(SP_ZONE).replace(tzinfo=None)
 
 
 def today_sp() -> date:
