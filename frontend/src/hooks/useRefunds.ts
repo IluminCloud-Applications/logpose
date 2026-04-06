@@ -65,10 +65,11 @@ export function useRefunds() {
       p.start_date = filters.dateRange.startDate;
       p.end_date = filters.dateRange.endDate;
     }
-    // status is intentionally excluded — summary always shows all refund types
+    if (filters.status !== "all") p.status = filters.status;
     if (filters.platform !== "all") p.platform = filters.platform;
     if (filters.productId !== "all") p.product_id = Number(filters.productId);
     if (filters.search) p.search = filters.search;
+    if (filters.hasReason !== "all") p.has_reason = filters.hasReason;
     return p;
   }, [filters]);
 

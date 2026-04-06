@@ -153,9 +153,11 @@ def refunds_summary(
     preset: str = Query("30d"),
     start_date: Optional[str] = Query(None),
     end_date: Optional[str] = Query(None),
+    status: Optional[str] = Query(None),
     platform: Optional[str] = Query(None),
     product_id: Optional[int] = Query(None),
     search: Optional[str] = Query(None),
+    has_reason: Optional[str] = Query(None),
     db: Session = Depends(get_db),
     _=Depends(get_current_user),
 ):
@@ -188,11 +190,27 @@ def refunds_summary(
             )
         )
 
+    refund_base = base
+    if status and status != "all":
+        try:
+            refund_base = refund_base.filter(Transaction.status == TransactionStatus(status))
+        except ValueError:
+            pass
+
+    if has_reason == "yes":
+        refund_base = refund_base.filter(
+            Transaction.id.in_(db.query(RefundReason.transaction_id))
+        )
+    elif has_reason == "no":
+        refund_base = refund_base.filter(
+            ~Transaction.id.in_(db.query(RefundReason.transaction_id))
+        )
+
     total_sales = base.filter(
         Transaction.status == TransactionStatus.APPROVED
     ).count()
-    refunded_q = base.filter(Transaction.status == TransactionStatus.REFUNDED)
-    chargeback_q = base.filter(Transaction.status == TransactionStatus.CHARGEBACK)
+    refunded_q = refund_base.filter(Transaction.status == TransactionStatus.REFUNDED)
+    chargeback_q = refund_base.filter(Transaction.status == TransactionStatus.CHARGEBACK)
 
     refunded = refunded_q.count()
     chargeback = chargeback_q.count()
@@ -216,7 +234,7 @@ def refunds_summary(
     # Contagem com motivo registrado
     with_reason = db.query(func.count(RefundReason.id)).filter(
         RefundReason.transaction_id.in_(
-            base.filter(Transaction.status.in_(REFUND_STATUSES))
+            refund_base.filter(Transaction.status.in_(REFUND_STATUSES))
             .with_entities(Transaction.id)
         )
     ).scalar() or 0
@@ -238,9 +256,11 @@ def reason_stats(
     preset: str = Query("30d"),
     start_date: Optional[str] = Query(None),
     end_date: Optional[str] = Query(None),
+    status: Optional[str] = Query(None),
     platform: Optional[str] = Query(None),
     product_id: Optional[int] = Query(None),
     search: Optional[str] = Query(None),
+    has_reason: Optional[str] = Query(None),
     db: Session = Depends(get_db),
     _=Depends(get_current_user),
 ):
@@ -270,6 +290,19 @@ def reason_stats(
                 Transaction.customer_email.ilike(term),
                 Transaction.product_name.ilike(term),
             )
+        )
+    if status and status != "all":
+        try:
+            base_ids = base_ids.filter(Transaction.status == TransactionStatus(status))
+        except ValueError:
+            pass
+    if has_reason == "yes":
+        base_ids = base_ids.filter(
+            Transaction.id.in_(db.query(RefundReason.transaction_id))
+        )
+    elif has_reason == "no":
+        base_ids = base_ids.filter(
+            ~Transaction.id.in_(db.query(RefundReason.transaction_id))
         )
 
     rows = (
