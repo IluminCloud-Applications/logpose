@@ -153,10 +153,13 @@ def refunds_summary(
     preset: str = Query("30d"),
     start_date: Optional[str] = Query(None),
     end_date: Optional[str] = Query(None),
+    platform: Optional[str] = Query(None),
+    product_id: Optional[int] = Query(None),
+    search: Optional[str] = Query(None),
     db: Session = Depends(get_db),
     _=Depends(get_current_user),
 ):
-    """KPIs de reembolso no período."""
+    """KPIs de reembolso no período, filtrando pelos mesmos critérios da lista."""
     date_start, date_end = _parse_date_range(preset, start_date, end_date)
 
     base = db.query(Transaction)
@@ -164,6 +167,26 @@ def refunds_summary(
         base = base.filter(Transaction.created_at >= date_start)
     if date_end:
         base = base.filter(Transaction.created_at <= date_end)
+
+    if platform and platform != "all":
+        try:
+            base = base.filter(Transaction.platform == PaymentPlatform(platform))
+        except ValueError:
+            pass
+
+    if product_id:
+        names = get_product_names_for_filter(db, product_id)
+        if names:
+            base = base.filter(Transaction.product_name.in_(names))
+
+    if search:
+        term = f"%{search}%"
+        base = base.filter(
+            or_(
+                Transaction.customer_email.ilike(term),
+                Transaction.product_name.ilike(term),
+            )
+        )
 
     total_sales = base.filter(
         Transaction.status == TransactionStatus.APPROVED
@@ -215,6 +238,9 @@ def reason_stats(
     preset: str = Query("30d"),
     start_date: Optional[str] = Query(None),
     end_date: Optional[str] = Query(None),
+    platform: Optional[str] = Query(None),
+    product_id: Optional[int] = Query(None),
+    search: Optional[str] = Query(None),
     db: Session = Depends(get_db),
     _=Depends(get_current_user),
 ):
@@ -228,6 +254,23 @@ def reason_stats(
         base_ids = base_ids.filter(Transaction.created_at >= date_start)
     if date_end:
         base_ids = base_ids.filter(Transaction.created_at <= date_end)
+    if platform and platform != "all":
+        try:
+            base_ids = base_ids.filter(Transaction.platform == PaymentPlatform(platform))
+        except ValueError:
+            pass
+    if product_id:
+        names = get_product_names_for_filter(db, product_id)
+        if names:
+            base_ids = base_ids.filter(Transaction.product_name.in_(names))
+    if search:
+        term = f"%{search}%"
+        base_ids = base_ids.filter(
+            or_(
+                Transaction.customer_email.ilike(term),
+                Transaction.product_name.ilike(term),
+            )
+        )
 
     rows = (
         db.query(RefundReason.reason_code, func.count(RefundReason.id))
@@ -238,3 +281,4 @@ def reason_stats(
     )
 
     return [{"code": code, "count": count} for code, count in rows]
+

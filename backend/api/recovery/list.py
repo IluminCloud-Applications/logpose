@@ -83,14 +83,22 @@ def list_recoveries(
     type_filter: str = Query("all"),
     status_filter: str = Query("all"),
     channel_filter: str = Query("all"),
+    product_id: int | None = Query(None),
     search: str | None = Query(None),
     page: int = Query(1, ge=1),
     per_page: int = Query(12, ge=1, le=200),
     db: Session = Depends(get_db),
     _=Depends(get_current_user),
 ):
+    from api.products.alias_helper import get_product_names_for_filter
+
     dt_start, dt_end = resolve_date_range(preset, date_start, date_end)
     configs = _get_channel_configs(db)
+
+    # Resolve product names (canonical + aliases) once
+    product_names: list[str] | None = None
+    if product_id:
+        product_names = get_product_names_for_filter(db, product_id)
 
     items = []
 
@@ -99,6 +107,8 @@ def list_recoveries(
         pending_q = _build_pending_query(db, dt_start, dt_end)
         if type_filter != "all":
             pending_q = pending_q.filter(Recovery.type == type_filter)
+        if product_names is not None:
+            pending_q = pending_q.filter(Recovery.product_name.in_(product_names))
         if search:
             term = f"%{search}%"
             pending_q = pending_q.filter(
@@ -119,6 +129,8 @@ def list_recoveries(
             db, configs, dt_start, dt_end,
         )
         if approved_q is not None:
+            if product_names is not None:
+                approved_q = approved_q.filter(Transaction.product_name.in_(product_names))
             if search:
                 term = f"%{search}%"
                 approved_q = approved_q.filter(
@@ -176,3 +188,101 @@ def _tx_to_row(tx: Transaction, channel: str, customer_name: str | None = None) 
         "channel": channel,
         "recoveredAt": tx.created_at.isoformat() if tx.created_at else None,
     }
+
+
+@router.get("/summary")
+def recovery_summary(
+    preset: str = Query("30d"),
+    date_start: str | None = Query(None),
+    date_end: str | None = Query(None),
+    type_filter: str = Query("all"),
+    status_filter: str = Query("all"),
+    channel_filter: str = Query("all"),
+    product_id: int | None = Query(None),
+    search: str | None = Query(None),
+    db: Session = Depends(get_db),
+    _=Depends(get_current_user),
+):
+    """KPIs agregados da recuperação, calculados sobre o dataset completo (sem paginação)."""
+    from api.products.alias_helper import get_product_names_for_filter
+
+    dt_start, dt_end = resolve_date_range(preset, date_start, date_end)
+    configs = _get_channel_configs(db)
+
+    product_names: list[str] | None = None
+    if product_id:
+        product_names = get_product_names_for_filter(db, product_id)
+
+    all_rows: list[dict] = []
+
+    # ── Pendentes ──
+    if status_filter in ("all", "pending"):
+        pending_q = _build_pending_query(db, dt_start, dt_end)
+        if type_filter != "all":
+            pending_q = pending_q.filter(Recovery.type == type_filter)
+        if product_names is not None:
+            pending_q = pending_q.filter(Recovery.product_name.in_(product_names))
+        if search:
+            term = f"%{search}%"
+            pending_q = pending_q.filter(
+                or_(
+                    Recovery.customer_name.ilike(term),
+                    Recovery.customer_email.ilike(term),
+                )
+            )
+        for r in pending_q.all():
+            channel = _classify_src(r.src, configs)
+            if channel_filter != "all" and channel != channel_filter:
+                continue
+            all_rows.append({"recovered": False, "amount": r.amount or 0, "channel": channel})
+
+    # ── Recuperados ──
+    if status_filter in ("all", "recovered"):
+        approved_q = _build_approved_with_src_query(db, configs, dt_start, dt_end)
+        if approved_q is not None:
+            if product_names is not None:
+                approved_q = approved_q.filter(Transaction.product_name.in_(product_names))
+            if search:
+                term = f"%{search}%"
+                approved_q = approved_q.filter(
+                    or_(
+                        Transaction.customer_email.ilike(term),
+                        Transaction.product_name.ilike(term),
+                    )
+                )
+            for tx, _ in approved_q.all():
+                channel = _classify_src(tx.src, configs)
+                if channel_filter != "all" and channel != channel_filter:
+                    continue
+                all_rows.append({"recovered": True, "amount": tx.amount or 0, "channel": channel})
+
+    total = len(all_rows)
+    recovered_rows = [r for r in all_rows if r["recovered"]]
+    pending_rows = [r for r in all_rows if not r["recovered"]]
+
+    recovered_count = len(recovered_rows)
+    pending_count = len(pending_rows)
+    recovery_rate = round((recovered_count / total * 100), 1) if total > 0 else 0.0
+    recovered_amount = sum(r["amount"] for r in recovered_rows)
+    lost_amount = sum(r["amount"] for r in pending_rows)
+
+    # Contagem recuperados por canal
+    def _count_channel(channel: str) -> int:
+        return sum(1 for r in recovered_rows if r["channel"] == channel)
+
+    return {
+        "total": total,
+        "recovered": recovered_count,
+        "pending": pending_count,
+        "recovery_rate": recovery_rate,
+        "recovered_amount": recovered_amount,
+        "lost_amount": lost_amount,
+        "by_channel": {
+            "whatsapp": _count_channel("whatsapp"),
+            "email": _count_channel("email"),
+            "sms": _count_channel("sms"),
+            "back_redirect": _count_channel("back_redirect"),
+            "other": _count_channel("other"),
+        },
+    }
+

@@ -63,6 +63,23 @@ export interface RecoveryListResponse {
   per_page: number;
 }
 
+export interface RecoverySummary {
+  total: number;
+  recovered: number;
+  pending: number;
+  recovery_rate: number;
+  recovered_amount: number;
+  lost_amount: number;
+  by_channel: {
+    whatsapp: number;
+    email: number;
+    sms: number;
+    back_redirect: number;
+    other: number;
+    [key: string]: number;
+  };
+}
+
 export async function fetchRecoveries(params: {
   preset: string;
   dateStart?: string;
@@ -70,6 +87,7 @@ export async function fetchRecoveries(params: {
   typeFilter?: string;
   statusFilter?: string;
   channelFilter?: string;
+  productId?: string;
   search?: string;
   page?: number;
   perPage?: number;
@@ -80,8 +98,30 @@ export async function fetchRecoveries(params: {
   if (params.typeFilter) qs.set("type_filter", params.typeFilter);
   if (params.statusFilter) qs.set("status_filter", params.statusFilter);
   if (params.channelFilter) qs.set("channel_filter", params.channelFilter);
+  if (params.productId) qs.set("product_id", params.productId);
   if (params.search) qs.set("search", params.search);
   qs.set("page", String(params.page ?? 1));
   qs.set("per_page", String(params.perPage ?? 12));
   return apiRequest<RecoveryListResponse>(`/recovery/list?${qs.toString()}`);
+}
+
+export async function fetchRecoverySummary(params: {
+  preset: string;
+  dateStart?: string;
+  dateEnd?: string;
+  typeFilter?: string;
+  statusFilter?: string;
+  channelFilter?: string;
+  productId?: string;
+  search?: string;
+}): Promise<RecoverySummary> {
+  const qs = new URLSearchParams({ preset: params.preset });
+  if (params.dateStart) qs.set("date_start", params.dateStart);
+  if (params.dateEnd) qs.set("date_end", params.dateEnd);
+  if (params.typeFilter) qs.set("type_filter", params.typeFilter);
+  if (params.statusFilter) qs.set("status_filter", params.statusFilter);
+  if (params.channelFilter) qs.set("channel_filter", params.channelFilter);
+  if (params.productId) qs.set("product_id", params.productId);
+  if (params.search) qs.set("search", params.search);
+  return apiRequest<RecoverySummary>(`/recovery/summary?${qs.toString()}`);
 }

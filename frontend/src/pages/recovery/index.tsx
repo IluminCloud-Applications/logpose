@@ -6,33 +6,44 @@ import { RecoveryTable } from "./components/RecoveryTable";
 import { ConfigDrawer } from "./components/ConfigDrawer";
 import { useRecoveries } from "@/hooks/useRecoveries";
 import { useChannelConfigs } from "@/hooks/useChannelConfigs";
+import { fetchSalesFilterOptions } from "@/services/sales";
 import type { DateRangeState } from "@/components/DateRangeFilter";
 import type { ChannelConfig, CustomChannelPayload } from "@/services/recovery";
+import type { SalesFilterOptions } from "@/types/sale";
 
 export default function RecoveryPage() {
   const [typeFilter, setTypeFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
   const [channelFilter, setChannelFilter] = useState("all");
+  const [productFilter, setProductFilter] = useState("all");
   const [dateRange, setDateRange] = useState<DateRangeState>({
     preset: "today", startDate: "", endDate: "",
   });
   const [search, setSearch] = useState("");
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [configOpen, setConfigOpen] = useState(false);
+  const [filterOptions, setFilterOptions] = useState<SalesFilterOptions>({
+    products: [], campaigns: [], platforms: [],
+  });
 
-  const { data, total, page, setPage, resetPage, isLoading, reload } = useRecoveries({
+  useEffect(() => {
+    fetchSalesFilterOptions().then(setFilterOptions).catch(() => {});
+  }, []);
+
+  const { data, total, page, setPage, resetPage, isLoading, summary, reload } = useRecoveries({
     preset: dateRange.preset,
     dateStart: dateRange.preset === "custom" ? dateRange.startDate : undefined,
     dateEnd: dateRange.preset === "custom" ? dateRange.endDate : undefined,
     typeFilter,
     statusFilter,
     channelFilter,
+    productId: productFilter,
     search: search || undefined,
   });
 
   useEffect(() => {
     resetPage();
-  }, [typeFilter, statusFilter, channelFilter, dateRange, search, resetPage]);
+  }, [typeFilter, statusFilter, channelFilter, productFilter, dateRange, search, resetPage]);
 
   const { configs, isSaving, save, addCustom, removeCustom } = useChannelConfigs();
 
@@ -71,12 +82,15 @@ export default function RecoveryPage() {
           onStatusChange={setStatusFilter}
           channelFilter={channelFilter}
           onChannelChange={setChannelFilter}
+          productFilter={productFilter}
+          onProductChange={setProductFilter}
+          products={filterOptions.products}
           onClose={() => setFiltersOpen(false)}
           channelConfigs={configs}
         />
       )}
 
-      <RecoveryKpis data={data} />
+      <RecoveryKpis summary={summary} loading={isLoading} />
       <RecoveryTable
         data={data}
         isLoading={isLoading}

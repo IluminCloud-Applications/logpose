@@ -138,6 +138,10 @@ def customers_summary(
     preset: str = Query("all"),
     start_date: Optional[str] = Query(None),
     end_date: Optional[str] = Query(None),
+    platform: Optional[str] = Query(None),
+    product_id: Optional[int] = Query(None),
+    campaign: Optional[str] = Query(None),
+    search: Optional[str] = Query(None),
     db: Session = Depends(get_db),
     _=Depends(get_current_user),
 ):
@@ -148,6 +152,44 @@ def customers_summary(
         query = query.filter(Customer.first_purchase_at >= date_start)
     if date_end:
         query = query.filter(Customer.first_purchase_at <= date_end)
+
+    if platform and platform != "all":
+        try:
+            plat = PaymentPlatform(platform)
+            customer_ids = db.query(Transaction.customer_id).filter(
+                Transaction.platform == plat,
+                Transaction.customer_id.isnot(None),
+            ).distinct().subquery()
+            query = query.filter(Customer.id.in_(db.query(customer_ids)))
+        except ValueError:
+            pass
+
+    if product_id:
+        names = get_product_names_for_filter(db, product_id)
+        if names:
+            tx_customer_ids = db.query(Transaction.customer_id).filter(
+                Transaction.product_name.in_(names),
+                Transaction.customer_id.isnot(None),
+            ).distinct().subquery()
+            query = query.filter(Customer.id.in_(db.query(tx_customer_ids)))
+
+    if campaign and campaign != "all":
+        camp_ids = db.query(Transaction.customer_id).filter(
+            Transaction.utm_campaign == campaign,
+            Transaction.customer_id.isnot(None),
+        ).distinct().subquery()
+        query = query.filter(Customer.id.in_(db.query(camp_ids)))
+
+    if search:
+        term = f"%{search}%"
+        query = query.filter(
+            or_(
+                Customer.name.ilike(term),
+                Customer.email.ilike(term),
+                Customer.cpf.ilike(term),
+                Customer.phone.ilike(term),
+            )
+        )
 
     total = query.count()
     total_orders = db.query(func.coalesce(func.sum(Customer.total_orders), 0)).filter(

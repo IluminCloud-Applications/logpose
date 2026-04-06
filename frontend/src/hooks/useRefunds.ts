@@ -57,13 +57,22 @@ export function useRefunds() {
 
   const params = buildParams();
 
-  const summaryParams: Record<string, string | number | undefined> = {
-    preset: filters.dateRange.preset,
-  };
-  if (filters.dateRange.preset === "custom") {
-    summaryParams.start_date = filters.dateRange.startDate;
-    summaryParams.end_date = filters.dateRange.endDate;
-  }
+  const buildSummaryParams = useCallback(() => {
+    const p: Record<string, string | number | undefined> = {
+      preset: filters.dateRange.preset,
+    };
+    if (filters.dateRange.preset === "custom") {
+      p.start_date = filters.dateRange.startDate;
+      p.end_date = filters.dateRange.endDate;
+    }
+    // status is intentionally excluded — summary always shows all refund types
+    if (filters.platform !== "all") p.platform = filters.platform;
+    if (filters.productId !== "all") p.product_id = Number(filters.productId);
+    if (filters.search) p.search = filters.search;
+    return p;
+  }, [filters]);
+
+  const summaryParams = buildSummaryParams();
 
   const { data: listData, isLoading, reload: reloadList } = useCachedQuery<{
     items: RefundItem[];

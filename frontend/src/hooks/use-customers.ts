@@ -51,14 +51,20 @@ export function useCustomers() {
 
   const params = buildParams();
 
-  const summaryParams = useCallback(() => {
+  const buildSummaryParams = useCallback(() => {
     const p: Record<string, unknown> = {
       preset: filters.dateRange.preset,
     };
-    if (filters.dateRange.startDate) p.start_date = filters.dateRange.startDate;
-    if (filters.dateRange.endDate) p.end_date = filters.dateRange.endDate;
+    if (filters.dateRange.preset === "custom") {
+      p.start_date = filters.dateRange.startDate;
+      p.end_date = filters.dateRange.endDate;
+    }
+    if (filters.platform !== "all") p.platform = filters.platform;
+    if (filters.productId !== "all") p.product_id = Number(filters.productId);
+    if (filters.campaign !== "all") p.campaign = filters.campaign;
+    if (filters.search) p.search = filters.search;
     return p;
-  }, [filters.dateRange]);
+  }, [filters]);
 
   const { data: listData, isLoading: loading, reload: reloadList } = useCachedQuery<{
     items: CustomerAPI[];
@@ -69,7 +75,7 @@ export function useCustomers() {
     queryFn: () => fetchCustomers(params as Record<string, string | number | undefined>),
   });
 
-  const sumParams = summaryParams();
+  const sumParams = buildSummaryParams();
   const { data: summary, reload: reloadSummary } = useCachedQuery<CustomersSummary>({
     cachePrefix: "customers-summary",
     params: sumParams,

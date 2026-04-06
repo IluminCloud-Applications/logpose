@@ -6,7 +6,7 @@ Dashboard estratégico de performance para Direct Response.
 
 ```bash
 git add -A
-git commit -m "v1.93 - implement product alias manager"
+git commit -m "v1.96 - fix bugs"
 git push
 ```
 

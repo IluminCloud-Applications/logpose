@@ -17,6 +17,11 @@ const DEFAULT_CHANNEL_OPTIONS = [
   { value: "other", label: "Outras" },
 ];
 
+interface Product {
+  id: number;
+  name: string;
+}
+
 interface RecoveryInlineFiltersProps {
   typeFilter: string;
   onTypeChange: (v: string) => void;
@@ -24,6 +29,9 @@ interface RecoveryInlineFiltersProps {
   onStatusChange: (v: string) => void;
   channelFilter: string;
   onChannelChange: (v: string) => void;
+  productFilter: string;
+  onProductChange: (v: string) => void;
+  products?: Product[];
   onClose: () => void;
   channelConfigs?: ChannelConfig[];
 }
@@ -32,6 +40,8 @@ export function RecoveryInlineFilters({
   typeFilter, onTypeChange,
   statusFilter, onStatusChange,
   channelFilter, onChannelChange,
+  productFilter, onProductChange,
+  products = [],
   onClose,
   channelConfigs = [],
 }: RecoveryInlineFiltersProps) {
@@ -39,15 +49,16 @@ export function RecoveryInlineFilters({
     typeFilter !== "all",
     statusFilter !== "all",
     channelFilter !== "all",
+    productFilter !== "all",
   ].filter(Boolean).length;
 
   const clearAll = () => {
     onTypeChange("all");
     onStatusChange("all");
     onChannelChange("all");
+    onProductChange("all");
   };
 
-  // Monta opções: padrão + personalizados
   const customOptions = channelConfigs
     .filter((c) => c.is_custom)
     .map((c) => ({ value: c.channel, label: c.label || c.channel }));
@@ -78,9 +89,9 @@ export function RecoveryInlineFilters({
         </div>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-3">
-        {/* Tipo */}
-        <div className="space-y-1.5">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        {/* Tipo — full width */}
+        <div className="space-y-1.5 sm:col-span-2 lg:col-span-4">
           <Label className="text-xs">Tipo</Label>
           <Tabs value={typeFilter} onValueChange={onTypeChange}>
             <TabsList className="h-9 w-full">
@@ -113,11 +124,25 @@ export function RecoveryInlineFilters({
           <Select value={channelFilter} onValueChange={onChannelChange}>
             <SelectTrigger className="h-9 w-full"><SelectValue /></SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">Todas</SelectItem>
+              <SelectItem value="all">Todos</SelectItem>
               {allChannelOptions.map((opt) => (
                 <SelectItem key={opt.value} value={opt.value}>
                   {opt.label}
                 </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        {/* Produto */}
+        <div className="space-y-1.5">
+          <Label className="text-xs">Produto</Label>
+          <Select value={productFilter} onValueChange={onProductChange}>
+            <SelectTrigger className="h-9 w-full"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Todos</SelectItem>
+              {products.map((p) => (
+                <SelectItem key={p.id} value={String(p.id)}>{p.name}</SelectItem>
               ))}
             </SelectContent>
           </Select>
