@@ -61,9 +61,15 @@ def parse_payt_webhook(payload: Dict[str, Any]) -> Optional[StandardizedWebhookE
         sources = link.get("sources", {})
         # As vezes eles jogam nos arrays originais invés de string
         def extract_param(key: str) -> Optional[str]:
-            val = sources.get(key)
+            val = None
+            if isinstance(sources, dict):
+                val = sources.get(key)
+                
             if not val:
-                val = link.get("query_params", {}).get(key)
+                qp = link.get("query_params", {})
+                if isinstance(qp, dict):
+                    val = qp.get(key)
+                    
             return str(val) if val else None
 
         return StandardizedWebhookEvent(

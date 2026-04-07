@@ -64,6 +64,10 @@ def parse_kiwify_webhook(payload: Dict[str, Any]) -> Optional[StandardizedWebhoo
         product_info = payload.get("Product", {})
         customer_info = payload.get("Customer", {})
         tracking = payload.get("TrackingParameters", {})
+        
+        # Prevenção caso a Kiwify envie um array vazio [] no lugar de dict {}
+        if not isinstance(tracking, dict):
+            tracking = {}
 
         return StandardizedWebhookEvent(
             external_id=payload.get("order_id", ""),

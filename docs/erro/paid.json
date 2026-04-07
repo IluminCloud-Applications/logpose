@@ -1,0 +1,71 @@
+{
+    "integration_key": "dbf47eaeebc9b1d7d86abcc70e40402a",
+    "started_at": "2026-04-06 11:07:29.000000",
+    "updated_at": "2026-04-06 11:59:35.000000",
+    "seller_id": "4ZYGMM",
+    "test": false,
+    "type": "order",
+    "tangible": false,
+    "cart_id": "MO2PN6A",
+    "status": "paid",
+    "transaction_id": "AGW2WYD",
+    "customer": {
+        "name": "Priscila Santos",
+        "fake_email": false,
+        "email": "pri_prado1@hotmail.com",
+        "doc": "35683507855",
+        "phone": "12988307859",
+        "ip": "2804:a4:9d:424f:de5e:b65e:4c91:24e3",
+        "url": "https://app.payt.com.br/admin/clientes/EXD7YGE/edit",
+        "code": "EXD7YGE"
+    },
+    "product": {
+        "name": "Mentoria Império Da Renda Academy | Paola Lellis [117]",
+        "price": 11700,
+        "code": "R2PWYO",
+        "sku": "4ed9a40ef70608",
+        "type": "digital",
+        "quantity": 1
+    },
+    "link": {
+        "title": "PROMO 60%OFF | Império Da Renda [SP-117][M1][R]",
+        "sources": {
+            "src": "iax1ira"
+        },
+        "url": "https://payt.site/Pp7CN9R",
+        "query_params": []
+    },
+    "transaction": {
+        "payment_method": "credit_card",
+        "payment_status": "paid",
+        "total_price": 14289,
+        "quantity": 1,
+        "modifiers": [],
+        "created_at": "2026-04-06 11:59:35",
+        "updated_at": "2026-04-06 11:59:35",
+        "paid_at": "2026-04-06 11:59:35",
+        "installments": 11,
+        "installment_price": 1299,
+        "price_without_installments": 11700
+    },
+    "commission": [
+        {
+            "name": "PAYT TECNOLOGIA E EDUCACAO DIGITAL LTDA",
+            "email": "contato@payt.com.br",
+            "type": "platform",
+            "amount": 3155
+        },
+        {
+            "name": "Paola Prado Santos",
+            "email": "paolapradosantos@gmail.com",
+            "type": "coproducer",
+            "amount": 222
+        },
+        {
+            "name": "HYDRA COMPANY DIGITAL",
+            "email": "contato.jdpcompany@gmail.com",
+            "type": "producer",
+            "amount": 10912
+        }
+    ]
+}
