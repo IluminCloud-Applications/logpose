@@ -12,11 +12,16 @@ class StandardizedWebhookEvent(BaseModel):
     status: TransactionStatus
     amount: float
     
+    original_status: Optional[str] = None
+    payment_method: Optional[str] = None
+    payment_status: Optional[str] = None
+
     # Dados do produto
     product_external_id: str
     product_name: str
     
     # Dados do cliente
+    customer_external_id: Optional[str] = None
     customer_email: EmailStr
     customer_name: Optional[str] = None
     customer_cpf: Optional[str] = None
@@ -33,4 +38,3 @@ class StandardizedWebhookEvent(BaseModel):
     # Detalhes complementares
     checkout_url: Optional[str] = None
     order_bumps: list[dict] = []
-

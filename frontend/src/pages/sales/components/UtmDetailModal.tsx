@@ -30,7 +30,18 @@ export function UtmDetailModal({ sale, onClose }: UtmDetailModalProps) {
             <p className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
               Transação
             </p>
-            <p className="mt-0.5 text-sm font-medium font-mono">{sale.external_id}</p>
+            {sale.platform === "payt" ? (
+              <a 
+                href={`https://app.payt.com.br/admin/vendas/${sale.external_id}`} 
+                target="_blank" 
+                rel="noreferrer"
+                className="mt-0.5 text-sm font-medium font-mono text-blue-500 hover:underline"
+              >
+                {sale.external_id}
+              </a>
+            ) : (
+              <p className="mt-0.5 text-sm font-medium font-mono">{sale.external_id}</p>
+            )}
           </div>
 
           <div className="grid grid-cols-2 gap-3">

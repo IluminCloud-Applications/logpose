@@ -1,0 +1,83 @@
+{
+    "integration_key": "dbf47eaeebc9b1d7d86abcc70e40402a",
+    "started_at": "2026-01-20 05:21:54.000000",
+    "updated_at": "2026-01-23 09:38:29.000000",
+    "seller_id": "4ZYGMM",
+    "test": false,
+    "type": "order",
+    "tangible": false,
+    "cart_id": "V8MOQZJ",
+    "status": "chargeback",
+    "transaction_id": "O5DE578",
+    "customer": {
+        "name": "Jonatan mangabeira",
+        "fake_email": false,
+        "email": "mangabeira64@gmail.com",
+        "doc": "06988671145",
+        "phone": "64992686865",
+        "ip": "2804:1424:c107:5400:4db1:73b6:74b4:6dba",
+        "url": "https://app.payt.com.br/admin/clientes/K9Y5DOD/edit",
+        "code": "K9Y5DOD"
+    },
+    "product": {
+        "name": "Método GV Lucrativo | Gabriela Viturino [197]",
+        "price": 19700,
+        "code": "L9KPM2",
+        "sku": "fad939ecb60928",
+        "type": "digital",
+        "quantity": 1
+    },
+    "link": {
+        "title": "PROMO Método GV Lucrativo | Gabriela Viturino [SP-197][F1]",
+        "sources": {
+            "src": "MGV_VSD_197_LD1_17_01_CA03RP05_ABO_TS1|CJ03|AD023H2J_MGV|Instagram_Reels|ig",
+            "utm_term": "Instagram_Reels",
+            "utm_medium": "CJ03|120238396464250307",
+            "utm_source": "FB",
+            "utm_content": "AD023H2J_MGV|120238396464190307::PAZXh0bgNhZW0BMABhZGlkAassLz-c3lNzcnRjBmFwcF9pZA8xMjQwMjQ1NzQyODc0MTQAAacgTfGIVQeeCguBrUdJ8V42Uliheo_FcDHVOEqd6NmBhLHj2za0MG4Slw9CfA_aem_X20HoLZbWzK7Wb0uGhyqBg::",
+            "utm_campaign": "MGV_VSD_197_LD1_17_01_CA03RP05_ABO_TS1|120238395686980307"
+        },
+        "url": "https://payt.site/R5Cn5om",
+        "query_params": {
+            "sck": "v3_5b59f478-78ac-4aaf-aba4-f995d43b6346_6961b5970d8ded7c54081f84_2100_t-10_s-1",
+            "vtid": "v3_5b59f478-78ac-4aaf-aba4-f995d43b6346_6961b5970d8ded7c54081f84_2100_t-10_s-1",
+            "xcod": "FBhQwK21wXxRMGV_VSD_197_LD1_17_01_CA03RP05_ABO_TS1|120238395686980307hQwK21wXxRCJ03|120238396464250307hQwK21wXxRAD023H2J_MGV|120238396464190307hQwK21wXxRInstagram_Reels",
+            "fbclid": "PAZXh0bgNhZW0BMABhZGlkAassLz-c3lNzcnRjBmFwcF9pZA8xMjQwMjQ1NzQyODc0MTQAAacgTfGIVQeeCguBrUdJ8V42Uliheo_FcDHVOEqd6NmBhLHj2za0MG4Slw9CfA_aem_X20HoLZbWzK7Wb0uGhyqBg",
+            "utm_id": "120238395686980307"
+        }
+    },
+    "transaction": {
+        "payment_method": "credit_card",
+        "payment_status": "chargeback",
+        "total_price": 24444,
+        "quantity": 1,
+        "modifiers": [],
+        "created_at": "2026-01-20 05:25:40",
+        "updated_at": "2026-01-23 09:38:29",
+        "paid_at": "2026-01-20 05:25:40",
+        "installments": 12,
+        "installment_price": 2037,
+        "price_without_installments": 19700,
+        "error_message": "cancelado"
+    },
+    "commission": [
+        {
+            "name": "PAYT TECNOLOGIA E EDUCACAO DIGITAL LTDA",
+            "email": "contato@payt.com.br",
+            "type": "platform",
+            "amount": 0
+        },
+        {
+            "name": "HYDRA COMPANY DIGITAL",
+            "email": "contato.jdpcompany@gmail.com",
+            "type": "producer",
+            "amount": 0
+        },
+        {
+            "name": "Gabriela monteiro da Conceição",
+            "email": "Gabmonteiro.30@gmail.com",
+            "type": "coproducer",
+            "amount": 0
+        }
+    ]
+}

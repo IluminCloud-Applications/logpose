@@ -128,7 +128,7 @@ def list_customers(
     items = []
     for c in customers:
         products = _get_customer_products(db, c.id)
-        items.append(_serialize(c, products))
+        items.append(_serialize(c, products, db=db))
 
     return {"total": total, "page": page, "per_page": per_page, "items": items}
 
@@ -227,9 +227,16 @@ def _get_customer_products(db: Session, customer_id: int) -> list[str]:
     return [r[0] for r in rows]
 
 
-def _serialize(c: Customer, products: list[str]) -> dict:
+def _serialize(c: Customer, products: list[str], db: Session = None) -> dict:
+    platform = None
+    if db:
+        plat_row = db.query(Transaction.platform).filter(Transaction.customer_id == c.id).order_by(Transaction.id.desc()).first()
+        platform = plat_row[0].value if plat_row else "api"
+
     return {
         "id": c.id,
+        "external_id": c.external_id,
+        "platform": platform,
         "name": c.name,
         "email": c.email,
         "phone": c.phone,

@@ -39,6 +39,24 @@ export function CustomerDetailModal({ customer, onClose }: CustomerDetailModalPr
           <DialogTitle>Detalhes do Cliente</DialogTitle>
         </DialogHeader>
         <div className="space-y-4">
+          <div className="rounded-lg bg-muted/50 p-3">
+            <p className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
+              ID do Cliente
+            </p>
+            {customer.platform === "payt" && customer.external_id ? (
+              <a 
+                href={`https://app.payt.com.br/admin/clientes/${customer.external_id}/edit`} 
+                target="_blank" 
+                rel="noreferrer"
+                className="mt-0.5 text-sm font-medium font-mono text-blue-500 hover:underline"
+              >
+                {customer.external_id}
+              </a>
+            ) : (
+              <p className="mt-0.5 text-sm font-medium font-mono">{customer.external_id || "—"}</p>
+            )}
+          </div>
+
           <div className="grid grid-cols-2 gap-3">
             {details.map((d) => (
               <div key={d.label} className="rounded-lg bg-muted/50 p-3">

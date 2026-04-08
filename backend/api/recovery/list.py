@@ -104,46 +104,48 @@ def list_recoveries(
 
     # ── Pendentes (da tabela recoveries) ──
     if status_filter in ("all", "pending"):
-        pending_q = _build_pending_query(db, dt_start, dt_end)
-        if type_filter != "all":
-            pending_q = pending_q.filter(Recovery.type == type_filter)
-        if product_names is not None:
-            pending_q = pending_q.filter(Recovery.product_name.in_(product_names))
-        if search:
-            term = f"%{search}%"
-            pending_q = pending_q.filter(
-                or_(
-                    Recovery.customer_name.ilike(term),
-                    Recovery.customer_email.ilike(term),
+        if type_filter != "unidentified":
+            pending_q = _build_pending_query(db, dt_start, dt_end)
+            if type_filter != "all":
+                pending_q = pending_q.filter(Recovery.type == type_filter)
+            if product_names is not None:
+                pending_q = pending_q.filter(Recovery.product_name.in_(product_names))
+            if search:
+                term = f"%{search}%"
+                pending_q = pending_q.filter(
+                    or_(
+                        Recovery.customer_name.ilike(term),
+                        Recovery.customer_email.ilike(term),
+                    )
                 )
-            )
-        for r in pending_q.all():
-            channel = _classify_src(r.src, configs)
-            if channel_filter != "all" and channel != channel_filter:
-                continue
-            items.append(_recovery_to_row(r, channel))
+            for r in pending_q.all():
+                channel = _classify_src(r.src, configs)
+                if channel_filter != "all" and channel != channel_filter:
+                    continue
+                items.append(_recovery_to_row(r, channel))
 
     # ── Recuperados (transações aprovadas com src matching) ──
     if status_filter in ("all", "recovered"):
-        approved_q = _build_approved_with_src_query(
-            db, configs, dt_start, dt_end,
-        )
-        if approved_q is not None:
-            if product_names is not None:
-                approved_q = approved_q.filter(Transaction.product_name.in_(product_names))
-            if search:
-                term = f"%{search}%"
-                approved_q = approved_q.filter(
-                    or_(
-                        Transaction.customer_email.ilike(term),
-                        Transaction.product_name.ilike(term),
+        if type_filter in ("all", "unidentified"):
+            approved_q = _build_approved_with_src_query(
+                db, configs, dt_start, dt_end,
+            )
+            if approved_q is not None:
+                if product_names is not None:
+                    approved_q = approved_q.filter(Transaction.product_name.in_(product_names))
+                if search:
+                    term = f"%{search}%"
+                    approved_q = approved_q.filter(
+                        or_(
+                            Transaction.customer_email.ilike(term),
+                            Transaction.product_name.ilike(term),
+                        )
                     )
-                )
-            for tx, customer_name in approved_q.all():
-                channel = _classify_src(tx.src, configs)
-                if channel_filter != "all" and channel != channel_filter:
-                    continue
-                items.append(_tx_to_row(tx, channel, customer_name))
+                for tx, customer_name in approved_q.all():
+                    channel = _classify_src(tx.src, configs)
+                    if channel_filter != "all" and channel != channel_filter:
+                        continue
+                    items.append(_tx_to_row(tx, channel, customer_name))
 
     # ── Ordenar por data (mais recente primeiro) ──
     items.sort(key=lambda x: x.get("date") or "", reverse=True)
@@ -217,44 +219,46 @@ def recovery_summary(
 
     # ── Pendentes ──
     if status_filter in ("all", "pending"):
-        pending_q = _build_pending_query(db, dt_start, dt_end)
-        if type_filter != "all":
-            pending_q = pending_q.filter(Recovery.type == type_filter)
-        if product_names is not None:
-            pending_q = pending_q.filter(Recovery.product_name.in_(product_names))
-        if search:
-            term = f"%{search}%"
-            pending_q = pending_q.filter(
-                or_(
-                    Recovery.customer_name.ilike(term),
-                    Recovery.customer_email.ilike(term),
+        if type_filter != "unidentified":
+            pending_q = _build_pending_query(db, dt_start, dt_end)
+            if type_filter != "all":
+                pending_q = pending_q.filter(Recovery.type == type_filter)
+            if product_names is not None:
+                pending_q = pending_q.filter(Recovery.product_name.in_(product_names))
+            if search:
+                term = f"%{search}%"
+                pending_q = pending_q.filter(
+                    or_(
+                        Recovery.customer_name.ilike(term),
+                        Recovery.customer_email.ilike(term),
+                    )
                 )
-            )
-        for r in pending_q.all():
-            channel = _classify_src(r.src, configs)
-            if channel_filter != "all" and channel != channel_filter:
-                continue
-            all_rows.append({"recovered": False, "amount": r.amount or 0, "channel": channel})
+            for r in pending_q.all():
+                channel = _classify_src(r.src, configs)
+                if channel_filter != "all" and channel != channel_filter:
+                    continue
+                all_rows.append({"recovered": False, "amount": r.amount or 0, "channel": channel})
 
     # ── Recuperados ──
     if status_filter in ("all", "recovered"):
-        approved_q = _build_approved_with_src_query(db, configs, dt_start, dt_end)
-        if approved_q is not None:
-            if product_names is not None:
-                approved_q = approved_q.filter(Transaction.product_name.in_(product_names))
-            if search:
-                term = f"%{search}%"
-                approved_q = approved_q.filter(
-                    or_(
-                        Transaction.customer_email.ilike(term),
-                        Transaction.product_name.ilike(term),
+        if type_filter in ("all", "unidentified"):
+            approved_q = _build_approved_with_src_query(db, configs, dt_start, dt_end)
+            if approved_q is not None:
+                if product_names is not None:
+                    approved_q = approved_q.filter(Transaction.product_name.in_(product_names))
+                if search:
+                    term = f"%{search}%"
+                    approved_q = approved_q.filter(
+                        or_(
+                            Transaction.customer_email.ilike(term),
+                            Transaction.product_name.ilike(term),
+                        )
                     )
-                )
-            for tx, _ in approved_q.all():
-                channel = _classify_src(tx.src, configs)
-                if channel_filter != "all" and channel != channel_filter:
-                    continue
-                all_rows.append({"recovered": True, "amount": tx.amount or 0, "channel": channel})
+                for tx, _ in approved_q.all():
+                    channel = _classify_src(tx.src, configs)
+                    if channel_filter != "all" and channel != channel_filter:
+                        continue
+                    all_rows.append({"recovered": True, "amount": tx.amount or 0, "channel": channel})
 
     total = len(all_rows)
     recovered_rows = [r for r in all_rows if r["recovered"]]

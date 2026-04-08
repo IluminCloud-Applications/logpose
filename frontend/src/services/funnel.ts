@@ -31,3 +31,14 @@ export async function fetchFunnelData(
   if (dateEnd) params.set("date_end", dateEnd);
   return apiRequest<FunnelProduct[]>(`/funnel/data?${params.toString()}`);
 }
+
+export async function fetchRecoveryFunnelData(
+  preset: string,
+  dateStart?: string,
+  dateEnd?: string,
+): Promise<FunnelProduct[]> {
+  const params = new URLSearchParams({ preset });
+  if (dateStart) params.set("date_start", dateStart);
+  if (dateEnd) params.set("date_end", dateEnd);
+  return apiRequest<FunnelProduct[]>(`/funnel/recovery-data?${params.toString()}`);
+}

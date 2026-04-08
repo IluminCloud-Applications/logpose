@@ -30,8 +30,31 @@ def classify_recovery_type(event: StandardizedWebhookEvent) -> RecoveryType:
     """Classifica o tipo de recuperação baseado nos dados do evento."""
     if event.status == TransactionStatus.TRIAL:
         return RecoveryType.TRIAL
+        
+    orig = (event.original_status or "").lower()
+    pm = (event.payment_method or "").lower()
+    ps = (event.payment_status or "").lower()
+
+    if orig in ["lost_cart", "abandoned"]:
+        return RecoveryType.ABANDONED_CART
+
+    if pm == "pix":
+        if ps == "refused" or orig == "canceled" or "waiting" in orig or "waiting" in ps:
+            return RecoveryType.UNPAID_PIX
+            
+    if pm in ["credit_card", "creditcard"]:
+        if ps == "refused" or orig == "canceled":
+            return RecoveryType.DECLINED_CARD
+
+    if "waiting" in orig or "waiting" in ps or pm in ["billet", "boleto"]:
+        return RecoveryType.UNPAID_PIX
+
+    if ps == "refused" or orig == "canceled":
+        return RecoveryType.DECLINED_CARD
+
     if event.amount == 0:
         return RecoveryType.ABANDONED_CART
+        
     return RecoveryType.ABANDONED_CART
 
 

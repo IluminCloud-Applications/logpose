@@ -74,7 +74,6 @@ export function FunnelChart({ funnel, anchor }: FunnelChartProps) {
                   px-3 py-3 border-r border-border/20 last:border-r-0
                   transition-colors duration-150
                   ${isHovered ? "bg-muted/40" : ""}
-                  ${i > 0 ? "border-l border-border/10" : ""}
                 `}
               >
                 <p className="text-[11px] text-muted-foreground font-medium truncate mb-0.5">

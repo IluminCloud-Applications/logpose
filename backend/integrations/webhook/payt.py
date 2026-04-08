@@ -43,13 +43,19 @@ def parse_payt_webhook(payload: Dict[str, Any]) -> Optional[StandardizedWebhookE
         if not tx_id:
             tx_id = payload.get("cart_id", "")
         
-        # Amount: buscar comissão do producer (quanto vamos receber), não total_price (quanto o cliente pagou)
         amount_cents = 0.0
         commissions = payload.get("commission", [])
         for comm in commissions:
             if comm.get("type") == "producer":
                 amount_cents = comm.get("amount", 0.0)
                 break
+                
+        # Se for um reembolso/chargeback, a PayT envia 0 na comissão. 
+        # Podemos pegar o valor "bruto" para pelo menos ter algum valor em caso de nova transação.
+        # (Mas o processor.py já busca a venda no banco para diminuir o total_spent corretamente).
+        if amount_cents == 0 and status in [TransactionStatus.REFUNDED, TransactionStatus.CHARGEBACK]:
+            tx = payload.get("transaction", {})
+            amount_cents = tx.get("price_without_installments") or tx.get("total_price") or 0.0
             
         amount = float(amount_cents) / 100.0
 
@@ -77,8 +83,12 @@ def parse_payt_webhook(payload: Dict[str, Any]) -> Optional[StandardizedWebhookE
             platform=PaymentPlatform.PAYT,
             status=status,
             amount=amount,
+            original_status=root_status,
+            payment_method=payload.get("transaction", {}).get("payment_method", ""),
+            payment_status=payment_status,
             product_external_id=product.get("code", ""),
             product_name=product.get("name", ""),
+            customer_external_id=customer.get("code", ""),
             customer_email=customer.get("email", ""),
             customer_name=customer.get("name", ""),
             customer_cpf=customer.get("doc", ""),

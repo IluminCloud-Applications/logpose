@@ -2,6 +2,8 @@
 
 export interface CustomerAPI {
   id: number;
+  external_id: string | null;
+  platform: "kiwify" | "payt" | "api" | null;
   name: string | null;
   email: string;
   phone: string | null;

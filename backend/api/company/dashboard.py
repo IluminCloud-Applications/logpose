@@ -65,7 +65,9 @@ def _build_monthly(
         meta = meta_monthly.get(month_num, {})
         spend = meta.get("spend", 0)
 
-        profit = revenue - losses - spend
+        # O revenue já é a soma apenas dos APROVADOS (os reembolsos já não estão lá).
+        # Subtrair 'losses' do revenue geraria uma "dupla subtração".
+        profit = revenue - spend
 
         result.append({
             "month": month_str,

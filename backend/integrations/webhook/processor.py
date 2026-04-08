@@ -37,6 +37,7 @@ def process_webhook_event(db: Session, event: StandardizedWebhookEvent):
     
     if not customer:
         customer = Customer(
+            external_id=event.customer_external_id,
             email=event.customer_email,
             name=event.customer_name,
             cpf=event.customer_cpf,
@@ -47,6 +48,8 @@ def process_webhook_event(db: Session, event: StandardizedWebhookEvent):
         db.add(customer)
         db.flush()
     else:
+        if event.customer_external_id and not customer.external_id:
+            customer.external_id = event.customer_external_id
         if event.customer_name and not customer.name:
             customer.name = event.customer_name
         if event.customer_cpf and not customer.cpf:
@@ -99,11 +102,24 @@ def process_webhook_event(db: Session, event: StandardizedWebhookEvent):
     product = db.query(Product).filter(Product.name == event.product_name).first()
     product_id_to_save = product.id if product else None
     
+    amount_to_save = event.amount
+    # Se for uma nova transação de chargeback/reembolso recebida direto (ex: reenvio webhooks de histórico)
+    # e chegar aqui com 0, tentamos copiar da possível venda original usando email e nome do produto (já que external_id falhou).
+    if event.status in [TransactionStatus.REFUNDED, TransactionStatus.CHARGEBACK] and amount_to_save == 0.0:
+        original_tx = db.query(Transaction).filter(
+            Transaction.customer_email == event.customer_email,
+            Transaction.product_name == event.product_name,
+            Transaction.status == TransactionStatus.APPROVED
+        ).order_by(Transaction.id.desc()).first()
+        
+        if original_tx:
+            amount_to_save = original_tx.amount
+    
     new_tx = Transaction(
         external_id=event.external_id,
         platform=event.platform,
         status=event.status,
-        amount=event.amount,
+        amount=amount_to_save,
         customer_id=customer.id,
         product_id=product_id_to_save,
         product_name=event.product_name,
