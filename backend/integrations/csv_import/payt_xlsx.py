@@ -95,11 +95,21 @@ def parse_payt_xlsx(
             or None
         )
 
-        # Data: vendas usa "10/03/2026 13:36:46", origem usa "10/03/2026 - 13:36:46"
-        date_str = _clean(venda.get("Data"))
-        if not date_str:
-            date_str = _clean(origem.get("Data"))
+        # Data: PayT exporta com nomes diferentes dependendo da versão do relatório.
+        # Versão antiga: "Data" | Versão nova: "Data da venda" / "Data Aprovação do Pagamento"
+        # Origem usa: "10/03/2026 - 13:36:46" (com ' - ')
+        date_str = (
+            _clean(venda.get("Data da venda"))
+            or _clean(venda.get("Data"))
+            or _clean(origem.get("Data"))
+        )
         date_str = date_str.replace(" - ", " ") if date_str else None
+
+        # Em reembolso/chargeback, "Você Recebe" vem zerado.
+        # Usamos "Valor da Venda" como fallback para registrar quanto foi perdido.
+        amount = _parse_brl(venda.get("Você Recebe"))
+        if amount == 0.0 and status in ("refunded", "chargeback"):
+            amount = _parse_brl(venda.get("Valor da Venda"))
 
         rows.append(ImportRow(
             external_id=code,
@@ -107,7 +117,7 @@ def parse_payt_xlsx(
             product_name=product_name,
             product_external_id=_clean(venda.get("Sku")) or product_name,
             product_ticket=_parse_brl(venda.get("Preço do Produto")),
-            amount=_parse_brl(venda.get("Você Recebe")),
+            amount=amount,
             customer_name=_clean(venda.get("Cliente")) or None,
             customer_email=_clean(venda.get("Email")),
             customer_cpf=_clean(venda.get("Documento")) or None,

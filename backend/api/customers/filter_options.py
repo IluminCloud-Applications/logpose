@@ -4,6 +4,7 @@ from sqlalchemy.orm import Session
 from database.core.connection import get_db
 from database.models.product import Product
 from database.models.transaction import Transaction
+from database.models.webhook_endpoint import WebhookEndpoint
 from api.auth.deps import get_current_user
 
 router = APIRouter(prefix="/customers", tags=["customers"])
@@ -38,6 +39,8 @@ def customer_filter_options(
 
     platform_labels = {"kiwify": "Kiwify", "payt": "PayT", "api": "API"}
 
+    accounts = db.query(WebhookEndpoint).order_by(WebhookEndpoint.name).all()
+
     return {
         "products": [{"id": p.id, "name": p.name} for p in products],
         "platforms": [
@@ -46,4 +49,8 @@ def customer_filter_options(
         ],
         "campaigns": [c[0] for c in campaigns],
         "sources": [s[0] for s in sources],
+        "accounts": [
+            {"slug": a.slug, "name": a.name, "platform": a.platform.value}
+            for a in accounts
+        ],
     }

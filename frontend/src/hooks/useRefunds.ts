@@ -15,6 +15,7 @@ export interface RefundsFilters {
   productId: string;
   search: string;
   hasReason: string;
+  accountSlug: string;
 }
 
 export const defaultRefundsFilters: RefundsFilters = {
@@ -24,13 +25,14 @@ export const defaultRefundsFilters: RefundsFilters = {
   productId: "all",
   search: "",
   hasReason: "all",
+  accountSlug: "all",
 };
 
 export function useRefunds() {
   const [page, setPage] = useState(1);
   const [filters, setFilters] = useState<RefundsFilters>(defaultRefundsFilters);
   const [filterOptions, setFilterOptions] = useState<SalesFilterOptions>({
-    products: [], campaigns: [], platforms: [],
+    products: [], campaigns: [], platforms: [], accounts: [],
   });
 
   useEffect(() => {
@@ -52,6 +54,7 @@ export function useRefunds() {
     if (filters.productId !== "all") p.product_id = Number(filters.productId);
     if (filters.search) p.search = filters.search;
     if (filters.hasReason !== "all") p.has_reason = filters.hasReason;
+    if (filters.accountSlug !== "all") p.account_slug = filters.accountSlug;
     return p;
   }, [filters, page]);
 
@@ -70,6 +73,7 @@ export function useRefunds() {
     if (filters.productId !== "all") p.product_id = Number(filters.productId);
     if (filters.search) p.search = filters.search;
     if (filters.hasReason !== "all") p.has_reason = filters.hasReason;
+    if (filters.accountSlug !== "all") p.account_slug = filters.accountSlug;
     return p;
   }, [filters]);
 

@@ -14,6 +14,7 @@ interface UseRecoveriesOptions {
   channelFilter: string;
   productId?: string;
   search?: string;
+  accountSlug?: string;
 }
 
 export function useRecoveries(opts: UseRecoveriesOptions) {
@@ -30,6 +31,7 @@ export function useRecoveries(opts: UseRecoveriesOptions) {
     channelFilter: opts.channelFilter,
     productId,
     search: opts.search,
+    accountSlug: opts.accountSlug !== "all" ? opts.accountSlug : undefined,
   };
 
   const listParams = { ...sharedParams, page, perPage: 12 };

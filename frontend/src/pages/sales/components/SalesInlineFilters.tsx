@@ -16,6 +16,8 @@ interface SalesInlineFiltersProps {
   filterOptions: SalesFilterOptions;
 }
 
+const platformLabels: Record<string, string> = { kiwify: "Kiwify", payt: "PayT", api: "API" };
+
 export function SalesInlineFilters({
   filters, onFiltersChange, onClose, filterOptions,
 }: SalesInlineFiltersProps) {
@@ -24,6 +26,7 @@ export function SalesInlineFilters({
     filters.platform !== "all",
     filters.productId !== "all",
     filters.campaign !== "all",
+    filters.accountSlug !== "all",
   ].filter(Boolean).length;
 
   const clearAllFilters = () =>
@@ -53,7 +56,7 @@ export function SalesInlineFilters({
         </div>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
         <div className="space-y-1.5">
           <Label className="text-xs">Status</Label>
           <Select value={filters.status} onValueChange={(v) => onFiltersChange({ ...filters, status: v })}>
@@ -75,6 +78,20 @@ export function SalesInlineFilters({
               <SelectItem value="all">Todas</SelectItem>
               {filterOptions.platforms?.map((p) => (
                 <SelectItem key={p.value} value={p.value}>{p.label}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="space-y-1.5">
+          <Label className="text-xs">Conta</Label>
+          <Select value={filters.accountSlug} onValueChange={(v) => onFiltersChange({ ...filters, accountSlug: v })}>
+            <SelectTrigger className="h-9 w-full"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Todas as contas</SelectItem>
+              {filterOptions.accounts?.map((a) => (
+                <SelectItem key={a.slug} value={a.slug}>
+                  {a.name} ({platformLabels[a.platform] || a.platform})
+                </SelectItem>
               ))}
             </SelectContent>
           </Select>

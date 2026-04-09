@@ -58,6 +58,7 @@ def list_refunds(
     product_id: Optional[int] = Query(None),
     search: Optional[str] = Query(None),
     has_reason: Optional[str] = Query(None),
+    account_slug: Optional[str] = Query(None),
     page: int = Query(1, ge=1),
     per_page: int = Query(12, ge=1, le=200),
     db: Session = Depends(get_db),
@@ -98,6 +99,9 @@ def list_refunds(
                 Transaction.product_name.ilike(term),
             )
         )
+
+    if account_slug and account_slug != "all":
+        query = query.filter(Transaction.webhook_slug == account_slug)
 
     # Filter by reason presence
     if has_reason == "yes":
@@ -158,6 +162,7 @@ def refunds_summary(
     product_id: Optional[int] = Query(None),
     search: Optional[str] = Query(None),
     has_reason: Optional[str] = Query(None),
+    account_slug: Optional[str] = Query(None),
     db: Session = Depends(get_db),
     _=Depends(get_current_user),
 ):
@@ -189,6 +194,9 @@ def refunds_summary(
                 Transaction.product_name.ilike(term),
             )
         )
+
+    if account_slug and account_slug != "all":
+        base = base.filter(Transaction.webhook_slug == account_slug)
 
     refund_base = base
     if status and status != "all":
@@ -261,6 +269,7 @@ def reason_stats(
     product_id: Optional[int] = Query(None),
     search: Optional[str] = Query(None),
     has_reason: Optional[str] = Query(None),
+    account_slug: Optional[str] = Query(None),
     db: Session = Depends(get_db),
     _=Depends(get_current_user),
 ):
@@ -291,6 +300,8 @@ def reason_stats(
                 Transaction.product_name.ilike(term),
             )
         )
+    if account_slug and account_slug != "all":
+        base_ids = base_ids.filter(Transaction.webhook_slug == account_slug)
     if status and status != "all":
         try:
             base_ids = base_ids.filter(Transaction.status == TransactionStatus(status))

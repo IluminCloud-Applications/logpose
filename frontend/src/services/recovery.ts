@@ -89,6 +89,7 @@ export async function fetchRecoveries(params: {
   channelFilter?: string;
   productId?: string;
   search?: string;
+  accountSlug?: string;
   page?: number;
   perPage?: number;
 }): Promise<RecoveryListResponse> {
@@ -100,6 +101,7 @@ export async function fetchRecoveries(params: {
   if (params.channelFilter) qs.set("channel_filter", params.channelFilter);
   if (params.productId) qs.set("product_id", params.productId);
   if (params.search) qs.set("search", params.search);
+  if (params.accountSlug) qs.set("account_slug", params.accountSlug);
   qs.set("page", String(params.page ?? 1));
   qs.set("per_page", String(params.perPage ?? 12));
   return apiRequest<RecoveryListResponse>(`/recovery/list?${qs.toString()}`);
@@ -114,6 +116,7 @@ export async function fetchRecoverySummary(params: {
   channelFilter?: string;
   productId?: string;
   search?: string;
+  accountSlug?: string;
 }): Promise<RecoverySummary> {
   const qs = new URLSearchParams({ preset: params.preset });
   if (params.dateStart) qs.set("date_start", params.dateStart);
@@ -123,5 +126,6 @@ export async function fetchRecoverySummary(params: {
   if (params.channelFilter) qs.set("channel_filter", params.channelFilter);
   if (params.productId) qs.set("product_id", params.productId);
   if (params.search) qs.set("search", params.search);
+  if (params.accountSlug) qs.set("account_slug", params.accountSlug);
   return apiRequest<RecoverySummary>(`/recovery/summary?${qs.toString()}`);
 }

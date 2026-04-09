@@ -53,6 +53,7 @@ def list_customers(
     campaign: Optional[str] = Query(None),
     src: Optional[str] = Query(None),
     search: Optional[str] = Query(None),
+    account_slug: Optional[str] = Query(None),
     page: int = Query(1, ge=1),
     per_page: int = Query(50, ge=1, le=200),
     db: Session = Depends(get_db),
@@ -105,6 +106,14 @@ def list_customers(
         ).distinct().subquery()
         query = query.filter(Customer.id.in_(db.query(src_ids)))
 
+    # Account slug filter
+    if account_slug and account_slug != "all":
+        acct_ids = db.query(Transaction.customer_id).filter(
+            Transaction.webhook_slug == account_slug,
+            Transaction.customer_id.isnot(None),
+        ).distinct().subquery()
+        query = query.filter(Customer.id.in_(db.query(acct_ids)))
+
     # Search by name, email, or cpf
     if search:
         term = f"%{search}%"
@@ -142,6 +151,7 @@ def customers_summary(
     product_id: Optional[int] = Query(None),
     campaign: Optional[str] = Query(None),
     search: Optional[str] = Query(None),
+    account_slug: Optional[str] = Query(None),
     db: Session = Depends(get_db),
     _=Depends(get_current_user),
 ):
@@ -190,6 +200,13 @@ def customers_summary(
                 Customer.phone.ilike(term),
             )
         )
+
+    if account_slug and account_slug != "all":
+        acct_ids = db.query(Transaction.customer_id).filter(
+            Transaction.webhook_slug == account_slug,
+            Transaction.customer_id.isnot(None),
+        ).distinct().subquery()
+        query = query.filter(Customer.id.in_(db.query(acct_ids)))
 
     total = query.count()
     total_orders = db.query(func.coalesce(func.sum(Customer.total_orders), 0)).filter(

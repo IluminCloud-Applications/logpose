@@ -16,6 +16,8 @@ interface RefundsInlineFiltersProps {
   filterOptions: SalesFilterOptions;
 }
 
+const platformLabels: Record<string, string> = { kiwify: "Kiwify", payt: "PayT", api: "API" };
+
 export function RefundsInlineFilters({
   filters, onFiltersChange, onClose, filterOptions,
 }: RefundsInlineFiltersProps) {
@@ -24,6 +26,7 @@ export function RefundsInlineFilters({
     filters.platform !== "all",
     filters.productId !== "all",
     filters.hasReason !== "all",
+    filters.accountSlug !== "all",
   ].filter(Boolean).length;
 
   const clearAll = () =>
@@ -57,7 +60,7 @@ export function RefundsInlineFilters({
         </div>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
         {/* Tipo */}
         <div className="space-y-1.5">
           <Label className="text-xs">Tipo</Label>
@@ -80,6 +83,22 @@ export function RefundsInlineFilters({
               <SelectItem value="all">Todas</SelectItem>
               {filterOptions.platforms?.map((p) => (
                 <SelectItem key={p.value} value={p.value}>{p.label}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        {/* Conta */}
+        <div className="space-y-1.5">
+          <Label className="text-xs">Conta</Label>
+          <Select value={filters.accountSlug} onValueChange={(v) => onFiltersChange({ ...filters, accountSlug: v })}>
+            <SelectTrigger className="h-9 w-full"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Todas as contas</SelectItem>
+              {filterOptions.accounts?.map((a) => (
+                <SelectItem key={a.slug} value={a.slug}>
+                  {a.name} ({platformLabels[a.platform] || a.platform})
+                </SelectItem>
               ))}
             </SelectContent>
           </Select>

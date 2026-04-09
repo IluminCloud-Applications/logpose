@@ -19,11 +19,21 @@ STATUS_MAP = {
 
 
 def _parse_date(date_str: str | None) -> datetime | None:
+    """Parseia string de data nos formatos usados pela PayT e Kiwify."""
     if not date_str:
         return None
-    for fmt in ("%d/%m/%Y %H:%M:%S", "%d/%m/%Y"):
+    # Normaliza separador ' - ' que a PayT usa no arquivo de origem
+    normalized = date_str.strip().replace(" - ", " ")
+    for fmt in (
+        "%d/%m/%Y %H:%M:%S",  # PayT vendas: 10/03/2026 14:32:17
+        "%d/%m/%Y %H:%M",     # sem segundos
+        "%Y-%m-%d %H:%M:%S",  # ISO datetime
+        "%Y-%m-%dT%H:%M:%S",  # ISO com T
+        "%d/%m/%Y",           # só data
+        "%Y-%m-%d",           # ISO só data
+    ):
         try:
-            return datetime.strptime(date_str.strip(), fmt)
+            return datetime.strptime(normalized, fmt)
         except ValueError:
             continue
     return None
@@ -75,6 +85,13 @@ def process_transactions(
                 p = product_db.get(parents[0])
                 product_id = p.id if p else None
 
+        # Resolver a data histórica ANTES do INSERT.
+        # Se passar None o Postgres usa server_default=NOW() e a venda antiga
+        # aparece com a data de hoje. Sempre passamos um valor explícito.
+        tx_date = _parse_date(row.created_at)
+        if tx_date is None and row.created_at:
+            logger.warning(f"Não foi possível parsear data '{row.created_at}' (id={row.external_id})")
+        tx_date = tx_date or _get_saopaulo_time()
 
         tx = Transaction(
             external_id=row.external_id, platform=platform_enum,
@@ -85,14 +102,14 @@ def process_transactions(
             utm_campaign=row.utm_campaign, utm_content=row.utm_content,
             utm_term=row.utm_term, src=row.src,
             checkout_url=row.checkout_code or row.checkout_name,
-            created_at=_parse_date(row.created_at),
+            created_at=tx_date,
         )
         db.add(tx)
 
         if status_enum == TransactionStatus.APPROVED:
             customer.total_spent += row.amount
             customer.total_orders += 1
-            now = _parse_date(row.created_at) or _get_saopaulo_time()
+            now = tx_date
             customer.last_purchase_at = now
             if not customer.first_purchase_at:
                 customer.first_purchase_at = now

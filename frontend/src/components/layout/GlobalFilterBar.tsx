@@ -1,14 +1,10 @@
 import { useState, useEffect, useRef } from "react";
-import {
-  RiCalendarLine, RiFilterLine, RiCloseLine, RiPercentLine, RiBuildingLine,
-} from "@remixicon/react";
+import { RiCalendarLine, RiFilterLine, RiCloseLine, RiPercentLine, RiBuildingLine } from "@remixicon/react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-import {
-  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
-} from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import type { DashboardFilters, DatePreset } from "@/hooks/use-dashboard";
 import type { CompanySettings } from "@/types/company";
 
@@ -28,10 +24,11 @@ interface GlobalFilterBarProps {
   settings: CompanySettings | null;
   products: { id: number; name: string }[];
   platforms?: { value: string; label: string }[];
+  accounts?: { slug: string; name: string; platform: string }[];
 }
 
 export function GlobalFilterBar({
-  filters, onFiltersChange, settings, products, platforms = [],
+  filters, onFiltersChange, settings, products, platforms = [], accounts = [],
 }: GlobalFilterBarProps) {
   const [isSticky, setIsSticky] = useState(false);
   const sentinelRef = useRef<HTMLDivElement>(null);
@@ -46,22 +43,21 @@ export function GlobalFilterBar({
     observer.observe(sentinel);
     return () => observer.disconnect();
   }, []);
-
   const isCustom = filters.datePreset === "custom";
   const taxRate = settings?.tax_rate ?? 0;
   const opCostsTotal = settings?.operational_costs.reduce((s, c) => s + c.amount, 0) ?? 0;
-
   const activeCount = [
     filters.datePreset !== "today" ? "1" : "",
     filters.product !== "all" ? "1" : "",
     filters.platform !== "all" ? "1" : "",
+    filters.accountSlug !== "all" ? "1" : "",
     filters.taxEnabled ? "1" : "",
     filters.opCostsEnabled ? "1" : "",
   ].filter(Boolean).length;
-
+  const platformLabels: Record<string, string> = { kiwify: "Kiwify", payt: "PayT", api: "API" };
   const handleClear = () => onFiltersChange({
     datePreset: "today", dateStart: "", dateEnd: "",
-    product: "all", platform: "all",
+    product: "all", platform: "all", accountSlug: "all",
     taxEnabled: false, opCostsEnabled: false,
   });
 
@@ -80,7 +76,6 @@ export function GlobalFilterBar({
             </span>
           )}
         </div>
-
         {/* Date Preset */}
         <div className="flex items-center gap-1.5">
           <RiCalendarLine className="size-3.5 text-muted-foreground" />
@@ -114,7 +109,6 @@ export function GlobalFilterBar({
             />
           </div>
         )}
-
         <Select
           value={filters.product}
           onValueChange={(v) => onFiltersChange({ ...filters, product: v })}
@@ -144,7 +138,22 @@ export function GlobalFilterBar({
             ))}
           </SelectContent>
         </Select>
-
+        <Select
+          value={filters.accountSlug}
+          onValueChange={(v) => onFiltersChange({ ...filters, accountSlug: v })}
+        >
+          <SelectTrigger className="h-9 w-[170px] text-xs">
+            <SelectValue placeholder="Conta" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Todas Contas</SelectItem>
+            {accounts.map((a) => (
+              <SelectItem key={a.slug} value={a.slug}>
+                {a.name} ({platformLabels[a.platform] || a.platform})
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
         {/* Tax toggle */}
         <div className="flex items-center gap-2 border-l border-border/30 pl-2.5 ml-0.5">
           <RiPercentLine className="size-3.5 text-muted-foreground" />
@@ -163,7 +172,6 @@ export function GlobalFilterBar({
             </span>
           )}
         </div>
-
         {/* Operational cost toggle */}
         <div className="flex items-center gap-2 border-l border-border/30 pl-2.5">
           <RiBuildingLine className="size-3.5 text-muted-foreground" />
@@ -182,7 +190,6 @@ export function GlobalFilterBar({
             </span>
           )}
         </div>
-
         {activeCount > 0 && (
           <Button
             variant="ghost" size="sm"

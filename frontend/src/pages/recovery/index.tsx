@@ -16,6 +16,7 @@ export default function RecoveryPage() {
   const [statusFilter, setStatusFilter] = useState("all");
   const [channelFilter, setChannelFilter] = useState("all");
   const [productFilter, setProductFilter] = useState("all");
+  const [accountFilter, setAccountFilter] = useState("all");
   const [dateRange, setDateRange] = useState<DateRangeState>({
     preset: "today", startDate: "", endDate: "",
   });
@@ -23,7 +24,7 @@ export default function RecoveryPage() {
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [configOpen, setConfigOpen] = useState(false);
   const [filterOptions, setFilterOptions] = useState<SalesFilterOptions>({
-    products: [], campaigns: [], platforms: [],
+    products: [], campaigns: [], platforms: [], accounts: [],
   });
 
   useEffect(() => {
@@ -39,11 +40,12 @@ export default function RecoveryPage() {
     channelFilter,
     productId: productFilter,
     search: search || undefined,
+    accountSlug: accountFilter,
   });
 
   useEffect(() => {
     resetPage();
-  }, [typeFilter, statusFilter, channelFilter, productFilter, dateRange, search, resetPage]);
+  }, [typeFilter, statusFilter, channelFilter, productFilter, accountFilter, dateRange, search, resetPage]);
 
   const { configs, isSaving, save, addCustom, removeCustom } = useChannelConfigs();
 
@@ -84,7 +86,10 @@ export default function RecoveryPage() {
           onChannelChange={setChannelFilter}
           productFilter={productFilter}
           onProductChange={setProductFilter}
+          accountFilter={accountFilter}
+          onAccountChange={setAccountFilter}
           products={filterOptions.products}
+          accounts={filterOptions.accounts}
           onClose={() => setFiltersOpen(false)}
           channelConfigs={configs}
         />

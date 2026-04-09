@@ -6,6 +6,7 @@ from typing import Optional
 
 from database.core.connection import get_db
 from database.models.transaction import Transaction, TransactionStatus, PaymentPlatform
+from database.models.webhook_endpoint import WebhookEndpoint
 from database.models.product import Product
 from database.core.timezone import now_sp, SP_ZONE
 from api.auth.deps import get_current_user
@@ -47,6 +48,7 @@ def _parse_date_range(preset: str, start: Optional[str], end: Optional[str]):
 def _apply_filters(
     query, db, preset, start_date, end_date,
     status, platform, product_id, campaign, search,
+    account_slug=None,
 ):
     """Aplica filtros comuns de vendas à query."""
     date_start, date_end = _parse_date_range(preset, start_date, end_date)
@@ -72,6 +74,8 @@ def _apply_filters(
         query = query.filter(Transaction.utm_campaign == campaign)
     if search:
         query = query.filter(Transaction.customer_email.ilike(f"%{search}%"))
+    if account_slug and account_slug != "all":
+        query = query.filter(Transaction.webhook_slug == account_slug)
     return query
 
 
@@ -85,6 +89,7 @@ def list_transactions(
     product_id: Optional[int] = Query(None),
     campaign: Optional[str] = Query(None),
     search: Optional[str] = Query(None),
+    account_slug: Optional[str] = Query(None),
     page: int = Query(1, ge=1),
     per_page: int = Query(50, ge=1, le=200),
     db: Session = Depends(get_db),
@@ -92,7 +97,7 @@ def list_transactions(
 ):
     query = _apply_filters(
         db.query(Transaction), db, preset, start_date, end_date,
-        status, platform, product_id, campaign, search,
+        status, platform, product_id, campaign, search, account_slug,
     )
     total = query.count()
     transactions = (
@@ -117,6 +122,7 @@ def sales_summary(
     product_id: Optional[int] = Query(None),
     campaign: Optional[str] = Query(None),
     search: Optional[str] = Query(None),
+    account_slug: Optional[str] = Query(None),
     db: Session = Depends(get_db),
     _=Depends(get_current_user),
 ):
@@ -124,7 +130,7 @@ def sales_summary(
     # Ignora o filtro de status para que o resumo sempre exiba todos os status.
     query = _apply_filters(
         db.query(Transaction), db, preset, start_date, end_date,
-        None, platform, product_id, campaign, search,
+        None, platform, product_id, campaign, search, account_slug,
     )
 
     total = query.count()
@@ -173,12 +179,23 @@ def filter_options(
 
     platform_labels = {"kiwify": "Kiwify", "payt": "PayT", "api": "API"}
 
+    # Contas: todos os webhook endpoints cadastrados
+    accounts = db.query(WebhookEndpoint).order_by(WebhookEndpoint.name).all()
+
     return {
         "products": [{"id": p.id, "name": p.name} for p in products],
         "campaigns": [c[0] for c in campaigns],
         "platforms": [
             {"value": p[0].value, "label": platform_labels.get(p[0].value, p[0].value)}
             for p in platforms
+        ],
+        "accounts": [
+            {
+                "slug": a.slug,
+                "name": a.name,
+                "platform": a.platform.value,
+            }
+            for a in accounts
         ],
     }
 
@@ -198,6 +215,7 @@ def _serialize(t: Transaction) -> dict:
         "utm_campaign": t.utm_campaign,
         "utm_content": t.utm_content,
         "src": t.src,
+        "webhook_slug": t.webhook_slug,
         "checkout_url": t.checkout_url,
         "order_bumps": t.order_bumps,
         "created_at": t.created_at.isoformat() if t.created_at else None,

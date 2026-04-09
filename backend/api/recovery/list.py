@@ -85,6 +85,7 @@ def list_recoveries(
     channel_filter: str = Query("all"),
     product_id: int | None = Query(None),
     search: str | None = Query(None),
+    account_slug: str | None = Query(None),
     page: int = Query(1, ge=1),
     per_page: int = Query(12, ge=1, le=200),
     db: Session = Depends(get_db),
@@ -122,6 +123,8 @@ def list_recoveries(
                 channel = _classify_src(r.src, configs)
                 if channel_filter != "all" and channel != channel_filter:
                     continue
+                if account_slug and account_slug != "all" and r.webhook_slug != account_slug:
+                    continue
                 items.append(_recovery_to_row(r, channel))
 
     # ── Recuperados (transações aprovadas com src matching) ──
@@ -141,6 +144,8 @@ def list_recoveries(
                             Transaction.product_name.ilike(term),
                         )
                     )
+                if account_slug and account_slug != "all":
+                    approved_q = approved_q.filter(Transaction.webhook_slug == account_slug)
                 for tx, customer_name in approved_q.all():
                     channel = _classify_src(tx.src, configs)
                     if channel_filter != "all" and channel != channel_filter:
@@ -202,6 +207,7 @@ def recovery_summary(
     channel_filter: str = Query("all"),
     product_id: int | None = Query(None),
     search: str | None = Query(None),
+    account_slug: str | None = Query(None),
     db: Session = Depends(get_db),
     _=Depends(get_current_user),
 ):
@@ -237,6 +243,8 @@ def recovery_summary(
                 channel = _classify_src(r.src, configs)
                 if channel_filter != "all" and channel != channel_filter:
                     continue
+                if account_slug and account_slug != "all" and r.webhook_slug != account_slug:
+                    continue
                 all_rows.append({"recovered": False, "amount": r.amount or 0, "channel": channel})
 
     # ── Recuperados ──
@@ -257,6 +265,8 @@ def recovery_summary(
                 for tx, _ in approved_q.all():
                     channel = _classify_src(tx.src, configs)
                     if channel_filter != "all" and channel != channel_filter:
+                        continue
+                    if account_slug and account_slug != "all" and tx.webhook_slug != account_slug:
                         continue
                     all_rows.append({"recovered": True, "amount": tx.amount or 0, "channel": channel})
 

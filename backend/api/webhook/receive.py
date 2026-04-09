@@ -81,6 +81,9 @@ async def receive_webhook(
         logger.info(f"Webhook ignorado: email de teste ({event.customer_email})")
         return {"status": "ok", "message": "Webhook de teste ignorado"}
 
+    # Injetar o slug do endpoint para identificar a conta de origem
+    event.webhook_slug = slug
+
     # Processar o evento (salvar transação, customer, etc.)
     process_webhook_event(db, event)
 

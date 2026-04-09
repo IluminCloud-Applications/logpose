@@ -36,4 +36,5 @@ export interface CustomersFilterOptions {
   platforms: { value: string; label: string }[];
   campaigns: string[];
   sources: string[];
+  accounts: { slug: string; name: string; platform: string }[];
 }

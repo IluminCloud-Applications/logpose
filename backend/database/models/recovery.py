@@ -41,6 +41,7 @@ class Recovery(Base):
     recovered = Column(Boolean, default=False)
     channel = Column(Enum(RecoveryChannel), nullable=True)
     src = Column(String(255), nullable=True)
+    webhook_slug = Column(String(50), nullable=True)
     recovered_at = Column(DateTime, nullable=True)
     created_at = Column(DateTime, server_default=CREATED_AT_DEFAULT)
     updated_at = Column(

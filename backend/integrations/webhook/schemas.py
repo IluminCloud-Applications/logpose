@@ -38,3 +38,6 @@ class StandardizedWebhookEvent(BaseModel):
     # Detalhes complementares
     checkout_url: Optional[str] = None
     order_bumps: list[dict] = []
+
+    # Identificação da conta (slug do webhook endpoint)
+    webhook_slug: Optional[str] = None

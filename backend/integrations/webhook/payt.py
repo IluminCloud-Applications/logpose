@@ -43,21 +43,31 @@ def parse_payt_webhook(payload: Dict[str, Any]) -> Optional[StandardizedWebhookE
         if not tx_id:
             tx_id = payload.get("cart_id", "")
         
-        amount_cents = 0.0
+        # A comissão do produtor já vem em reais (não em centavos) na PayT
+        amount_raw = 0.0
         commissions = payload.get("commission", [])
         for comm in commissions:
             if comm.get("type") == "producer":
-                amount_cents = comm.get("amount", 0.0)
+                amount_raw = float(comm.get("amount", 0.0))
                 break
-                
-        # Se for um reembolso/chargeback, a PayT envia 0 na comissão. 
-        # Podemos pegar o valor "bruto" para pelo menos ter algum valor em caso de nova transação.
-        # (Mas o processor.py já busca a venda no banco para diminuir o total_spent corretamente).
-        if amount_cents == 0 and status in [TransactionStatus.REFUNDED, TransactionStatus.CHARGEBACK]:
+
+        # Se for reembolso/chargeback, a PayT zera a comissão.
+        # Tentamos recuperar o valor real nesta ordem:
+        #   1. price_without_installments (valor do produto sem juros)
+        #   2. installment_price (valor da parcela)
+        #   3. total_price (valor total da transação)
+        #   4. product.price (preço cadastrado do produto)
+        # Todos esses campos já vêm em reais na PayT — NÃO dividir por 100.
+        if amount_raw == 0.0 and status in [TransactionStatus.REFUNDED, TransactionStatus.CHARGEBACK]:
             tx = payload.get("transaction", {})
-            amount_cents = tx.get("price_without_installments") or tx.get("total_price") or 0.0
-            
-        amount = float(amount_cents) / 100.0
+            amount_raw = (
+                float(tx.get("price_without_installments") or 0)
+                or float(tx.get("installment_price") or 0)
+                or float(tx.get("total_price") or 0)
+                or float(payload.get("product", {}).get("price") or 0)
+            )
+
+        amount = amount_raw
 
         product = payload.get("product", {})
         customer = payload.get("customer", {})

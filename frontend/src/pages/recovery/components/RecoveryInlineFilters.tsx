@@ -7,6 +7,7 @@ import {
 } from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { ChannelConfig } from "@/services/recovery";
+import type { AccountOption } from "@/types/sale";
 
 // Canais padrão sempre exibidos
 const DEFAULT_CHANNEL_OPTIONS = [
@@ -16,6 +17,8 @@ const DEFAULT_CHANNEL_OPTIONS = [
   { value: "back_redirect", label: "BackRedirect" },
   { value: "other", label: "Outras" },
 ];
+
+const platformLabels: Record<string, string> = { kiwify: "Kiwify", payt: "PayT", api: "API" };
 
 interface Product {
   id: number;
@@ -31,7 +34,10 @@ interface RecoveryInlineFiltersProps {
   onChannelChange: (v: string) => void;
   productFilter: string;
   onProductChange: (v: string) => void;
+  accountFilter: string;
+  onAccountChange: (v: string) => void;
   products?: Product[];
+  accounts?: AccountOption[];
   onClose: () => void;
   channelConfigs?: ChannelConfig[];
 }
@@ -41,7 +47,9 @@ export function RecoveryInlineFilters({
   statusFilter, onStatusChange,
   channelFilter, onChannelChange,
   productFilter, onProductChange,
+  accountFilter, onAccountChange,
   products = [],
+  accounts = [],
   onClose,
   channelConfigs = [],
 }: RecoveryInlineFiltersProps) {
@@ -50,6 +58,7 @@ export function RecoveryInlineFilters({
     statusFilter !== "all",
     channelFilter !== "all",
     productFilter !== "all",
+    accountFilter !== "all",
   ].filter(Boolean).length;
 
   const clearAll = () => {
@@ -57,6 +66,7 @@ export function RecoveryInlineFilters({
     onStatusChange("all");
     onChannelChange("all");
     onProductChange("all");
+    onAccountChange("all");
   };
 
   const customOptions = channelConfigs
@@ -143,6 +153,22 @@ export function RecoveryInlineFilters({
               <SelectItem value="all">Todos</SelectItem>
               {products.map((p) => (
                 <SelectItem key={p.id} value={String(p.id)}>{p.name}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        {/* Conta */}
+        <div className="space-y-1.5">
+          <Label className="text-xs">Conta</Label>
+          <Select value={accountFilter} onValueChange={onAccountChange}>
+            <SelectTrigger className="h-9 w-full"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Todas as contas</SelectItem>
+              {accounts.map((a) => (
+                <SelectItem key={a.slug} value={a.slug}>
+                  {a.name} ({platformLabels[a.platform] || a.platform})
+                </SelectItem>
               ))}
             </SelectContent>
           </Select>

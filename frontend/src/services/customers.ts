@@ -12,6 +12,7 @@ interface CustomersQueryParams {
   campaign?: string;
   src?: string;
   search?: string;
+  account_slug?: string;
   page?: number;
   per_page?: number;
 }

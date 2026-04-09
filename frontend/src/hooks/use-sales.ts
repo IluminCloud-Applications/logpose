@@ -10,6 +10,7 @@ export interface SalesFilters {
   platform: string;
   productId: string;
   campaign: string;
+  accountSlug: string;
   search: string;
 }
 
@@ -19,13 +20,14 @@ export const defaultSalesFilters: SalesFilters = {
   platform: "all",
   productId: "all",
   campaign: "all",
+  accountSlug: "all",
   search: "",
 };
 
 export function useSales() {
   const [page, setPage] = useState(1);
   const [filters, setFilters] = useState<SalesFilters>(defaultSalesFilters);
-  const [filterOptions, setFilterOptions] = useState<SalesFilterOptions>({ products: [], campaigns: [], platforms: [] });
+  const [filterOptions, setFilterOptions] = useState<SalesFilterOptions>({ products: [], campaigns: [], platforms: [], accounts: [] });
 
   const buildParams = useCallback(() => {
     const p: Record<string, unknown> = {
@@ -41,6 +43,7 @@ export function useSales() {
     if (filters.platform !== "all") p.platform = filters.platform;
     if (filters.productId !== "all") p.product_id = Number(filters.productId);
     if (filters.campaign !== "all") p.campaign = filters.campaign;
+    if (filters.accountSlug !== "all") p.account_slug = filters.accountSlug;
     if (filters.search) p.search = filters.search;
     return p;
   }, [filters, page]);
@@ -57,6 +60,7 @@ export function useSales() {
     if (filters.platform !== "all") p.platform = filters.platform;
     if (filters.productId !== "all") p.product_id = Number(filters.productId);
     if (filters.campaign !== "all") p.campaign = filters.campaign;
+    if (filters.accountSlug !== "all") p.account_slug = filters.accountSlug;
     if (filters.search) p.search = filters.search;
     return p;
   }, [filters]);

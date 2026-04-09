@@ -88,6 +88,7 @@ def create_recovery_if_pending(
         recovered=False,
         channel=RecoveryChannel.OTHER,
         src=event.src,
+        webhook_slug=event.webhook_slug,
     )
     db.add(recovery)
 

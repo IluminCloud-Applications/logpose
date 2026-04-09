@@ -14,6 +14,7 @@ export interface SaleAPI {
   utm_campaign: string | null;
   utm_content: string | null;
   src: string | null;
+  webhook_slug: string | null;
   checkout_url: string | null;
   order_bumps: unknown[] | null;
   created_at: string | null;
@@ -37,8 +38,15 @@ export interface SalesSummary {
   avg_ticket: number;
 }
 
+export interface AccountOption {
+  slug: string;
+  name: string;
+  platform: string;
+}
+
 export interface SalesFilterOptions {
   products: { id: number; name: string }[];
   campaigns: string[];
   platforms: { value: string; label: string }[];
+  accounts: AccountOption[];
 }

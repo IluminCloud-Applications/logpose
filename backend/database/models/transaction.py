@@ -55,6 +55,9 @@ class Transaction(Base):
     utm_term = Column(String(255), nullable=True)
     src = Column(String(255), nullable=True)
 
+    # Identificação da conta (webhook endpoint slug)
+    webhook_slug = Column(String(50), nullable=True, index=True)
+
     # Detalhes do carrinho / checkout
     checkout_url = Column(String(1024), nullable=True)
     order_bumps = Column(JSON, nullable=True)

@@ -14,11 +14,13 @@ export default function DashboardPage() {
   const { data, settings, loading, filters, setFilters, reload } = useDashboard();
   const [products, setProducts] = useState<{ id: number; name: string }[]>([]);
   const [platforms, setPlatforms] = useState<{ value: string; label: string }[]>([]);
+  const [accounts, setAccounts] = useState<{ slug: string; name: string; platform: string }[]>([]);
 
   useEffect(() => {
     fetchCustomersFilterOptions().then((opt) => {
       setProducts(opt.products);
       if (opt.platforms) setPlatforms(opt.platforms);
+      if (opt.accounts) setAccounts(opt.accounts);
     }).catch(() => {});
   }, []);
 
@@ -31,6 +33,7 @@ export default function DashboardPage() {
         settings={settings}
         products={products}
         platforms={platforms}
+        accounts={accounts}
       />
       {loading || !data ? (
         <div className="grid gap-3 grid-cols-2 lg:grid-cols-4">

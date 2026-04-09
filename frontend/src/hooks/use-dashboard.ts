@@ -13,6 +13,7 @@ export interface DashboardFilters {
   dateEnd: string;
   product: string;
   platform: string;
+  accountSlug: string;
   taxEnabled: boolean;
   opCostsEnabled: boolean;
 }
@@ -23,6 +24,7 @@ export const dashboardFilterDefaults: DashboardFilters = {
   dateEnd: "",
   product: "all",
   platform: "all",
+  accountSlug: "all",
   taxEnabled: false,
   opCostsEnabled: false,
 };
@@ -40,6 +42,7 @@ export function useDashboard() {
     }
     if (filters.platform !== "all") p.platform = filters.platform;
     if (filters.product !== "all") p.product_id = Number(filters.product);
+    if (filters.accountSlug !== "all") p.account_slug = filters.accountSlug;
     return p;
   }, [filters]);
 
