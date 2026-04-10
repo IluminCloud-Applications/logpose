@@ -177,7 +177,7 @@ def _auto_create_payt_checkouts(
     Auto-cria checkouts PayT a partir dos códigos encontrados no XLSX.
     Usa o nome canônico para lookup no product_db.
     """
-    product_checkouts: dict[str, dict[str, str]] = {}
+    product_checkouts: dict[str, dict[str, dict]] = {}
     for row in rows:
         if not row.checkout_code:
             continue
@@ -195,22 +195,35 @@ def _auto_create_payt_checkouts(
                 continue
             if prod_name not in product_checkouts:
                 product_checkouts[prod_name] = {}
-            product_checkouts[prod_name][row.checkout_code] = row.checkout_name or row.checkout_code
+            if row.checkout_code not in product_checkouts[prod_name]:
+                product_checkouts[prod_name][row.checkout_code] = {
+                    "name": row.checkout_name or row.checkout_code,
+                    "prices": set()
+                }
+            
+            # Adiciona o preço do produto ao set de preços do checkout
+            if row.product_ticket:
+                product_checkouts[prod_name][row.checkout_code]["prices"].add(row.product_ticket)
 
     for prod_name, checkouts in product_checkouts.items():
         product = product_db[prod_name]
-        for code, name in checkouts.items():
+        for code, info in checkouts.items():
             existing = db.query(Checkout).filter(
                 Checkout.product_id == product.id,
                 Checkout.checkout_code == code,
             ).first()
             if existing:
                 continue
+            
+            prices = info["prices"]
+            checkout_price = list(prices)[0] if len(prices) == 1 else 0.0
+
             db.add(Checkout(
                 product_id=product.id,
                 url="",
-                price=0.0,
+                price=checkout_price,
                 platform=CheckoutPlatform.PAYT,
                 checkout_code=code,
+                name=info["name"]  # Usamos o nome salvo no dict
             ))
     db.flush()
