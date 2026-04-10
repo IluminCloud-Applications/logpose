@@ -98,9 +98,11 @@ def list_recoveries(
     configs = _get_channel_configs(db)
 
     # Resolve product names (canonical + aliases) or upsell name once
+    upsell_name: str | None = None
     product_names: list[str] | None = None
+    
     if upsell_id:
-        product_names = get_upsell_name_for_filter(db, upsell_id)
+        upsell_name = get_upsell_name_for_filter(db, upsell_id)
     elif product_id:
         product_names = get_product_names_for_filter(db, product_id)
 
@@ -112,7 +114,9 @@ def list_recoveries(
             pending_q = _build_pending_query(db, dt_start, dt_end)
             if type_filter != "all":
                 pending_q = pending_q.filter(Recovery.type == type_filter)
-            if product_names is not None:
+            if upsell_name:
+                pending_q = pending_q.filter(Recovery.product_name.ilike(f"%{upsell_name}%"))
+            elif product_names is not None:
                 pending_q = pending_q.filter(Recovery.product_name.in_(product_names))
             if search:
                 term = f"%{search}%"
@@ -137,7 +141,9 @@ def list_recoveries(
                 db, configs, dt_start, dt_end,
             )
             if approved_q is not None:
-                if product_names is not None:
+                if upsell_name:
+                    approved_q = approved_q.filter(Transaction.product_name.ilike(f"%{upsell_name}%"))
+                elif product_names is not None:
                     approved_q = approved_q.filter(Transaction.product_name.in_(product_names))
                 if search:
                     term = f"%{search}%"
@@ -221,9 +227,10 @@ def recovery_summary(
     dt_start, dt_end = resolve_date_range(preset, date_start, date_end)
     configs = _get_channel_configs(db)
 
+    upsell_name: str | None = None
     product_names: list[str] | None = None
     if upsell_id:
-        product_names = get_upsell_name_for_filter(db, upsell_id)
+        upsell_name = get_upsell_name_for_filter(db, upsell_id)
     elif product_id:
         product_names = get_product_names_for_filter(db, product_id)
 
@@ -235,7 +242,9 @@ def recovery_summary(
             pending_q = _build_pending_query(db, dt_start, dt_end)
             if type_filter != "all":
                 pending_q = pending_q.filter(Recovery.type == type_filter)
-            if product_names is not None:
+            if upsell_name:
+                pending_q = pending_q.filter(Recovery.product_name.ilike(f"%{upsell_name}%"))
+            elif product_names is not None:
                 pending_q = pending_q.filter(Recovery.product_name.in_(product_names))
             if search:
                 term = f"%{search}%"
@@ -258,7 +267,9 @@ def recovery_summary(
         if type_filter in ("all", "unidentified"):
             approved_q = _build_approved_with_src_query(db, configs, dt_start, dt_end)
             if approved_q is not None:
-                if product_names is not None:
+                if upsell_name:
+                    approved_q = approved_q.filter(Transaction.product_name.ilike(f"%{upsell_name}%"))
+                elif product_names is not None:
                     approved_q = approved_q.filter(Transaction.product_name.in_(product_names))
                 if search:
                     term = f"%{search}%"

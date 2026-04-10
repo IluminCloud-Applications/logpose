@@ -83,10 +83,10 @@ def list_customers(
 
     # Upsell filter takes priority over product filter
     if upsell_id:
-        names = get_upsell_name_for_filter(db, upsell_id)
-        if names:
+        upsell_name = get_upsell_name_for_filter(db, upsell_id)
+        if upsell_name:
             tx_customer_ids = db.query(Transaction.customer_id).filter(
-                Transaction.product_name.in_(names),
+                Transaction.product_name.ilike(f"%{upsell_name}%"),
                 Transaction.customer_id.isnot(None),
             ).distinct().subquery()
             query = query.filter(Customer.id.in_(db.query(tx_customer_ids)))
@@ -185,10 +185,10 @@ def customers_summary(
             pass
 
     if upsell_id:
-        names = get_upsell_name_for_filter(db, upsell_id)
-        if names:
+        upsell_name = get_upsell_name_for_filter(db, upsell_id)
+        if upsell_name:
             tx_customer_ids = db.query(Transaction.customer_id).filter(
-                Transaction.product_name.in_(names),
+                Transaction.product_name.ilike(f"%{upsell_name}%"),
                 Transaction.customer_id.isnot(None),
             ).distinct().subquery()
             query = query.filter(Customer.id.in_(db.query(tx_customer_ids)))

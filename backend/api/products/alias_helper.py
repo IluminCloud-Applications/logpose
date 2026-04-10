@@ -32,12 +32,14 @@ def get_product_names_for_filter(db: Session, product_id: int) -> list[str]:
     return names
 
 
-def get_upsell_name_for_filter(db: Session, upsell_id: int) -> list[str]:
+def get_upsell_name_for_filter(db: Session, upsell_id: int) -> str | None:
     """
-    Retorna o nome do upsell para filtrar transações.
-    Upsells geram transações separadas com product_name = upsell.name.
+    Retorna o nome do upsell para filtrar transações via ILIKE (contains).
+    Upsells podem ter nomes parciais, ex: 'Cofre Secreto - PMJ',
+    enquanto a transação registra 'Cofre Secreto - PMJ | Ivana [147]'.
+    Usar com `Transaction.product_name.ilike(f"%{nome}%")`.
     """
     upsell = db.query(Upsell).filter(Upsell.id == upsell_id).first()
     if not upsell:
-        return []
-    return [upsell.name]
+        return None
+    return upsell.name

@@ -88,9 +88,9 @@ def list_refunds(
             pass
 
     if upsell_id:
-        names = get_upsell_name_for_filter(db, upsell_id)
-        if names:
-            query = query.filter(Transaction.product_name.in_(names))
+        upsell_name = get_upsell_name_for_filter(db, upsell_id)
+        if upsell_name:
+            query = query.filter(Transaction.product_name.ilike(f"%{upsell_name}%"))
     elif product_id:
         names = get_product_names_for_filter(db, product_id)
         if names:
@@ -188,9 +188,9 @@ def refunds_summary(
             pass
 
     if upsell_id:
-        names = get_upsell_name_for_filter(db, upsell_id)
-        if names:
-            base = base.filter(Transaction.product_name.in_(names))
+        upsell_name = get_upsell_name_for_filter(db, upsell_id)
+        if upsell_name:
+            base = base.filter(Transaction.product_name.ilike(f"%{upsell_name}%"))
     elif product_id:
         names = get_product_names_for_filter(db, product_id)
         if names:
@@ -300,9 +300,9 @@ def reason_stats(
         except ValueError:
             pass
     if upsell_id:
-        names = get_upsell_name_for_filter(db, upsell_id)
-        if names:
-            base_ids = base_ids.filter(Transaction.product_name.in_(names))
+        upsell_name = get_upsell_name_for_filter(db, upsell_id)
+        if upsell_name:
+            base_ids = base_ids.filter(Transaction.product_name.ilike(f"%{upsell_name}%"))
     elif product_id:
         names = get_product_names_for_filter(db, product_id)
         if names:

@@ -62,9 +62,9 @@ def _apply_filters(query, db, preset, start, end, platform, product_id, account_
         except ValueError:
             pass
     if upsell_id:
-        names = get_upsell_name_for_filter(db, upsell_id)
-        if names:
-            query = query.filter(Transaction.product_name.in_(names))
+        upsell_name = get_upsell_name_for_filter(db, upsell_id)
+        if upsell_name:
+            query = query.filter(Transaction.product_name.ilike(f"%{upsell_name}%"))
     elif product_id:
         names = get_product_names_for_filter(db, product_id)
         if names:
