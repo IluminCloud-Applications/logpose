@@ -10,6 +10,7 @@ sejam corretamente filtradas junto com as importadas via CSV.
 from sqlalchemy.orm import Session
 from database.models.product import Product
 from database.models.product_alias import ProductAlias
+from database.models.product_items import Upsell
 
 
 def get_product_names_for_filter(db: Session, product_id: int) -> list[str]:
@@ -29,3 +30,14 @@ def get_product_names_for_filter(db: Session, product_id: int) -> list[str]:
 
     names = [product.name] + [a.alias for a in aliases]
     return names
+
+
+def get_upsell_name_for_filter(db: Session, upsell_id: int) -> list[str]:
+    """
+    Retorna o nome do upsell para filtrar transações.
+    Upsells geram transações separadas com product_name = upsell.name.
+    """
+    upsell = db.query(Upsell).filter(Upsell.id == upsell_id).first()
+    if not upsell:
+        return []
+    return [upsell.name]

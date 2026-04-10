@@ -8,6 +8,7 @@ import {
 import type { SalesFilterOptions } from "@/types/sale";
 import type { SalesFilters } from "@/hooks/use-sales";
 import { defaultSalesFilters } from "@/hooks/use-sales";
+import { ProductSelect } from "@/components/ProductSelect";
 
 interface SalesInlineFiltersProps {
   filters: SalesFilters;
@@ -98,15 +99,12 @@ export function SalesInlineFilters({
         </div>
         <div className="space-y-1.5">
           <Label className="text-xs">Produto</Label>
-          <Select value={filters.productId} onValueChange={(v) => onFiltersChange({ ...filters, productId: v })}>
-            <SelectTrigger className="h-9 w-full"><SelectValue /></SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Todos</SelectItem>
-              {filterOptions.products.map((p) => (
-                <SelectItem key={p.id} value={String(p.id)}>{p.name}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <ProductSelect
+            value={filters.productId}
+            onValueChange={(v) => onFiltersChange({ ...filters, productId: v })}
+            products={filterOptions.products}
+            upsells={filterOptions.upsells}
+          />
         </div>
         <div className="space-y-1.5">
           <Label className="text-xs">Campanha</Label>

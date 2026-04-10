@@ -88,6 +88,7 @@ export async function fetchRecoveries(params: {
   statusFilter?: string;
   channelFilter?: string;
   productId?: string;
+  upsellId?: string;
   search?: string;
   accountSlug?: string;
   page?: number;
@@ -100,6 +101,7 @@ export async function fetchRecoveries(params: {
   if (params.statusFilter) qs.set("status_filter", params.statusFilter);
   if (params.channelFilter) qs.set("channel_filter", params.channelFilter);
   if (params.productId) qs.set("product_id", params.productId);
+  if (params.upsellId) qs.set("upsell_id", params.upsellId);
   if (params.search) qs.set("search", params.search);
   if (params.accountSlug) qs.set("account_slug", params.accountSlug);
   qs.set("page", String(params.page ?? 1));
@@ -115,6 +117,7 @@ export async function fetchRecoverySummary(params: {
   statusFilter?: string;
   channelFilter?: string;
   productId?: string;
+  upsellId?: string;
   search?: string;
   accountSlug?: string;
 }): Promise<RecoverySummary> {
@@ -125,6 +128,7 @@ export async function fetchRecoverySummary(params: {
   if (params.statusFilter) qs.set("status_filter", params.statusFilter);
   if (params.channelFilter) qs.set("channel_filter", params.channelFilter);
   if (params.productId) qs.set("product_id", params.productId);
+  if (params.upsellId) qs.set("upsell_id", params.upsellId);
   if (params.search) qs.set("search", params.search);
   if (params.accountSlug) qs.set("account_slug", params.accountSlug);
   return apiRequest<RecoverySummary>(`/recovery/summary?${qs.toString()}`);

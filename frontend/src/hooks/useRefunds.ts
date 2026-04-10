@@ -7,6 +7,7 @@ import {
 import { fetchSalesFilterOptions } from "@/services/sales";
 import type { SalesFilterOptions } from "@/types/sale";
 import { useCachedQuery } from "./useCachedQuery";
+import { parseProductFilterValue } from "@/utils/product-filter";
 
 export interface RefundsFilters {
   dateRange: DateRangeState;
@@ -32,7 +33,7 @@ export function useRefunds() {
   const [page, setPage] = useState(1);
   const [filters, setFilters] = useState<RefundsFilters>(defaultRefundsFilters);
   const [filterOptions, setFilterOptions] = useState<SalesFilterOptions>({
-    products: [], campaigns: [], platforms: [], accounts: [],
+    products: [], upsells: [], campaigns: [], platforms: [], accounts: [],
   });
 
   useEffect(() => {
@@ -51,7 +52,9 @@ export function useRefunds() {
     }
     if (filters.status !== "all") p.status = filters.status;
     if (filters.platform !== "all") p.platform = filters.platform;
-    if (filters.productId !== "all") p.product_id = Number(filters.productId);
+    const pf = parseProductFilterValue(filters.productId);
+    if (pf.product_id) p.product_id = pf.product_id;
+    if (pf.upsell_id) p.upsell_id = pf.upsell_id;
     if (filters.search) p.search = filters.search;
     if (filters.hasReason !== "all") p.has_reason = filters.hasReason;
     if (filters.accountSlug !== "all") p.account_slug = filters.accountSlug;
@@ -70,7 +73,9 @@ export function useRefunds() {
     }
     if (filters.status !== "all") p.status = filters.status;
     if (filters.platform !== "all") p.platform = filters.platform;
-    if (filters.productId !== "all") p.product_id = Number(filters.productId);
+    const pf = parseProductFilterValue(filters.productId);
+    if (pf.product_id) p.product_id = pf.product_id;
+    if (pf.upsell_id) p.upsell_id = pf.upsell_id;
     if (filters.search) p.search = filters.search;
     if (filters.hasReason !== "all") p.has_reason = filters.hasReason;
     if (filters.accountSlug !== "all") p.account_slug = filters.accountSlug;

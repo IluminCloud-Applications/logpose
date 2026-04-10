@@ -31,8 +31,11 @@ export interface CustomersSummary {
   avg_ticket: number;
 }
 
+import type { UpsellOption } from "./sale";
+
 export interface CustomersFilterOptions {
   products: { id: number; name: string }[];
+  upsells: UpsellOption[];
   platforms: { value: string; label: string }[];
   campaigns: string[];
   sources: string[];

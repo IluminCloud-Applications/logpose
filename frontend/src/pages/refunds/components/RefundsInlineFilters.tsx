@@ -8,6 +8,7 @@ import {
 import type { SalesFilterOptions } from "@/types/sale";
 import type { RefundsFilters } from "@/hooks/useRefunds";
 import { defaultRefundsFilters } from "@/hooks/useRefunds";
+import { ProductSelect } from "@/components/ProductSelect";
 
 interface RefundsInlineFiltersProps {
   filters: RefundsFilters;
@@ -104,18 +105,14 @@ export function RefundsInlineFilters({
           </Select>
         </div>
 
-        {/* Produto */}
         <div className="space-y-1.5">
           <Label className="text-xs">Produto</Label>
-          <Select value={filters.productId} onValueChange={(v) => onFiltersChange({ ...filters, productId: v })}>
-            <SelectTrigger className="h-9 w-full"><SelectValue /></SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Todos</SelectItem>
-              {filterOptions.products.map((p) => (
-                <SelectItem key={p.id} value={String(p.id)}>{p.name}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <ProductSelect
+            value={filters.productId}
+            onValueChange={(v) => onFiltersChange({ ...filters, productId: v })}
+            products={filterOptions.products}
+            upsells={filterOptions.upsells}
+          />
         </div>
 
         {/* Motivo registrado */}

@@ -5,6 +5,7 @@ import {
   fetchCustomers, fetchCustomersSummary, fetchCustomersFilterOptions,
 } from "@/services/customers";
 import { useCachedQuery } from "./useCachedQuery";
+import { parseProductFilterValue } from "@/utils/product-filter";
 
 export interface CustomersFilters {
   dateRange: DateRangeState;
@@ -30,7 +31,7 @@ export function useCustomers() {
   const [page, setPage] = useState(1);
   const [filters, setFilters] = useState<CustomersFilters>(defaultCustomersFilters);
   const [filterOptions, setFilterOptions] = useState<CustomersFilterOptions>({
-    products: [], platforms: [], campaigns: [], sources: [], accounts: [],
+    products: [], upsells: [], platforms: [], campaigns: [], sources: [], accounts: [],
   });
 
   const buildParams = useCallback(() => {
@@ -44,7 +45,9 @@ export function useCustomers() {
       p.end_date = filters.dateRange.endDate;
     }
     if (filters.platform !== "all") p.platform = filters.platform;
-    if (filters.productId !== "all") p.product_id = Number(filters.productId);
+    const pf = parseProductFilterValue(filters.productId);
+    if (pf.product_id) p.product_id = pf.product_id;
+    if (pf.upsell_id) p.upsell_id = pf.upsell_id;
     if (filters.campaign !== "all") p.campaign = filters.campaign;
     if (filters.src) p.src = filters.src;
     if (filters.accountSlug !== "all") p.account_slug = filters.accountSlug;
@@ -63,7 +66,9 @@ export function useCustomers() {
       p.end_date = filters.dateRange.endDate;
     }
     if (filters.platform !== "all") p.platform = filters.platform;
-    if (filters.productId !== "all") p.product_id = Number(filters.productId);
+    const pf = parseProductFilterValue(filters.productId);
+    if (pf.product_id) p.product_id = pf.product_id;
+    if (pf.upsell_id) p.upsell_id = pf.upsell_id;
     if (filters.campaign !== "all") p.campaign = filters.campaign;
     if (filters.accountSlug !== "all") p.account_slug = filters.accountSlug;
     if (filters.search) p.search = filters.search;

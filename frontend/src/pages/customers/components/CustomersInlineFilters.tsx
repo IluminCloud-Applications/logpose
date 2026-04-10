@@ -9,6 +9,7 @@ import {
 import type { CustomersFilterOptions } from "@/types/customer";
 import type { CustomersFilters } from "@/hooks/use-customers";
 import { defaultCustomersFilters } from "@/hooks/use-customers";
+import { ProductSelect } from "@/components/ProductSelect";
 
 interface CustomersInlineFiltersProps {
   filters: CustomersFilters;
@@ -101,21 +102,14 @@ export function CustomersInlineFilters({
           </Select>
         </div>
 
-        {/* Produto */}
         <div className="space-y-1.5">
           <Label className="text-xs">Produto</Label>
-          <Select
+          <ProductSelect
             value={filters.productId}
             onValueChange={(v) => onFiltersChange({ ...filters, productId: v })}
-          >
-            <SelectTrigger className="h-9 w-full"><SelectValue /></SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Todos</SelectItem>
-              {filterOptions.products.map((p) => (
-                <SelectItem key={p.id} value={String(p.id)}>{p.name}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+            products={filterOptions.products}
+            upsells={filterOptions.upsells}
+          />
         </div>
 
         {/* Campanha (utm_campaign) */}

@@ -7,6 +7,7 @@ interface DashboardParams {
   end_date?: string;
   platform?: string;
   product_id?: number;
+  upsell_id?: number;
   account_slug?: string;
 }
 

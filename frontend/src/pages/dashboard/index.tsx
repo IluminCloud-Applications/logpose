@@ -9,16 +9,19 @@ import { GlobalFilterBar } from "@/components/layout/GlobalFilterBar";
 import { useDashboard } from "@/hooks/use-dashboard";
 import { fetchCustomersFilterOptions } from "@/services/customers";
 import { Skeleton } from "@/components/ui/skeleton";
+import type { UpsellOption } from "@/types/sale";
 
 export default function DashboardPage() {
   const { data, settings, loading, filters, setFilters, reload } = useDashboard();
   const [products, setProducts] = useState<{ id: number; name: string }[]>([]);
+  const [upsells, setUpsells] = useState<UpsellOption[]>([]);
   const [platforms, setPlatforms] = useState<{ value: string; label: string }[]>([]);
   const [accounts, setAccounts] = useState<{ slug: string; name: string; platform: string }[]>([]);
 
   useEffect(() => {
     fetchCustomersFilterOptions().then((opt) => {
       setProducts(opt.products);
+      setUpsells(opt.upsells ?? []);
       if (opt.platforms) setPlatforms(opt.platforms);
       if (opt.accounts) setAccounts(opt.accounts);
     }).catch(() => {});
@@ -32,6 +35,7 @@ export default function DashboardPage() {
         onFiltersChange={setFilters}
         settings={settings}
         products={products}
+        upsells={upsells}
         platforms={platforms}
         accounts={accounts}
       />

@@ -7,6 +7,8 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import type { DashboardFilters, DatePreset } from "@/hooks/use-dashboard";
 import type { CompanySettings } from "@/types/company";
+import type { UpsellOption } from "@/types/sale";
+import { ProductSelect } from "@/components/ProductSelect";
 
 const presetLabels: Record<DatePreset, string> = {
   today: "Hoje",
@@ -23,12 +25,13 @@ interface GlobalFilterBarProps {
   onFiltersChange: (filters: DashboardFilters) => void;
   settings: CompanySettings | null;
   products: { id: number; name: string }[];
+  upsells?: UpsellOption[];
   platforms?: { value: string; label: string }[];
   accounts?: { slug: string; name: string; platform: string }[];
 }
 
 export function GlobalFilterBar({
-  filters, onFiltersChange, settings, products, platforms = [], accounts = [],
+  filters, onFiltersChange, settings, products, upsells = [], platforms = [], accounts = [],
 }: GlobalFilterBarProps) {
   const [isSticky, setIsSticky] = useState(false);
   const sentinelRef = useRef<HTMLDivElement>(null);
@@ -109,20 +112,13 @@ export function GlobalFilterBar({
             />
           </div>
         )}
-        <Select
+        <ProductSelect
           value={filters.product}
           onValueChange={(v) => onFiltersChange({ ...filters, product: v })}
-        >
-          <SelectTrigger className="h-9 w-[170px] text-xs">
-            <SelectValue placeholder="Produto" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">Todos Produtos</SelectItem>
-            {products.map((p) => (
-              <SelectItem key={p.id} value={String(p.id)}>{p.name}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+          products={products}
+          upsells={upsells}
+          className="h-9 w-[170px] text-xs"
+        />
 
         <Select
           value={filters.platform}

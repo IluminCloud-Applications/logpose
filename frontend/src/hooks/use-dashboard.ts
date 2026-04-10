@@ -4,6 +4,7 @@ import type { CompanySettings } from "@/types/company";
 import { fetchDashboardOverview } from "@/services/dashboard";
 import { fetchCompanySettings } from "@/services/company";
 import { useCachedQuery } from "./useCachedQuery";
+import { parseProductFilterValue } from "@/utils/product-filter";
 
 export type DatePreset = "today" | "7d" | "14d" | "30d" | "90d" | "all" | "custom";
 
@@ -41,7 +42,9 @@ export function useDashboard() {
       p.end_date = filters.dateEnd;
     }
     if (filters.platform !== "all") p.platform = filters.platform;
-    if (filters.product !== "all") p.product_id = Number(filters.product);
+    const pf = parseProductFilterValue(filters.product);
+    if (pf.product_id) p.product_id = pf.product_id;
+    if (pf.upsell_id) p.upsell_id = pf.upsell_id;
     if (filters.accountSlug !== "all") p.account_slug = filters.accountSlug;
     return p;
   }, [filters]);

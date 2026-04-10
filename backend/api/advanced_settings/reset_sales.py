@@ -6,6 +6,9 @@ from database.models.recovery import Recovery
 from database.models.customer import Customer
 from database.models.customer_product import CustomerProduct
 from database.models.refund_reason import RefundReason
+from database.models.product import Product
+from database.models.product_alias import ProductAlias
+from database.models.product_items import Checkout, OrderBump, Upsell
 from api.auth.deps import require_role
 
 router = APIRouter(prefix="/advanced-settings", tags=["advanced-settings"])
@@ -17,25 +20,33 @@ def reset_sales(
     user=Depends(require_role("owner")),
 ):
     try:
-        # Deleta na ordem correta para respeitar FKs
-        deleted_refund_reasons = db.query(RefundReason).delete()
-        deleted_customer_products = db.query(CustomerProduct).delete()
-        deleted_recoveries = db.query(Recovery).delete()
-        deleted_transactions = db.query(Transaction).delete()
-        deleted_customers = db.query(Customer).delete()
+        # 1. Filhos de transactions
+        db.query(RefundReason).delete()
+
+        # 2. Filhos de customers
+        db.query(CustomerProduct).delete()
+        db.query(Recovery).delete()
+
+        # 3. Transactions (FK → customers, products SET NULL)
+        db.query(Transaction).delete()
+
+        # 4. Customers
+        db.query(Customer).delete()
+
+        # 5. Filhos de products
+        db.query(ProductAlias).delete()
+        db.query(Checkout).delete()
+        db.query(OrderBump).delete()
+        db.query(Upsell).delete()
+
+        # 6. Products
+        db.query(Product).delete()
 
         db.commit()
 
-        return {
-            "success": True,
-            "deleted": {
-                "transactions": deleted_transactions,
-                "recoveries": deleted_recoveries,
-                "customers": deleted_customers,
-                "customer_products": deleted_customer_products,
-                "refund_reasons": deleted_refund_reasons,
-            },
-        }
+        return {"success": True}
     except Exception as e:
         db.rollback()
-        raise HTTPException(status_code=500, detail=f"Erro ao resetar vendas: {str(e)}")
+        raise HTTPException(
+            status_code=500, detail=f"Erro ao resetar vendas: {str(e)}"
+        )

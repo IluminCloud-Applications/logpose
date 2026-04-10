@@ -39,12 +39,10 @@ export function ResetSalesCard() {
     if (!isConfirmValid) return;
     setLoading(true);
     try {
-      const result = await resetSales();
+      await resetSales();
       setOpen(false);
       setConfirmText("");
-      toast.success(
-        `Dados resetados: ${result.deleted.transactions} vendas, ${result.deleted.recoveries} recuperações, ${result.deleted.customers} clientes removidos.`
-      );
+      toast.success("Todos os dados foram resetados com sucesso.");
     } catch {
       toast.error("Erro ao resetar vendas. Tente novamente.");
     } finally {
@@ -71,9 +69,9 @@ export function ResetSalesCard() {
         <CardContent>
           <div className="flex items-center justify-between rounded-lg border border-destructive/30 bg-destructive/5 p-4">
             <div className="space-y-0.5">
-              <p className="text-sm font-medium">Resetar todas as vendas</p>
+              <p className="text-sm font-medium">Resetar todos os dados</p>
               <p className="text-xs text-muted-foreground">
-                Remove permanentemente vendas, reembolsos, recuperações e clientes
+                Remove permanentemente vendas, produtos, recuperações e clientes
               </p>
             </div>
             <Button
@@ -97,7 +95,7 @@ export function ResetSalesCard() {
                 <RiAlertLine className="size-5 text-destructive" />
               </div>
               <DialogTitle className="text-destructive">
-                Resetar todas as vendas
+                Resetar todos os dados
               </DialogTitle>
             </div>
             <DialogDescription className="text-sm leading-relaxed">
@@ -111,7 +109,7 @@ export function ResetSalesCard() {
               <li>Todas as transações (vendas, reembolsos, chargebacks)</li>
               <li>Todos os registros de recuperação</li>
               <li>Todos os clientes cadastrados</li>
-              <li>Histórico de produtos por cliente</li>
+              <li>Todos os produtos, checkouts, order bumps e upsells</li>
             </ul>
           </DialogHeader>
 

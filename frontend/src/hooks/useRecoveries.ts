@@ -4,6 +4,7 @@ import {
   fetchRecoveries, fetchRecoverySummary,
   type RecoveryListResponse, type RecoverySummary,
 } from "@/services/recovery";
+import { parseProductFilterValue } from "@/utils/product-filter";
 
 interface UseRecoveriesOptions {
   preset: string;
@@ -20,7 +21,7 @@ interface UseRecoveriesOptions {
 export function useRecoveries(opts: UseRecoveriesOptions) {
   const [page, setPage] = useState(1);
 
-  const productId = opts.productId !== "all" ? opts.productId : undefined;
+  const pf = parseProductFilterValue(opts.productId ?? "all");
 
   const sharedParams = {
     preset: opts.preset,
@@ -29,7 +30,8 @@ export function useRecoveries(opts: UseRecoveriesOptions) {
     typeFilter: opts.typeFilter,
     statusFilter: opts.statusFilter,
     channelFilter: opts.channelFilter,
-    productId,
+    productId: pf.product_id ? String(pf.product_id) : undefined,
+    upsellId: pf.upsell_id ? String(pf.upsell_id) : undefined,
     search: opts.search,
     accountSlug: opts.accountSlug !== "all" ? opts.accountSlug : undefined,
   };

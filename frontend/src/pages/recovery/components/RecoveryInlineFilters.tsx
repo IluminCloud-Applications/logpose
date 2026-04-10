@@ -7,7 +7,8 @@ import {
 } from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { ChannelConfig } from "@/services/recovery";
-import type { AccountOption } from "@/types/sale";
+import type { AccountOption, UpsellOption } from "@/types/sale";
+import { ProductSelect } from "@/components/ProductSelect";
 
 // Canais padrão sempre exibidos
 const DEFAULT_CHANNEL_OPTIONS = [
@@ -37,6 +38,7 @@ interface RecoveryInlineFiltersProps {
   accountFilter: string;
   onAccountChange: (v: string) => void;
   products?: Product[];
+  upsells?: UpsellOption[];
   accounts?: AccountOption[];
   onClose: () => void;
   channelConfigs?: ChannelConfig[];
@@ -49,6 +51,7 @@ export function RecoveryInlineFilters({
   productFilter, onProductChange,
   accountFilter, onAccountChange,
   products = [],
+  upsells = [],
   accounts = [],
   onClose,
   channelConfigs = [],
@@ -144,18 +147,14 @@ export function RecoveryInlineFilters({
           </Select>
         </div>
 
-        {/* Produto */}
         <div className="space-y-1.5">
           <Label className="text-xs">Produto</Label>
-          <Select value={productFilter} onValueChange={onProductChange}>
-            <SelectTrigger className="h-9 w-full"><SelectValue /></SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Todos</SelectItem>
-              {products.map((p) => (
-                <SelectItem key={p.id} value={String(p.id)}>{p.name}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <ProductSelect
+            value={productFilter}
+            onValueChange={onProductChange}
+            products={products}
+            upsells={upsells}
+          />
         </div>
 
         {/* Conta */}

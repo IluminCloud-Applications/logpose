@@ -3,6 +3,7 @@ import type { SaleAPI, SalesSummary, SalesFilterOptions } from "@/types/sale";
 import type { DateRangeState } from "@/components/DateRangeFilter";
 import { fetchTransactions, fetchSalesSummary, fetchSalesFilterOptions } from "@/services/sales";
 import { useCachedQuery } from "./useCachedQuery";
+import { parseProductFilterValue } from "@/utils/product-filter";
 
 export interface SalesFilters {
   dateRange: DateRangeState;
@@ -27,7 +28,7 @@ export const defaultSalesFilters: SalesFilters = {
 export function useSales() {
   const [page, setPage] = useState(1);
   const [filters, setFilters] = useState<SalesFilters>(defaultSalesFilters);
-  const [filterOptions, setFilterOptions] = useState<SalesFilterOptions>({ products: [], campaigns: [], platforms: [], accounts: [] });
+  const [filterOptions, setFilterOptions] = useState<SalesFilterOptions>({ products: [], upsells: [], campaigns: [], platforms: [], accounts: [] });
 
   const buildParams = useCallback(() => {
     const p: Record<string, unknown> = {
@@ -41,7 +42,9 @@ export function useSales() {
     }
     if (filters.status !== "all") p.status = filters.status;
     if (filters.platform !== "all") p.platform = filters.platform;
-    if (filters.productId !== "all") p.product_id = Number(filters.productId);
+    const pf = parseProductFilterValue(filters.productId);
+    if (pf.product_id) p.product_id = pf.product_id;
+    if (pf.upsell_id) p.upsell_id = pf.upsell_id;
     if (filters.campaign !== "all") p.campaign = filters.campaign;
     if (filters.accountSlug !== "all") p.account_slug = filters.accountSlug;
     if (filters.search) p.search = filters.search;
@@ -58,7 +61,9 @@ export function useSales() {
     }
     // status is intentionally excluded — summary always shows all statuses
     if (filters.platform !== "all") p.platform = filters.platform;
-    if (filters.productId !== "all") p.product_id = Number(filters.productId);
+    const pf = parseProductFilterValue(filters.productId);
+    if (pf.product_id) p.product_id = pf.product_id;
+    if (pf.upsell_id) p.upsell_id = pf.upsell_id;
     if (filters.campaign !== "all") p.campaign = filters.campaign;
     if (filters.accountSlug !== "all") p.account_slug = filters.accountSlug;
     if (filters.search) p.search = filters.search;

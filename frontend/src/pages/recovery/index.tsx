@@ -24,7 +24,7 @@ export default function RecoveryPage() {
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [configOpen, setConfigOpen] = useState(false);
   const [filterOptions, setFilterOptions] = useState<SalesFilterOptions>({
-    products: [], campaigns: [], platforms: [], accounts: [],
+    products: [], upsells: [], campaigns: [], platforms: [], accounts: [],
   });
 
   useEffect(() => {
@@ -89,6 +89,7 @@ export default function RecoveryPage() {
           accountFilter={accountFilter}
           onAccountChange={setAccountFilter}
           products={filterOptions.products}
+          upsells={filterOptions.upsells}
           accounts={filterOptions.accounts}
           onClose={() => setFiltersOpen(false)}
           channelConfigs={configs}

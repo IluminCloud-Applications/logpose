@@ -84,6 +84,7 @@ def list_recoveries(
     status_filter: str = Query("all"),
     channel_filter: str = Query("all"),
     product_id: int | None = Query(None),
+    upsell_id: int | None = Query(None),
     search: str | None = Query(None),
     account_slug: str | None = Query(None),
     page: int = Query(1, ge=1),
@@ -91,14 +92,16 @@ def list_recoveries(
     db: Session = Depends(get_db),
     _=Depends(get_current_user),
 ):
-    from api.products.alias_helper import get_product_names_for_filter
+    from api.products.alias_helper import get_product_names_for_filter, get_upsell_name_for_filter
 
     dt_start, dt_end = resolve_date_range(preset, date_start, date_end)
     configs = _get_channel_configs(db)
 
-    # Resolve product names (canonical + aliases) once
+    # Resolve product names (canonical + aliases) or upsell name once
     product_names: list[str] | None = None
-    if product_id:
+    if upsell_id:
+        product_names = get_upsell_name_for_filter(db, upsell_id)
+    elif product_id:
         product_names = get_product_names_for_filter(db, product_id)
 
     items = []
@@ -206,19 +209,22 @@ def recovery_summary(
     status_filter: str = Query("all"),
     channel_filter: str = Query("all"),
     product_id: int | None = Query(None),
+    upsell_id: int | None = Query(None),
     search: str | None = Query(None),
     account_slug: str | None = Query(None),
     db: Session = Depends(get_db),
     _=Depends(get_current_user),
 ):
     """KPIs agregados da recuperação, calculados sobre o dataset completo (sem paginação)."""
-    from api.products.alias_helper import get_product_names_for_filter
+    from api.products.alias_helper import get_product_names_for_filter, get_upsell_name_for_filter
 
     dt_start, dt_end = resolve_date_range(preset, date_start, date_end)
     configs = _get_channel_configs(db)
 
     product_names: list[str] | None = None
-    if product_id:
+    if upsell_id:
+        product_names = get_upsell_name_for_filter(db, upsell_id)
+    elif product_id:
         product_names = get_product_names_for_filter(db, product_id)
 
     all_rows: list[dict] = []

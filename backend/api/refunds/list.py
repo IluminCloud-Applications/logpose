@@ -14,7 +14,7 @@ from database.models.refund_reason import RefundReason
 from database.models.product import Product
 from database.core.timezone import now_sp, SP_ZONE
 from api.auth.deps import get_current_user
-from api.products.alias_helper import get_product_names_for_filter
+from api.products.alias_helper import get_product_names_for_filter, get_upsell_name_for_filter
 
 router = APIRouter(prefix="/refunds", tags=["refunds"])
 
@@ -56,6 +56,7 @@ def list_refunds(
     status: Optional[str] = Query(None),
     platform: Optional[str] = Query(None),
     product_id: Optional[int] = Query(None),
+    upsell_id: Optional[int] = Query(None),
     search: Optional[str] = Query(None),
     has_reason: Optional[str] = Query(None),
     account_slug: Optional[str] = Query(None),
@@ -86,7 +87,11 @@ def list_refunds(
         except ValueError:
             pass
 
-    if product_id:
+    if upsell_id:
+        names = get_upsell_name_for_filter(db, upsell_id)
+        if names:
+            query = query.filter(Transaction.product_name.in_(names))
+    elif product_id:
         names = get_product_names_for_filter(db, product_id)
         if names:
             query = query.filter(Transaction.product_name.in_(names))
@@ -160,6 +165,7 @@ def refunds_summary(
     status: Optional[str] = Query(None),
     platform: Optional[str] = Query(None),
     product_id: Optional[int] = Query(None),
+    upsell_id: Optional[int] = Query(None),
     search: Optional[str] = Query(None),
     has_reason: Optional[str] = Query(None),
     account_slug: Optional[str] = Query(None),
@@ -181,7 +187,11 @@ def refunds_summary(
         except ValueError:
             pass
 
-    if product_id:
+    if upsell_id:
+        names = get_upsell_name_for_filter(db, upsell_id)
+        if names:
+            base = base.filter(Transaction.product_name.in_(names))
+    elif product_id:
         names = get_product_names_for_filter(db, product_id)
         if names:
             base = base.filter(Transaction.product_name.in_(names))
@@ -267,6 +277,7 @@ def reason_stats(
     status: Optional[str] = Query(None),
     platform: Optional[str] = Query(None),
     product_id: Optional[int] = Query(None),
+    upsell_id: Optional[int] = Query(None),
     search: Optional[str] = Query(None),
     has_reason: Optional[str] = Query(None),
     account_slug: Optional[str] = Query(None),
@@ -288,7 +299,11 @@ def reason_stats(
             base_ids = base_ids.filter(Transaction.platform == PaymentPlatform(platform))
         except ValueError:
             pass
-    if product_id:
+    if upsell_id:
+        names = get_upsell_name_for_filter(db, upsell_id)
+        if names:
+            base_ids = base_ids.filter(Transaction.product_name.in_(names))
+    elif product_id:
         names = get_product_names_for_filter(db, product_id)
         if names:
             base_ids = base_ids.filter(Transaction.product_name.in_(names))

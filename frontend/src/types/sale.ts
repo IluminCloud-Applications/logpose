@@ -44,8 +44,16 @@ export interface AccountOption {
   platform: string;
 }
 
+export interface UpsellOption {
+  id: number;
+  name: string;
+  product_id: number;
+  product_name: string;
+}
+
 export interface SalesFilterOptions {
   products: { id: number; name: string }[];
+  upsells: UpsellOption[];
   campaigns: string[];
   platforms: { value: string; label: string }[];
   accounts: AccountOption[];

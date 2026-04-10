@@ -8,9 +8,10 @@ from database.core.connection import get_db
 from database.models.transaction import Transaction, TransactionStatus, PaymentPlatform
 from database.models.webhook_endpoint import WebhookEndpoint
 from database.models.product import Product
+from database.models.product_items import Upsell
 from database.core.timezone import now_sp, SP_ZONE
 from api.auth.deps import get_current_user
-from api.products.alias_helper import get_product_names_for_filter
+from api.products.alias_helper import get_product_names_for_filter, get_upsell_name_for_filter
 
 router = APIRouter(prefix="/sales", tags=["sales"])
 
@@ -48,7 +49,7 @@ def _parse_date_range(preset: str, start: Optional[str], end: Optional[str]):
 def _apply_filters(
     query, db, preset, start_date, end_date,
     status, platform, product_id, campaign, search,
-    account_slug=None,
+    account_slug=None, upsell_id=None,
 ):
     """Aplica filtros comuns de vendas à query."""
     date_start, date_end = _parse_date_range(preset, start_date, end_date)
@@ -66,7 +67,11 @@ def _apply_filters(
             query = query.filter(Transaction.platform == PaymentPlatform(platform))
         except ValueError:
             pass
-    if product_id:
+    if upsell_id:
+        names = get_upsell_name_for_filter(db, upsell_id)
+        if names:
+            query = query.filter(Transaction.product_name.in_(names))
+    elif product_id:
         names = get_product_names_for_filter(db, product_id)
         if names:
             query = query.filter(Transaction.product_name.in_(names))
@@ -87,6 +92,7 @@ def list_transactions(
     status: Optional[str] = Query(None),
     platform: Optional[str] = Query(None),
     product_id: Optional[int] = Query(None),
+    upsell_id: Optional[int] = Query(None),
     campaign: Optional[str] = Query(None),
     search: Optional[str] = Query(None),
     account_slug: Optional[str] = Query(None),
@@ -98,6 +104,7 @@ def list_transactions(
     query = _apply_filters(
         db.query(Transaction), db, preset, start_date, end_date,
         status, platform, product_id, campaign, search, account_slug,
+        upsell_id=upsell_id,
     )
     total = query.count()
     transactions = (
@@ -120,6 +127,7 @@ def sales_summary(
     end_date: Optional[str] = Query(None),
     platform: Optional[str] = Query(None),
     product_id: Optional[int] = Query(None),
+    upsell_id: Optional[int] = Query(None),
     campaign: Optional[str] = Query(None),
     search: Optional[str] = Query(None),
     account_slug: Optional[str] = Query(None),
@@ -131,6 +139,7 @@ def sales_summary(
     query = _apply_filters(
         db.query(Transaction), db, preset, start_date, end_date,
         None, platform, product_id, campaign, search, account_slug,
+        upsell_id=upsell_id,
     )
 
     total = query.count()
@@ -182,8 +191,25 @@ def filter_options(
     # Contas: todos os webhook endpoints cadastrados
     accounts = db.query(WebhookEndpoint).order_by(WebhookEndpoint.name).all()
 
+    # Upsells agrupados por produto
+    upsells = (
+        db.query(Upsell.id, Upsell.name, Upsell.product_id, Product.name.label("product_name"))
+        .join(Product, Upsell.product_id == Product.id)
+        .order_by(Product.name, Upsell.name)
+        .all()
+    )
+
     return {
         "products": [{"id": p.id, "name": p.name} for p in products],
+        "upsells": [
+            {
+                "id": u.id,
+                "name": u.name,
+                "product_id": u.product_id,
+                "product_name": u.product_name,
+            }
+            for u in upsells
+        ],
         "campaigns": [c[0] for c in campaigns],
         "platforms": [
             {"value": p[0].value, "label": platform_labels.get(p[0].value, p[0].value)}

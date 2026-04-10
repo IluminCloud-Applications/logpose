@@ -11,7 +11,7 @@ from database.models.product import Product
 from database.models.transaction import Transaction, TransactionStatus, PaymentPlatform
 from database.core.timezone import now_sp, SP_ZONE
 from api.auth.deps import get_current_user
-from api.products.alias_helper import get_product_names_for_filter
+from api.products.alias_helper import get_product_names_for_filter, get_upsell_name_for_filter
 
 router = APIRouter(prefix="/customers", tags=["customers"])
 
@@ -50,6 +50,7 @@ def list_customers(
     end_date: Optional[str] = Query(None),
     platform: Optional[str] = Query(None),
     product_id: Optional[int] = Query(None),
+    upsell_id: Optional[int] = Query(None),
     campaign: Optional[str] = Query(None),
     src: Optional[str] = Query(None),
     search: Optional[str] = Query(None),
@@ -80,8 +81,16 @@ def list_customers(
         except ValueError:
             pass
 
-    # Product filter: customers with transactions matching product (name + aliases)
-    if product_id:
+    # Upsell filter takes priority over product filter
+    if upsell_id:
+        names = get_upsell_name_for_filter(db, upsell_id)
+        if names:
+            tx_customer_ids = db.query(Transaction.customer_id).filter(
+                Transaction.product_name.in_(names),
+                Transaction.customer_id.isnot(None),
+            ).distinct().subquery()
+            query = query.filter(Customer.id.in_(db.query(tx_customer_ids)))
+    elif product_id:
         names = get_product_names_for_filter(db, product_id)
         if names:
             tx_customer_ids = db.query(Transaction.customer_id).filter(
@@ -149,6 +158,7 @@ def customers_summary(
     end_date: Optional[str] = Query(None),
     platform: Optional[str] = Query(None),
     product_id: Optional[int] = Query(None),
+    upsell_id: Optional[int] = Query(None),
     campaign: Optional[str] = Query(None),
     search: Optional[str] = Query(None),
     account_slug: Optional[str] = Query(None),
@@ -174,7 +184,15 @@ def customers_summary(
         except ValueError:
             pass
 
-    if product_id:
+    if upsell_id:
+        names = get_upsell_name_for_filter(db, upsell_id)
+        if names:
+            tx_customer_ids = db.query(Transaction.customer_id).filter(
+                Transaction.product_name.in_(names),
+                Transaction.customer_id.isnot(None),
+            ).distinct().subquery()
+            query = query.filter(Customer.id.in_(db.query(tx_customer_ids)))
+    elif product_id:
         names = get_product_names_for_filter(db, product_id)
         if names:
             tx_customer_ids = db.query(Transaction.customer_id).filter(

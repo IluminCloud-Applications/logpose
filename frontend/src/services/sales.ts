@@ -8,6 +8,7 @@ interface SalesQueryParams {
   status?: string;
   platform?: string;
   product_id?: number;
+  upsell_id?: number;
   campaign?: string;
   search?: string;
   account_slug?: string;
