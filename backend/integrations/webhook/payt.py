@@ -43,31 +43,31 @@ def parse_payt_webhook(payload: Dict[str, Any]) -> Optional[StandardizedWebhookE
         if not tx_id:
             tx_id = payload.get("cart_id", "")
         
-        # A comissão do produtor já vem em reais (não em centavos) na PayT
-        amount_raw = 0.0
+        # Todos os valores monetários no webhook da PayT vêm em CENTAVOS (int).
+        # Ex: 15580 = R$155,80. Precisamos dividir por 100.
+        amount_centavos = 0.0
         commissions = payload.get("commission", [])
         for comm in commissions:
             if comm.get("type") == "producer":
-                amount_raw = float(comm.get("amount", 0.0))
+                amount_centavos = float(comm.get("amount", 0.0))
                 break
 
         # Se for reembolso/chargeback, a PayT zera a comissão.
-        # Tentamos recuperar o valor real nesta ordem:
+        # Tentamos recuperar o valor (em centavos) nesta ordem:
         #   1. price_without_installments (valor do produto sem juros)
         #   2. installment_price (valor da parcela)
         #   3. total_price (valor total da transação)
         #   4. product.price (preço cadastrado do produto)
-        # Todos esses campos já vêm em reais na PayT — NÃO dividir por 100.
-        if amount_raw == 0.0 and status in [TransactionStatus.REFUNDED, TransactionStatus.CHARGEBACK]:
+        if amount_centavos == 0.0 and status in [TransactionStatus.REFUNDED, TransactionStatus.CHARGEBACK]:
             tx = payload.get("transaction", {})
-            amount_raw = (
+            amount_centavos = (
                 float(tx.get("price_without_installments") or 0)
                 or float(tx.get("installment_price") or 0)
                 or float(tx.get("total_price") or 0)
                 or float(payload.get("product", {}).get("price") or 0)
             )
 
-        amount = amount_raw
+        amount = amount_centavos / 100.0
 
         product = payload.get("product", {})
         customer = payload.get("customer", {})
