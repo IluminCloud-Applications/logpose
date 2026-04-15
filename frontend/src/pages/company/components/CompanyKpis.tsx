@@ -28,6 +28,7 @@ export function CompanyKpis({ data, settings, totalSalesCount, uniqueCustomersCo
     {
       title: "Faturamento Anual",
       value: fmtCompact(k.totalRevenue),
+      rawValue: k.totalRevenue,
       icon: RiMoneyDollarBoxLine,
       subtitle: `${k.currentMonth} meses ativos`,
       variant: "primary" as const,
@@ -35,6 +36,7 @@ export function CompanyKpis({ data, settings, totalSalesCount, uniqueCustomersCo
     {
       title: "Lucro Líquido Real",
       value: fmtCompact(k.netProfit),
+      rawValue: k.netProfit,
       icon: RiLineChartLine,
       subtitle: `Após impostos e operacional`,
       variant: k.netProfit > 0 ? ("success" as const) : ("destructive" as const),
@@ -42,6 +44,7 @@ export function CompanyKpis({ data, settings, totalSalesCount, uniqueCustomersCo
     {
       title: "Ticket Médio (AOV)",
       value: fmtCompact(k.aov),
+      rawValue: k.aov,
       icon: RiShoppingCartLine,
       subtitle: `${k.totalSales} vendas no período`,
       variant: "primary" as const,
@@ -64,6 +67,7 @@ export function CompanyKpis({ data, settings, totalSalesCount, uniqueCustomersCo
     {
       title: "Investido Total",
       value: fmtCompact(k.totalSpend),
+      rawValue: k.totalSpend,
       icon: RiBarChartLine,
       subtitle: `Impostos: ${fmtCompact(k.taxAmount)}`,
       variant: "default" as const,
@@ -71,6 +75,7 @@ export function CompanyKpis({ data, settings, totalSalesCount, uniqueCustomersCo
     {
       title: `Projeção ${year}`,
       value: fmtCompact(k.projectedAnnualRevenue),
+      rawValue: k.projectedAnnualRevenue,
       icon: RiCalendarCheckLine,
       subtitle: `Média/mês: ${fmtCompact(k.avgMonthlyRevenue)}`,
       variant: "primary" as const,

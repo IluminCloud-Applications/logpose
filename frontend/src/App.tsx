@@ -27,11 +27,13 @@ import { AIChatProvider } from "@/components/ai-chat/AIChatProvider";
 import { Toaster } from "@/components/ui/sonner";
 import { PageDataProvider } from "@/contexts/PageDataContext";
 import { AdvancedFeaturesProvider } from "@/contexts/AdvancedFeaturesContext";
+import { ValueDisplayProvider } from "@/contexts/ValueDisplayContext";
 
 export default function App() {
   return (
     <PageDataProvider>
     <AdvancedFeaturesProvider>
+    <ValueDisplayProvider>
     <BrowserRouter>
       <TooltipProvider>
         <AppGuard>
@@ -69,6 +71,7 @@ export default function App() {
       <Toaster richColors position="top-right" />
       <AIChatProvider />
     </BrowserRouter>
+    </ValueDisplayProvider>
     </AdvancedFeaturesProvider>
     </PageDataProvider>
   );

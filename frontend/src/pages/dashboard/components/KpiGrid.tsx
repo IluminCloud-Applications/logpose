@@ -44,18 +44,21 @@ export function KpiGrid({ kpis, taxEnabled, taxRate, opCostsEnabled, opCostsTota
     {
       title: revenueLabel,
       value: fmtCompact(revenue),
+      rawValue: revenue,
       icon: RiMoneyDollarBoxLine,
       variant: "primary" as const,
     },
     {
       title: profitLabel,
       value: fmtCompact(profit),
+      rawValue: profit,
       icon: RiLineChartLine,
       variant: profit >= 0 ? ("success" as const) : ("destructive" as const),
     },
     {
       title: "Investido",
       value: fmtCompact(kpis.total_spend),
+      rawValue: kpis.total_spend,
       icon: RiBarChartLine,
       subtitle: `CPA: ${fmtCompact(kpis.cpa)}`,
       variant: "default" as const,
@@ -89,6 +92,7 @@ export function KpiGrid({ kpis, taxEnabled, taxRate, opCostsEnabled, opCostsTota
     {
       title: "Chargebacks",
       value: fmtCompact(kpis.chargeback_amount),
+      rawValue: kpis.chargeback_amount,
       icon: RiErrorWarningLine,
       subtitle: `Taxa: ${kpis.chargeback_rate}%`,
       variant: "destructive" as const,

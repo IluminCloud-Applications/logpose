@@ -1,4 +1,7 @@
 import type { RemixiconComponentType } from "@remixicon/react";
+import { RiMoneyDollarCircleLine } from "@remixicon/react";
+import { Switch } from "@/components/ui/switch";
+import { useValueDisplay } from "@/contexts/ValueDisplayContext";
 
 interface MoreItem {
   label: string;
@@ -19,6 +22,8 @@ export function MoreDropdown({
   currentPath,
   onItemClick,
 }: MoreDropdownProps) {
+  const { showFull, toggle } = useValueDisplay();
+
   return (
     <div
       className={`absolute bottom-full right-0 mb-2 transition-all duration-200 origin-bottom-right ${
@@ -53,6 +58,17 @@ export function MoreDropdown({
             </button>
           );
         })}
+
+        <div className="my-1 border-t border-border/30" />
+
+        <button
+          onClick={(e) => { e.stopPropagation(); toggle(); }}
+          className="flex items-center gap-3 w-full px-3 py-2.5 rounded-xl transition-colors text-muted-foreground hover:bg-muted/50 hover:text-foreground"
+        >
+          <RiMoneyDollarCircleLine className="size-4.5 shrink-0" />
+          <span className="text-sm font-medium flex-1 text-left">Valores Reais</span>
+          <Switch checked={showFull} className="scale-75 pointer-events-none" />
+        </button>
       </div>
     </div>
   );

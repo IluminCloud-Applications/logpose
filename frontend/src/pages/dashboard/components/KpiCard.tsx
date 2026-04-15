@@ -1,10 +1,13 @@
 import { Card, CardContent } from "@/components/ui/card";
 import type { RemixiconComponentType } from "@remixicon/react";
 import { cn } from "@/lib/utils";
+import { useValueDisplay } from "@/contexts/ValueDisplayContext";
+import { fmtFull } from "@/utils/format";
 
 interface KpiCardProps {
   title: string;
   value: string;
+  rawValue?: number;
   subtitle?: string;
   icon: RemixiconComponentType;
   trend?: {
@@ -31,12 +34,18 @@ const iconBgStyles = {
 export function KpiCard({
   title,
   value,
+  rawValue,
   subtitle,
   icon: Icon,
   trend,
   variant = "default",
 }: KpiCardProps) {
-  const isLongValue = value.length > 12;
+  const { showFull } = useValueDisplay();
+  const displayValue = showFull && rawValue != null ? fmtFull(rawValue) : value;
+  const titleAttr = rawValue != null
+    ? showFull ? value : fmtFull(rawValue)
+    : value;
+  const isLongValue = displayValue.length > 12;
 
   return (
     <Card className="group relative overflow-hidden border-border/40 transition-all duration-300 hover:shadow-lg hover:border-primary/20">
@@ -49,12 +58,12 @@ export function KpiCard({
             <p
               className={cn(
                 "font-bold tabular-nums truncate",
-                isLongValue ? "text-base sm:text-lg" : "text-lg sm:text-2xl",
+                isLongValue ? "text-sm sm:text-base" : "text-lg sm:text-2xl",
                 variantStyles[variant],
               )}
-              title={value}
+              title={titleAttr}
             >
-              {value}
+              {displayValue}
             </p>
             {subtitle && (
               <p className="text-xs text-muted-foreground truncate">{subtitle}</p>

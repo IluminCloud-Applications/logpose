@@ -22,6 +22,7 @@ export function RefundsKpis({ summary, loading }: RefundsKpisProps) {
     {
       label: "Valor Reembolsos",
       value: summary ? fmtCompact(summary.refund_amount) : "R$ 0",
+      rawValue: summary?.refund_amount ?? 0,
       icon: RiRefundLine,
       color: "text-amber-500",
     },

@@ -1,6 +1,8 @@
-import { RiLogoutBoxLine, RiExpandUpDownLine, RiSunLine, RiMoonLine, RiUserLine, RiSettings3Line } from "@remixicon/react";
+import { RiLogoutBoxLine, RiExpandUpDownLine, RiSunLine, RiMoonLine, RiUserLine, RiSettings3Line, RiMoneyDollarCircleLine } from "@remixicon/react";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
+import { Switch } from "@/components/ui/switch";
+import { useValueDisplay } from "@/contexts/ValueDisplayContext";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
   DropdownMenu,
@@ -24,6 +26,7 @@ export function SidebarUser() {
   const user = getStoredUser();
 
   const [isDark, setIsDark] = useState(() => localStorage.getItem("theme") === "dark");
+  const { showFull, toggle: toggleFull } = useValueDisplay();
 
   useEffect(() => {
     const root = document.documentElement;
@@ -101,6 +104,11 @@ export function SidebarUser() {
               </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
+            <DropdownMenuItem onSelect={(e) => { e.preventDefault(); toggleFull(); }}>
+              <RiMoneyDollarCircleLine className="size-4" />
+              <span className="flex-1">Valores Reais</span>
+              <Switch checked={showFull} className="scale-75 pointer-events-none" />
+            </DropdownMenuItem>
             {user?.role === "owner" && (
               <DropdownMenuItem onClick={() => navigate("/advanced-settings")}>
                 <RiSettings3Line className="size-4" />
