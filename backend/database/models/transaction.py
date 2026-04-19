@@ -1,6 +1,6 @@
 from sqlalchemy import (
     Column, Integer, String, Float, DateTime,
-    Enum, ForeignKey, JSON
+    Enum, ForeignKey, JSON, Text
 )
 from database.core.connection import Base
 from database.core.timezone import CREATED_AT_DEFAULT, UPDATED_AT_DEFAULT
@@ -48,12 +48,12 @@ class Transaction(Base):
     customer_email = Column(String(255), nullable=True, index=True)
 
     # UTMs para rastreamento de origem
-    utm_source = Column(String(255), nullable=True)
-    utm_medium = Column(String(255), nullable=True)
-    utm_campaign = Column(String(255), nullable=True)
-    utm_content = Column(String(255), nullable=True)
-    utm_term = Column(String(255), nullable=True)
-    src = Column(String(255), nullable=True)
+    utm_source = Column(Text, nullable=True)
+    utm_medium = Column(Text, nullable=True)
+    utm_campaign = Column(Text, nullable=True)
+    utm_content = Column(Text, nullable=True)
+    utm_term = Column(Text, nullable=True)
+    src = Column(Text, nullable=True)
 
     # Identificação da conta (webhook endpoint slug)
     webhook_slug = Column(String(50), nullable=True, index=True)
