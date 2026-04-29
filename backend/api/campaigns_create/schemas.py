@@ -50,8 +50,9 @@ class CampaignCreatePayload(BaseModel):
 class CampaignCreateResponse(BaseModel):
     """Resposta da criação de campanha."""
     success: bool
-    campaign_id: str | None = None
-    adset_id: str | None = None
+    campaign_id: str | None = None        # Mantido para retrocompatibilidade
+    adset_id: str | None = None           # Mantido para retrocompatibilidade
+    campaigns_created: int = 0
     ads_created: int = 0
     errors: list[str] = []
 

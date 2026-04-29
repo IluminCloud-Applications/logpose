@@ -47,6 +47,7 @@ export interface CampaignFormState {
   productLabel: string;
   // Step 1 — Campanha
   campaignName: string;
+  campaignCount: number;
   dailyBudget: number;
   bidStrategy: string;
   bidAmount: number | null;
@@ -81,6 +82,7 @@ const INITIAL_STATE: CampaignFormState = {
   productId: "",
   productLabel: "",
   campaignName: "",
+  campaignCount: 1,
   dailyBudget: 0,
   bidStrategy: "VOLUME",
   bidAmount: null,

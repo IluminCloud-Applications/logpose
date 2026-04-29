@@ -79,10 +79,12 @@ export default function CampaignsCreatePage() {
         extra_params: ad.extra_params, cta_type: ad.cta_type,
         media_type: ad.media_type, media_index: i,
       }));
-      const payload = { ...buildExportPayload(form), account_id: form.accountId, ads };
+      const payload = { ...buildExportPayload(form), account_id: form.accountId, campaign_count: form.campaignCount, ads };
       const result = await publishCampaign(payload, files);
       if (result.success) {
-        toast.success(`Campanha criada! ${result.ads_created} anúncio(s) publicados.`);
+        const camps = result.campaigns_created ?? 1;
+        const plural = camps > 1 ? `${camps} campanhas` : "1 campanha";
+        toast.success(`${plural} criada(s)! ${result.ads_created} anúncio(s) publicados.`);
         resetForm();
         navigate("/campaigns");
       } else {
@@ -97,12 +99,15 @@ export default function CampaignsCreatePage() {
 
   return (
     <div className="flex flex-col gap-5 p-6 max-w-4xl mx-auto">
-      <div className="flex items-center justify-between">
+    <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <Button variant="ghost" size="sm" onClick={() => navigate("/campaigns")}>
             <RiArrowLeftLine className="size-4 mr-1" /> Voltar
           </Button>
           <h1 className="text-xl font-bold">Nova Campanha</h1>
+          <span className="font-mono text-sm bg-muted px-2.5 py-1 rounded-md text-muted-foreground tracking-wide">
+            {form.campaignCount}-{maxReachedStep >= 2 ? form.adsetCount : "x"}-{form.ads.length > 0 ? form.ads.length : "x"}
+          </span>
         </div>
         <div className="flex gap-2">
           <Button variant="outline" size="sm" onClick={() => handleImportCampaign(updateField)}>

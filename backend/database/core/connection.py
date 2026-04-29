@@ -4,7 +4,7 @@ from sqlalchemy.orm import sessionmaker, declarative_base
 
 DATABASE_URL = os.getenv(
     "DATABASE_URL",
-    "postgresql://postgres:postgres@db:5432/convergeai"
+    "postgresql://postgres:postgres@db:5432/logpose"
 )
 
 engine = create_engine(DATABASE_URL, pool_pre_ping=True)

@@ -31,24 +31,41 @@ export function CampaignStep({ form, onUpdate }: CampaignStepProps) {
         <CardTitle className="text-lg">Configurar Campanha</CardTitle>
       </CardHeader>
       <CardContent className="space-y-5">
-        {/* Nome */}
-        <div className="space-y-2">
-          <Label>Nome da Campanha</Label>
-          <Input
-            placeholder="Ex: Oferta Black Friday"
-            value={form.campaignName}
-            onChange={(e) => onUpdate("campaignName", e.target.value)}
-            autoComplete="off"
-          />
-          {form.campaignName && (
-            <button
-              onClick={() => onUpdate("campaignName", suggestedName)}
-              className="flex items-center gap-1.5 text-xs text-primary hover:text-primary/80 transition-colors"
-            >
-              <RiLightbulbLine className="size-3.5" />
-              Sugestão: {suggestedName}
-            </button>
-          )}
+        {/* Nome + Quantidade */}
+        <div className="grid grid-cols-[1fr_130px] gap-3">
+          <div className="space-y-2">
+            <Label>Nome da Campanha</Label>
+            <Input
+              placeholder="Ex: Oferta Black Friday"
+              value={form.campaignName}
+              onChange={(e) => onUpdate("campaignName", e.target.value)}
+              autoComplete="off"
+            />
+            {form.campaignName && (
+              <button
+                onClick={() => onUpdate("campaignName", suggestedName)}
+                className="flex items-center gap-1.5 text-xs text-primary hover:text-primary/80 transition-colors"
+              >
+                <RiLightbulbLine className="size-3.5" />
+                Sugestão: {suggestedName}
+              </button>
+            )}
+          </div>
+          <div className="space-y-2">
+            <Label>Qtd. Campanhas</Label>
+            <Input
+              type="number"
+              min={1}
+              max={20}
+              value={form.campaignCount}
+              onChange={(e) => onUpdate("campaignCount", Math.max(1, parseInt(e.target.value) || 1))}
+            />
+            {form.campaignCount > 1 && (
+              <p className="text-xs text-muted-foreground">
+                {form.campaignCount}-{form.adsetCount}-x
+              </p>
+            )}
+          </div>
         </div>
 
         {/* Orçamento diário */}

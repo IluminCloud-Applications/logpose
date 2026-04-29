@@ -32,6 +32,7 @@ export interface CampaignCreateResult {
   success: boolean;
   campaign_id?: string;
   adset_id?: string;
+  campaigns_created?: number;
   ads_created: number;
   errors: string[];
 }

@@ -10,6 +10,7 @@ export function buildExportPayload(form: CampaignFormState): Record<string, unkn
   return {
     version: "1.0",
     campaign_name: form.campaignName,
+    campaign_count: form.campaignCount,
     daily_budget: form.dailyBudget,
     bid_strategy: form.bidStrategy,
     bid_amount: form.bidAmount,
@@ -66,6 +67,7 @@ export function applyDataToForm(
   updateField("roasFloor", (data.roas_floor as number | null) ?? null);
   updateField("adsetName", (data.adset_name as string) ?? "");
   updateField("adsetCount", (data.adset_count as number) ?? 1);
+  updateField("campaignCount", (data.campaign_count as number) ?? 1);
   updateField("pixelId", (data.pixel_id as string) ?? "");
   updateField("startTime", getNextMidnightSP());
   updateField("videoId", (data.video_id as string) ?? "");

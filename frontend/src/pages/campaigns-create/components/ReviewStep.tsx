@@ -32,7 +32,7 @@ export function ReviewStep({ form, onUpdate }: ReviewStepProps) {
               <RiRocketLine className="size-5 text-primary" />
               <div>
                 <p className="font-semibold">
-                  Estrutura: 1-{form.adsetCount}-{form.ads.length} — 1 campanha, {form.adsetCount} conjunto{form.adsetCount > 1 ? "s" : ""}, {form.ads.length} anúncio{form.ads.length > 1 ? "s" : ""} cada
+                  Estrutura: {form.campaignCount}-{form.adsetCount}-{form.ads.length} — {form.campaignCount} campanha{form.campaignCount > 1 ? "s" : ""}, {form.adsetCount} conjunto{form.adsetCount > 1 ? "s" : ""} cada, {form.ads.length} anúncio{form.ads.length > 1 ? "s" : ""} cada
                 </p>
                 <p className="text-muted-foreground text-xs mt-0.5">
                   {form.publishActive
