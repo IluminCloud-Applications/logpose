@@ -6,8 +6,9 @@ Dashboard estratégico de performance para Direct Response.
 
 ```bash
 git add -A
-git commit -m "v2.0.7 - fix import"
-git push
+git commit -m "v1"
+git tag 1.0.0
+git push origin 1.0.0
 ```
 
 
@@ -15,8 +16,10 @@ git push
 
 ```bash
 git add -A
-git commit -m "v1.2.0"
+git commit -m "feat: first commit"
 git branch -M main
 git push -u origin main
+git tag 1.0.0
+git push origin 1.0.0
 ```
 
