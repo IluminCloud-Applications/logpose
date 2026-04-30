@@ -1,15 +1,15 @@
 <div align="center">
   <!-- Substitua pelo link da imagem do banner/logo do App -->
-  <img src="https://via.placeholder.com/800x200?text=Log+Pose+Banner" alt="Banner do Log Pose" />
+  <img src="https://raw.githubusercontent.com/IluminCloud-Applications/logpose/main/frontend/public/logo_dark.webp" alt="Banner do Log Pose" />
 
   <h1>Log Pose</h1>
   <p>O dashboard definitivo para CEOs de Direct Response. Navegue pelos seus dados de tráfego e vendas com a precisão de um pirata rumo a Laugh Tale.</p>
 
   <p>
-    <a href="#-instalação-em-1-clique-recomendado"><b>Deploy Automático</b></a> •
-    <a href="#-tutorial-de-instalação"><b>Vídeo Tutorial</b></a> •
-    <a href="#-instalação-manual-avançado"><b>Instalação Manual</b></a> •
-    <a href="#-licença"><b>Licença</b></a>
+    <a href="#instalação-em-1-clique-recomendado"><b>Deploy Automático</b></a> •
+    <a href="#tutorial-de-instalação"><b>Vídeo Tutorial</b></a> •
+    <a href="#instalação-manual-avançado"><b>Instalação Manual</b></a> •
+    <a href="#licença"><b>Licença</b></a>
   </p>
 </div>
 
