@@ -1,6 +1,38 @@
-node_modules/
-dist/
-.env
-__pycache__/
-*.pyc
+# Dependencies
+frontend/node_modules
+backend/__pycache__
+backend/**/__pycache__
+
+# Build artifacts
+frontend/dist
 .vite/
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Env
+frontend/.env.local
+backend/.env
+.env
+
+# Docs locais
+GEMINI.md
+GEMINI-backend.md
+git.md
+docs/
+design.md
+ilumin.md
+
+# Pastas Ocultas
+.gemini
+.github
+.gemini/
+.github/
+
