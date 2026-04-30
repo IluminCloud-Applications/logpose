@@ -1,6 +1,6 @@
 <div align="center">
   <!-- Substitua pelo link da imagem do banner/logo do App -->
-  <img src="/frontend/public/logo_dark.webp" alt="Banner do Log Pose" width="100" />
+  <img src="/frontend/public/logo_dark.webp" alt="Banner do Log Pose" width="200" />
 
   <h1>Log Pose</h1>
   <p>O dashboard definitivo para CEOs de Direct Response. Navegue pelos seus dados de tráfego e vendas com a precisão de um pirata rumo a Laugh Tale.</p>
