@@ -1,6 +1,6 @@
 <div align="center">
   <!-- Substitua pelo link da imagem do banner/logo do App -->
-  <img src="https://raw.githubusercontent.com/IluminCloud-Applications/logpose/main/frontend/public/logo_dark.webp" alt="Banner do Log Pose" />
+  <img src="frontend/public/logo_dark.webp" alt="Banner do Log Pose" />
 
   <h1>Log Pose</h1>
   <p>O dashboard definitivo para CEOs de Direct Response. Navegue pelos seus dados de tráfego e vendas com a precisão de um pirata rumo a Laugh Tale.</p>
