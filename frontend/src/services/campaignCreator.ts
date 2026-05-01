@@ -73,6 +73,19 @@ export async function publishCampaign(
   payload: Record<string, unknown>,
   files: File[]
 ): Promise<CampaignCreateResult> {
+  // Mock mode — intercept before hitting the real API
+  if (sessionStorage.getItem("mock_mode") === "true") {
+    await new Promise((r) => setTimeout(r, 800));
+    return {
+      success: true,
+      campaign_id: "mock_camp_" + Date.now(),
+      adset_id: "mock_adset_" + Date.now(),
+      campaigns_created: (payload.campaign_count as number) || 1,
+      ads_created: Array.isArray(payload.ads) ? (payload.ads as unknown[]).length : 1,
+      errors: [],
+    };
+  }
+
   const formData = new FormData();
   formData.append("payload", JSON.stringify(payload));
   files.forEach((file) => formData.append("files", file));
