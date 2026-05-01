@@ -1,7 +1,22 @@
+export type CampaignObjective =
+  | "sales"
+  | "traffic"
+  | "engagement"
+  | "leads"
+  | "awareness"
+  | "app_promotion";
+
+export type BidStrategy = "volume" | "bid_cap" | "cost_cap" | "roas";
+
 export interface CampaignRow {
   id: string;
   name: string;
   status: "active" | "paused" | "completed" | "unidentified";
+  objective: CampaignObjective;
+  bid_strategy: BidStrategy;
+  budget_type: "CBO" | "ABO";
+  account_id: string;
+  account_name: string;
   budget: number;
   spend: number;
   revenue: number;
@@ -23,6 +38,11 @@ export const campaignsData: CampaignRow[] = [
     id: "1",
     name: "Campaign - Ebook Fitness",
     status: "active",
+    objective: "sales",
+    bid_strategy: "volume",
+    budget_type: "CBO",
+    account_id: "act_123456789",
+    account_name: "Log Pose - Oficial",
     budget: 500,
     spend: 8500,
     revenue: 28400,
@@ -42,6 +62,11 @@ export const campaignsData: CampaignRow[] = [
     id: "2",
     name: "Campaign - Curso Marketing Digital",
     status: "active",
+    objective: "sales",
+    bid_strategy: "cost_cap",
+    budget_type: "ABO",
+    account_id: "act_987654321",
+    account_name: "Log Pose - Secundária",
     budget: 800,
     spend: 12300,
     revenue: 35200,
@@ -61,6 +86,11 @@ export const campaignsData: CampaignRow[] = [
     id: "3",
     name: "Campaign - Mentoria Premium",
     status: "active",
+    objective: "leads",
+    bid_strategy: "bid_cap",
+    budget_type: "CBO",
+    account_id: "act_123456789",
+    account_name: "Log Pose - Oficial",
     budget: 350,
     spend: 6200,
     revenue: 24800,
@@ -80,6 +110,11 @@ export const campaignsData: CampaignRow[] = [
     id: "4",
     name: "Campaign - PLR Bundle Pack",
     status: "paused",
+    objective: "traffic",
+    bid_strategy: "volume",
+    budget_type: "ABO",
+    account_id: "act_987654321",
+    account_name: "Log Pose - Secundária",
     budget: 600,
     spend: 9800,
     revenue: 22050,
@@ -99,6 +134,11 @@ export const campaignsData: CampaignRow[] = [
     id: "5",
     name: "Campaign - Lançamento VIP",
     status: "active",
+    objective: "sales",
+    bid_strategy: "roas",
+    budget_type: "CBO",
+    account_id: "act_123456789",
+    account_name: "Log Pose - Oficial",
     budget: 400,
     spend: 5350,
     revenue: 17000,
@@ -118,6 +158,11 @@ export const campaignsData: CampaignRow[] = [
     id: "6",
     name: "Campaign - Desafio 21 Dias",
     status: "completed",
+    objective: "awareness",
+    bid_strategy: "volume",
+    budget_type: "ABO",
+    account_id: "act_987654321",
+    account_name: "Log Pose - Secundária",
     budget: 250,
     spend: 4200,
     revenue: 9800,
@@ -137,6 +182,11 @@ export const campaignsData: CampaignRow[] = [
     id: "unidentified",
     name: "Não identificado",
     status: "unidentified",
+    objective: "sales",
+    bid_strategy: "volume",
+    budget_type: "CBO",
+    account_id: "",
+    account_name: "",
     budget: 0,
     spend: 0,
     revenue: 7050,

@@ -73,6 +73,8 @@ services:
     image: ghcr.io/seu-usuario/logpose:${APP_VERSION}
     environment:
       - DATABASE_URL=postgres://logpose_user:${DB_PASSWORD}@db:5432/logpose
+      - SECRET_KEY=${SECRET_KEY}
+      - META_GRAPH_API_VERSION=${META_GRAPH_API_VERSION}
     networks:
       - traefik
       - internal
@@ -123,6 +125,8 @@ services:
     image: ghcr.io/seu-usuario/logpose:latest
     environment:
       - DATABASE_URL=postgres://logpose_user:pass@db:5432/logpose
+      - SECRET_KEY=sua_chave_secreta_aqui
+      - META_GRAPH_API_VERSION=v25.0
     ports:
       - "8000:8000" # Lembre-se de configurar o proxy reverso para apontar para cá
     depends_on:

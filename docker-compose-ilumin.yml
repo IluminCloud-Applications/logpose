@@ -6,7 +6,7 @@ services:
         condition: service_healthy
     environment:
       - DATABASE_URL=postgresql://postgres:${DB_PASSWORD}@db:5432/logpose
-      - SECRET_KEY=${DB_PASSWORD}
+      - SECRET_KEY=${SECRET_KEY}
       - META_GRAPH_API_VERSION=v25.0
     networks:
       - traefik
