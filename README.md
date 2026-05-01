@@ -70,7 +70,7 @@ Se você usa a stack da Ilumin ou Traefik, este arquivo já vem com as labels e 
 ```yaml
 services:
   app:
-    image: ghcr.io/seu-usuario/logpose:${APP_VERSION}
+    image: ghcr.io/ilumincloud-applications/logpose:${APP_VERSION}
     environment:
       - DATABASE_URL=postgres://logpose_user:${DB_PASSWORD}@db:5432/logpose
       - SECRET_KEY=${SECRET_KEY}
@@ -122,7 +122,7 @@ version: '3.8'
 
 services:
   app:
-    image: ghcr.io/seu-usuario/logpose:latest
+    image: ghcr.io/ilumincloud-applications/logpose:latest
     environment:
       - DATABASE_URL=postgres://logpose_user:pass@db:5432/logpose
       - SECRET_KEY=sua_chave_secreta_aqui
